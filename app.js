@@ -63,7 +63,8 @@ function svTips(a){const T=[...TY[typeOf(a)].tips],lc=['lchf','keto','carn'].inc
 function svBadges(a){const b=[DIETN[a.diet],SCH[a.sched].n];if(a.stage=='plateau')b.push('⏸️ 정체기 모드');if(a.stage=='yoyo')b.push('🔁 천천히 모드');if((a.avoid||[]).length)b.push('🚫 '+a.avoid.map(k=>AVN[k]).join('·'));return b.map(x=>`<span class="svbadge">${x}</span>`).join('')}
 let svA=null,svI=0;
 function svOpen(){svA=JSON.parse(JSON.stringify(SV));svA.care=[];svI=0;svDraw();$('#sv').hidden=false;$('#sv').scrollTop=0}
-function svClose(){$('#sv').hidden=true;if(!profileDone)onbOpen()}
+// 설문을 마치면 처음 쓰는 사람과 같은 순서로 항상 기본 정보 입력으로 이어진다
+function svClose(next){$('#sv').hidden=true;if(next||!profileDone)onbOpen(next)}
 function svDraw(){const box=$('#svin');
  if(svI>=SVQ.length){const ty=TY[typeOf(svA)];
   box.innerHTML=`<div class="svres"><div class="sub">나의 식단 타입은</div><div class="svbig">${ty.e}</div><div class="svq" style="margin-top:4px">${ty.n} <span class="sub" style="font-size:16px">${ty.t}</span></div><div class="sub">${ty.d}</div><div class="svbadges">${svBadges(svA)}</div></div>
@@ -89,7 +90,7 @@ function svApply(){const prev=SV.done?TY[typeOf()].n:null;const{care,...a}=svA;S
  lowfm=SV.gut;$$('.lowfm').forEach(x=>x.checked=lowfm);$('#c2').checked=lowfm;
  G.meals=SV.meals;$('#gm').value=G.meals;
  const ty=TY[typeOf()];logChg(prev&&prev!=ty.n?`식단 타입 ${prev}→${ty.n}`:`식단 타입: ${ty.n}`);G0={...G};
- applyLow();wmenu();calc();goalMsg();refresh();tyUI();const first=!profileDone;svClose();scrollTo(0,0);if(!first)toast(`${ty.e} ${ty.n} 루틴으로 맞췄어요`)}
+ applyLow();wmenu();calc();goalMsg();refresh();tyUI();svClose(true);scrollTo(0,0)}
 function tyUI(){const e=$('#tycard');if(!e)return;
  if(!SV.done){e.innerHTML=`<summary><div><h2>내 식단 타입 찾기</h2><div class="sub">1분 설문으로 식단 구성을 나에게 맞춰요</div></div></summary><button class="pri" id="tygo" style="width:100%">설문 시작하기</button>`;$('#tygo').onclick=svOpen;return}
  const ty=TY[typeOf()];
@@ -516,14 +517,15 @@ $$('[data-wp]').forEach(b=>b.onclick=()=>wpOpen(b.dataset.wp));
 $('#wpclose').onclick=()=>{$('#wpov').hidden=true};
 $('#wpshare').onclick=async()=>{try{const r=await fetch($('#wpimg').src),bl=await r.blob(),f=new File([bl],'diet-wallpaper.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){}toast('이 화면에선 공유가 막혀 있어요. 이미지를 길게 눌러 저장해 주세요')};
 /* onboarding */
-function onbOpen(){$('#oage').value=$('#age').value;$('#oht').value=$('#ht').value;$('#owt').value=$('#wt').value;$('#opa').value=$('#pa').value;$('#okg').value=G.kg;$('#owk').value=G.weeks;plBoxes();$('#onbmsg').textContent='';$('#onb').hidden=false}
-$('#onbre').onclick=onbOpen;
+function onbOpen(fromSv){const ty=SV.done?TY[typeOf()]:null;$('#onbstep').hidden=!fromSv;$('#onbt').textContent=ty?`${ty.e} ${ty.n} 루틴 만들기`:'시작해볼까요?';$('#onbs').textContent=ty?'나이·키·몸무게를 넣으면 내 타입에 맞춘 탄·단·지 기준과 하루 식단이 첫 화면에 만들어져요. 나중에 언제든 바꿀 수 있어요.':'기본 정보를 넣으면 나에게 맞는 루틴이 첫 화면에 만들어져요. 나중에 언제든 바꿀 수 있어요.';$('#onbskip').hidden=!profileDone;$('#oage').value=$('#age').value;$('#oht').value=$('#ht').value;$('#owt').value=$('#wt').value;$('#opa').value=$('#pa').value;$('#okg').value=G.kg;$('#owk').value=G.weeks;plBoxes();$('#onbmsg').textContent='';$('#onb').hidden=false}
+$('#onbre').onclick=()=>onbOpen();
+$('#onbskip').onclick=()=>{$('#onb').hidden=true;scrollTo(0,0);if(SV.done)toast(`${TY[typeOf()].e} ${TY[typeOf()].n} 루틴으로 맞췄어요`)};
 $('#onbgo').onclick=()=>{const age=+$('#oage').value,ht=+$('#oht').value,wt=+$('#owt').value,m=$('#onbmsg');
  if(!(age>=19&&age<=80))return m.textContent='이 앱은 19~80세 성인 기준으로 만들어졌어요.';
  if(!(ht>=120&&ht<=220&&wt>=30&&wt<=250))return m.textContent='키와 몸무게를 확인해 주세요.';
  $('#age').value=age;$('#ht').value=ht;$('#wt').value=wt;$('#pa').value=$('#opa').value;
  G.kg=Math.min(20,Math.max(1,+$('#okg').value||5));G.weeks=Math.min(52,Math.max(2,Math.round(+$('#owk').value)||8));$('#gkg').value=G.kg;$('#gwk').value=G.weeks;
 
- if(!profileDone)wlog=[];logWeight(wt);logChg(profileDone?'기본정보 다시 입력':'기본정보 입력');G0={...G};profileDone=true;$('#onb').hidden=true;goalMsg();calc();refresh();scrollTo(0,0);toast('내 루틴을 만들었어요')};
+ if(!profileDone)wlog=[];logWeight(wt);logChg(profileDone?'기본정보 다시 입력':'기본정보 입력');G0={...G};profileDone=true;$('#onb').hidden=true;goalMsg();calc();refresh();scrollTo(0,0);toast(SV.done?`${TY[typeOf()].e} ${TY[typeOf()].n} 루틴을 만들었어요`:'내 루틴을 만들었어요')};
 if(!SV.done&&!SV.skip)svOpen();else if(!profileDone)onbOpen();checkHash();chgUI();posterUI();lockUI();
 setInterval(saveState,1500);addEventListener('pagehide',saveState);document.addEventListener('visibilitychange',saveState);

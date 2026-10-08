@@ -234,8 +234,9 @@
  <button id="wpclose" style="width:100%;margin-top:8px">닫기</button></div></div>
 <div id="sv" hidden><div class="onbin" id="svin"></div></div>
 <div id="onb" hidden><div class="onbin">
- <div class="ptitle" style="font-size:30px">시작해볼까요?</div>
- <div class="sub" style="margin:6px 0 14px">기본 정보를 넣으면 나에게 맞는 루틴이 첫 화면에 만들어져요. 나중에 언제든 바꿀 수 있어요.</div>
+ <div class="sub" id="onbstep" hidden>마지막 단계 · 기본 정보</div>
+ <div class="ptitle" style="font-size:30px" id="onbt">시작해볼까요?</div>
+ <div class="sub" style="margin:6px 0 14px" id="onbs">기본 정보를 넣으면 나에게 맞는 루틴이 첫 화면에 만들어져요. 나중에 언제든 바꿀 수 있어요.</div>
  <div class="grid2"><div><label>나이 (19세 이상)</label><input id="oage" type="number" value="0" onfocus="this.select()"></div><div><label>활동량</label><select id="opa"><option value="1.0">거의 안 움직임</option><option value="1.12" selected>가벼운 활동</option><option value="1.27">활동적</option></select></div>
  <div><label>키(cm)</label><input id="oht" type="number" value="0" onfocus="this.select()"></div><div><label>몸무게(kg)</label><input id="owt" type="number" step="0.1" value="0" onfocus="this.select()"></div>
  <div><label>감량 목표(kg)</label><input id="okg" type="number" step="0.5" value="5"></div><div><label>기간(주)</label><input id="owk" type="number" value="8"></div></div>
@@ -243,6 +244,7 @@
  <div id="oplbox"></div>
  <div id="onbmsg" class="bad" style="margin-top:8px;font-size:13px"></div>
  <button class="pri" id="onbgo" style="width:100%;margin-top:12px;padding:12px">시작하기</button>
+ <button id="onbskip" hidden style="width:100%;margin-top:8px">지금 정보 그대로 둘게요</button>
  <div class="sub" style="margin-top:10px">한국인 영양소 섭취기준(19세 이상 성인) 기반 예시 계산이에요. 개인 상태에 맞는 조정은 전문가 상담이 필요해요. 입력한 정보는 이 기기에만 저장돼요.</div>
 </div></div>
 <nav class="tabs" id="tabs">
