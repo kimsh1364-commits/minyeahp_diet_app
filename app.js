@@ -12,7 +12,7 @@ const typeOf=(a=SV)=>{const f=['lchf','keto','carn'].includes(a.diet),r=a.sched=
 const TY={
  bear:{e:'🐻',n:'곰형',t:'든든한 세 끼 균형형',d:'정해진 시간에 밥·단백질·채소를 고루 먹을 때 가장 잘 맞아요.',tips:['끼니마다 밥 ⅔공기 + 단백질 1 + 채소 2','아침을 거르지 않아야 저녁 과식이 줄어요','저녁은 잠들기 3시간 전에 마무리해요']},
  squirrel:{e:'🐿️',n:'다람쥐형',t:'비축 도시락형',d:'생활 시간이 들쭉날쭉해서, 미리 소분해 두고 나눠 먹을 때 잘 맞아요.',tips:['일어나서 1~2시간 안에 첫 끼를 먹어요','3~4시간 간격으로 조금씩 나눠 먹어요','가방에 비상 간식(두유·삶은 달걀·견과)을 챙겨요']},
- lion:{e:'🦁',n:'사자형',t:'단백질 사냥형',d:'고기·생선·달걀로 든든하게 먹을 때 만족도가 높아요.',tips:['끼니마다 단백질과 채소를 먼저 먹어요','밥은 ½공기, 고구마·현미처럼 천천히 오르는 탄수로 골라요','탄수화물은 하루 130g 아래로 줄이지 않아요']},
+ lion:{e:'🦁',n:'사자형',t:'단백질 사냥형',d:'고기·생선·달걀로 든든하게 먹을 때 만족도가 높아요.',tips:['끼니마다 단백질과 채소를 먼저 먹어요','고기·생선은 굽거나 삶고, 지방은 올리브유·견과·생선으로 채워요']},
  owl:{e:'🦉',n:'부엉이형',t:'내 리듬 단백질형',d:'근무·생활 리듬에 맞춰 단백질 위주로 간단히 챙길 때 잘 맞아요.',tips:['끼니 시간은 시계 말고 일어난 시각 기준으로 잡아요','근무 중엔 달걀·그릭요거트·두부 같은 단백질 간식을 챙겨요','퇴근 후 잠들기 전 끼니는 가볍게 먹어요']}};
 const SCH={day:{n:'주간 고정',m:['아침','점심','저녁','간식'],w:['점심','저녁'],last:'8시 전'},
  free:{n:'프리랜서·불규칙',m:['첫 끼','둘째 끼','셋째 끼','간식'],w:['둘째 끼','셋째 끼'],last:'잠들기 3시간 전'},
@@ -22,9 +22,11 @@ const DIETN={mix:'🍚 일반식',vegan:'🌱 비건·채식',lchf:'🥑 저탄�
 const DIETM={
  mix:[['그릭요거트+바나나','또는 달걀2+고구마'],['밥 ⅔공기+단백질 1','+채소 2 도시락'],['밥 ⅔공기+단백질 1','채소 듬뿍'],['두유+견과 한 줌','근력 운동 날 쉐이크']],
  vegan:[['두유 오트밀+바나나','또는 두부 스크램블+토스트'],['현미밥 ⅔+두부·템페','+채소 2 도시락'],['잡곡밥 ⅔+콩·렌틸 요리','채소 듬뿍'],['두유+견과 한 줌','에다마메 한 컵']],
- lc:[['달걀2+아보카도','+작은 고구마 1개'],['밥 ½공기+단백질 1.5','+채소 2 도시락'],['밥 ½공기+생선·고기','채소 듬뿍+올리브유'],['그릭요거트+베리','견과 한 줌']],
- carn:[['달걀2~3+작은 고구마','또는 우유·요거트'],['고기·생선 1.5+밥 ½','+채소 1접시는 꼭'],['고기·생선 1.5+밥 ½','채소 한 접시'],['삶은 달걀·요거트','+과일 한 줌']]};
-const dietM=()=>DIETM[SV.diet=='carn'?'carn':LC()?'lc':SV.diet=='vegan'?'vegan':'mix'];
+ lc:[],carn:[]};
+// 저탄고지·키토·카니보어: 탄수를 밥에 고정하지 않고 날마다 바꿔 제안하되, 끼니마다 탄수 1은 꼭 넣는다(130g 하한)
+const CBM=['고구마 1개','감자 1개','단호박 1컵','현미밥 ½공기','귀리밥 ½공기','퀴노아 ½컵'],CBB=['고구마 1개','바나나 1개','귀리 ½컵','통밀빵 1장'],CBS=['바나나','사과','베리 한 컵','귤 2개'];
+function lcM(carn){const d=todayIdx;return carn?[['달걀2~3+요거트','+'+CBB[d%4]],['고기·생선 1.5+채소 1','+'+CBM[d%6]],['고기·생선 1.5+채소 1','+'+CBM[(d+3)%6]],['삶은 달걀·육포','+'+CBS[d%4]]]:[['달걀2+아보카도','+'+CBB[d%4]],['단백질 1.5+채소 2','+'+CBM[d%6]],['생선·고기+채소 듬뿍','+'+CBM[(d+3)%6]],['그릭요거트+견과','+'+CBS[d%4]]]}
+const dietM=()=>LC()?lcM(SV.diet=='carn'):DIETM[SV.diet=='vegan'?'vegan':'mix'];
 const AVN={d:'유제품',e:'달걀',n:'견과·땅콩',s:'갑각류',w:'밀가루'};
 const SVQ=[
  {k:'diet',q:'평소 어떤 식단이 가장 편하세요?',o:[['mix','🍚','일반식','가리는 것 없이 다 먹어요'],['vegan','🌱','비건·채식','고기·생선을 먹지 않아요'],['lchf','🥑','저탄고지','탄수는 줄이고 지방·단백질 위주로 먹어요'],['keto','🥓','키토','탄수를 아주 적게 먹는 방식이에요'],['carn','🥩','카니보어','고기·달걀 위주로 먹어요']]},
@@ -38,7 +40,7 @@ const SVQ=[
  {k:'care',multi:1,q:'해당하는 게 있나요?',d:'이 답은 저장하지 않아요. 결과 화면에서 주의할 점만 알려 드려요.',o:[['preg','🤰','임신 중이거나 수유 중이에요',''],['ed','💬','섭식장애로 진료·상담을 받았거나 받는 중이에요',''],['med','🏥','당뇨·갑상선·다낭성난소증후군 등으로 진료 중이에요',''],['none','🙂','해당 없어요','']]}];
 // 결과 화면·기준 탭 카드에 같이 쓰는 안내 문구
 function svNotes(a){const n=[],lc=['lchf','keto','carn'].includes(a.diet);
- if(lc)n.push(['','저탄고지·키토·카니보어를 골라도 이 앱은 탄수화물을 하루 <b>130g 아래로 안내하지 않아요.</b> 탄수를 너무 줄이면 월경이 불규칙해질 수 있어서예요. 대신 탄수는 고구마·현미처럼 천천히 오르는 것으로, 나머지는 단백질·좋은 지방으로 채워요.']);
+ if(lc)n.push(['','저탄고지·키토·카니보어를 골라도 이 앱은 탄수화물을 하루 <b>130g 아래로 안내하지 않아요.</b> 여자 몸은 탄수가 부족하면 월경이 불규칙해질 수 있어서예요. 탄수는 꼭 밥이 아니어도 돼요. 고구마·감자·단호박·귀리·과일처럼 좋아하는 걸로 끼니마다 1번씩 넣고, 나머지는 단백질·좋은 지방으로 채워요.']);
  if(a.diet=='carn')n.push(['','고기만 먹으면 식이섬유·비타민C가 부족해지기 쉬워요. 고기 위주로 짜되 <b>채소 한 접시</b>는 지켜요.']);
  if(a.diet=='vegan')n.push(['','비타민 B12는 식물성 식품으로 채우기 어려워요. 보충제는 전문가와 상의해 주세요. 철분이 많은 콩·시금치는 비타민C(과일·파프리카)와 함께 먹어요.']);
  const c=a.care||[];
@@ -47,6 +49,7 @@ function svNotes(a){const n=[],lc=['lchf','keto','carn'].includes(a.diet);
  if(c.includes('med'))n.push(['warn','진료 중인 질환이 있으면 식단·운동을 바꾸기 전에 담당 의사와 먼저 상의해 주세요.']);
  return n}
 function svTips(a){const T=[...TY[typeOf(a)].tips],lc=['lchf','keto','carn'].includes(a.diet);
+ if(lc)T.push('🍠 탄수 1은 끼니마다 꼭 넣어요. 밥이 아니어도 돼요: 고구마·감자·단호박·귀리·퀴노아·과일 중에서 매일 바꿔 골라요');
  if(a.diet=='vegan')T.push('단백질은 두부·템페·콩·두유를 끼니마다 섞어서 채워요');
  if(a.stage=='plateau')T.push('⏸️ 정체기엔 더 줄이지 말고 채워요. 덜 먹을수록 근육이 빠지고 정체가 길어질 수 있어요','⏸️ 몸무게는 하루가 아니라 일주일 평균으로 봐요. 수분 때문에 1~2kg은 오르내려요','⏸️ 걸음 +2,000보, 근력 운동 주 2회, 잠 7시간을 먼저 챙겨요');
  if(a.stage=='yoyo')T.push('🔁 한 주에 체중의 0.5% 안팎으로 천천히 빼요. 기간을 넉넉히 잡을수록 다시 찌는 위험이 줄어요','🔁 금지보다 “반만 먹고 채우기”로 먹고 싶은 걸 남겨 둬요');
@@ -109,7 +112,7 @@ function calc(){
  if(LC()){cLo=130;cHi=150;fLo=Math.round(Math.max(0,target-cHi*4-prot*4)/9);fHi=Math.round(Math.max(0,target-cLo*4-prot*4)/9)}
  window.TARGET=target;window.CARBMIN=cLo;window.PROT=prot;
  $('#calc').innerHTML=`<div class="grid2" style="font-size:13px"><div>탄수화물 <b>${cLo}g 이상</b><div class="sub">넉넉히 ${cLo}–${cHi}g</div></div><div>단백질 <b>${prot}g</b><div class="sub">체중 kg당 약 1.2g</div></div><div>지방 <b>${fLo}–${fHi}g</b><div class="sub">${LC()?'넉넉히 · ':''}견과·생선·올리브유 등 좋은 지방</div></div><div>식이섬유 <b>20g</b><div class="sub">채소 3접시 + 잡곡</div></div></div>
- <div class="sub" style="margin-top:6px">※ 한국인 영양소 섭취기준(2025)의 비율 범위(탄 50–65·단 10–20·지 15–30%)를 바탕으로 하되, 감량 중 근육을 지키려고 단백질은 체중 기준으로 잡은 예시예요. 개인 상태에 맞는 조정은 전문가 상담이 필요해요.${LC()?' 저탄고지·키토를 골라도 탄수화물은 월경 불순 예방을 위해 130g 아래로 내리지 않아요.':''}</div>`;
+ <div class="sub" style="margin-top:6px">※ 한국인 영양소 섭취기준(2025)의 비율 범위(탄 50–65·단 10–20·지 15–30%)를 바탕으로 하되, 감량 중 근육을 지키려고 단백질은 체중 기준으로 잡은 예시예요. 개인 상태에 맞는 조정은 전문가 상담이 필요해요.${LC()?' 저탄고지·키토를 골라도 탄수화물은 월경 불순 예방을 위해 130g 아래로 내리지 않아요. 밥 대신 고구마·감자·단호박·귀리·과일로 채워도 돼요.':''}</div>`;
  $('#csum').textContent=`탄수 ${cLo}g↑ · 단백질 ${prot}g · 채소 3접시`;if(typeof posterUI==='function')posterUI();
  tot();
 }
@@ -118,8 +121,8 @@ function calc(){
 
 /* menus */
 const POOL={
-L:[{n:'닭가슴살 달걀 볼 + 현미밥',al:'e',m:10,k:480,p:34,fm:0},{n:'참치 마요 샌드위치 + 방울토마토',al:'ew',m:8,k:430,p:28,fm:1},{n:'두부 계란 덮밥',al:'e',m:10,k:470,p:30,fm:0},{n:'연어 포케 볼',m:10,k:520,p:30,fm:0},{n:'소고기 야채 비빔밥',al:'e',m:7,k:530,p:29,fm:0},{n:'닭가슴살 월남쌈 + 잡곡밥',m:10,k:450,p:31,fm:1},{n:'오트밀 요거트 볼 + 삶은 달걀',al:'de',m:5,k:400,p:26,fm:1},{n:'새우 달걀 볶음밥',al:'se',m:10,k:500,p:27,fm:0},{n:'병아리콩 샐러드 + 통밀 토르티야',v:1,al:'w',m:8,k:460,p:22,fm:1},{n:'소불고기 쌈 도시락',m:10,k:510,p:32,fm:0},{n:'두부·템페 현미 포케 볼',v:1,m:10,k:480,p:24,fm:0},{n:'렌틸콩 커리 + 현미밥',v:1,m:10,k:500,p:22,fm:1},{n:'두부면 비빔국수 + 에다마메',v:1,m:8,k:430,p:26,fm:0},{n:'병아리콩 후무스 랩 + 채소스틱',v:1,al:'w',m:8,k:460,p:18,fm:1},{n:'소고기 스테이크 샐러드 + 고구마 ½',lc:1,m:10,k:500,p:36,fm:0},{n:'연어 아보카도 볼 (밥 ½공기)',lc:1,m:10,k:520,p:32,fm:0},{n:'닭다리살 구이 + 달걀 + 채소 + 밥 ½',lc:1,al:'e',m:10,k:510,p:38,fm:0},{n:'고등어구이 + 쌈채소 + 밥 ½',lc:1,m:10,k:480,p:30,fm:0},{n:'목살 수육 + 쌈채소 + 밥 ½',lc:1,m:10,k:520,p:34,fm:0}],
-D:[{n:'닭가슴살 스테이크 + 구운 채소',lc:1,m:15,k:470,p:38,fm:0},{n:'두부김치 볶음 + 잡곡밥',m:15,k:490,p:28,fm:1},{n:'연어 구이 + 샐러드 + 밥',m:15,k:540,p:36,fm:0},{n:'소고기 야채 볶음 + 밥',m:15,k:520,p:32,fm:0},{n:'순두부찌개 + 밥',al:'e',m:15,k:480,p:26,fm:0},{n:'새우 야채 볶음 + 잡곡밥',al:'s',m:15,k:500,p:30,fm:0},{n:'달걀찜 + 두부 + 나물 + 밥',al:'e',m:12,k:450,p:28,fm:0},{n:'닭볶음탕(소) + 밥 ½',lc:1,m:20,k:520,p:34,fm:1},{n:'두부 스테이크 + 구운 채소 + 현미밥',v:1,m:15,k:470,p:26,fm:0},{n:'콩불고기 덮밥',v:1,m:15,k:490,p:27,fm:1},{n:'템페 채소 볶음 + 잡곡밥',v:1,m:15,k:480,p:25,fm:0},{n:'채식 버섯 순두부 + 현미밥',v:1,m:15,k:450,p:22,fm:1},{n:'병아리콩 토마토 스튜 + 통밀빵',v:1,al:'w',m:20,k:470,p:20,fm:1},{n:'소고기 채소 구이 + 고구마 ½',lc:1,m:15,k:500,p:36,fm:0},{n:'연어 스테이크 + 아스파라거스 + 밥 ½',lc:1,m:15,k:510,p:34,fm:1},{n:'닭가슴살 샤브샤브 + 채소 + 밥 ½',lc:1,m:15,k:450,p:38,fm:0},{n:'고등어 김치찜 + 밥 ½',lc:1,m:20,k:480,p:30,fm:1}],
+L:[{n:'닭가슴살 달걀 볼 + 현미밥',al:'e',m:10,k:480,p:34,fm:0},{n:'참치 마요 샌드위치 + 방울토마토',al:'ew',m:8,k:430,p:28,fm:1},{n:'두부 계란 덮밥',al:'e',m:10,k:470,p:30,fm:0},{n:'연어 포케 볼',m:10,k:520,p:30,fm:0},{n:'소고기 야채 비빔밥',al:'e',m:7,k:530,p:29,fm:0},{n:'닭가슴살 월남쌈 + 잡곡밥',m:10,k:450,p:31,fm:1},{n:'오트밀 요거트 볼 + 삶은 달걀',al:'de',m:5,k:400,p:26,fm:1},{n:'새우 달걀 볶음밥',al:'se',m:10,k:500,p:27,fm:0},{n:'병아리콩 샐러드 + 통밀 토르티야',v:1,al:'w',m:8,k:460,p:22,fm:1},{n:'소불고기 쌈 도시락',m:10,k:510,p:32,fm:0},{n:'두부·템페 현미 포케 볼',v:1,m:10,k:480,p:24,fm:0},{n:'렌틸콩 커리 + 현미밥',v:1,m:10,k:500,p:22,fm:1},{n:'두부면 비빔국수 + 에다마메',v:1,m:8,k:430,p:26,fm:0},{n:'병아리콩 후무스 랩 + 채소스틱',v:1,al:'w',m:8,k:460,p:18,fm:1},{n:'소고기 스테이크 샐러드 + 구운 고구마 1개',lc:1,c:40,m:10,k:500,p:36,fm:0},{n:'연어 아보카도 퀴노아 볼',lc:1,c:38,m:10,k:520,p:32,fm:0},{n:'닭다리살 구이 + 달걀 + 단호박 찜',lc:1,c:32,al:'e',m:10,k:510,p:38,fm:0},{n:'고등어구이 + 쌈채소 + 찐 감자 1개',lc:1,c:35,m:10,k:480,p:30,fm:0},{n:'목살 수육 + 쌈채소 + 현미밥 ½공기',lc:1,c:35,m:10,k:520,p:34,fm:0},{n:'닭가슴살 그릭 샐러드 + 통밀 또띠아',lc:1,c:35,al:'dw',m:8,k:470,p:36,fm:1},{n:'참치 달걀 샐러드 + 바나나 1개',lc:1,c:32,al:'e',m:5,k:450,p:32,fm:0}],
+D:[{n:'닭가슴살 스테이크 + 구운 채소 + 감자 1개',lc:1,c:35,m:15,k:470,p:38,fm:0},{n:'두부김치 볶음 + 잡곡밥',m:15,k:490,p:28,fm:1},{n:'연어 구이 + 샐러드 + 밥',m:15,k:540,p:36,fm:0},{n:'소고기 야채 볶음 + 밥',m:15,k:520,p:32,fm:0},{n:'순두부찌개 + 밥',al:'e',m:15,k:480,p:26,fm:0},{n:'새우 야채 볶음 + 잡곡밥',al:'s',m:15,k:500,p:30,fm:0},{n:'달걀찜 + 두부 + 나물 + 밥',al:'e',m:12,k:450,p:28,fm:0},{n:'닭볶음탕(소) + 밥 ½',lc:1,c:42,m:20,k:520,p:34,fm:1},{n:'두부 스테이크 + 구운 채소 + 현미밥',v:1,m:15,k:470,p:26,fm:0},{n:'콩불고기 덮밥',v:1,m:15,k:490,p:27,fm:1},{n:'템페 채소 볶음 + 잡곡밥',v:1,m:15,k:480,p:25,fm:0},{n:'채식 버섯 순두부 + 현미밥',v:1,m:15,k:450,p:22,fm:1},{n:'병아리콩 토마토 스튜 + 통밀빵',v:1,al:'w',m:20,k:470,p:20,fm:1},{n:'소고기 채소 구이 + 고구마 1개',lc:1,c:40,m:15,k:500,p:36,fm:0},{n:'연어 스테이크 + 아스파라거스 + 귀리밥 ½공기',lc:1,c:35,m:15,k:510,p:34,fm:1},{n:'닭가슴살 샤브샤브 + 채소 + 단호박',lc:1,c:30,m:15,k:450,p:38,fm:0},{n:'고등어 김치찜 + 현미밥 ½공기',lc:1,c:35,m:20,k:480,p:30,fm:1},{n:'돼지 안심 구이 + 단호박 + 채소',lc:1,c:30,m:15,k:470,p:36,fm:0},{n:'소고기 미역국 + 감자전 1장',lc:1,c:38,m:20,k:500,p:30,fm:0}],
 S:[{n:'그릭요거트 + 베리',al:'d',m:2,k:150,c:14,p:15,fm:0},{n:'삶은 달걀 2개 + 방울토마토',al:'e',m:3,k:190,c:6,p:14,fm:0},{n:'고구마 ½ + 우유',al:'d',m:5,k:210,c:40,p:8,fm:0},{n:'두유 + 견과 한 줌',v:1,al:'n',m:1,k:200,c:12,p:10,fm:0},{n:'땅콩버터 토스트 ½ + 바나나',v:1,al:'nw',m:4,k:230,c:32,p:8,fm:1}]};
 let wk={L:[0,2,3,4,7],D:[0,2,3,4,5]};
 // 메뉴 태그: v 비건, lc 단백·지방 중심(밥 ½ 이하), al 알레르기(d 유제품·e 달걀·n 견과·s 갑각류·w 밀)
@@ -129,7 +132,7 @@ const rnd=a=>a[Math.floor(Math.random()*a.length)];
 function applyLow(){['L','D'].forEach(t=>wk[t].forEach((id,i)=>{if(!okM(t,id)){const f=free(t,wk[t]),all=POOL[t].map((m,j)=>j).filter(j=>okM(t,j));wk[t][i]=f.length?rnd(f):all.length?rnd(all):id}}))}
 function wmenu(){
  applyLow();const sc=SCH[SV.sched]||SCH.day;$('#wmsub').textContent=(SV.sched=='day'?'점심 도시락(10분 안팎)·저녁':sc.w.join('·'))+' 메뉴예요. ↻로 바꿔요.'+(SV.diet=='vegan'?' 🌱 비건 메뉴만 골랐어요.':LC()?' 단백질 중심 메뉴로 골랐어요.':'')+(SV.avoid.length?' 🚫 '+SV.avoid.map(k=>AVN[k]).join('·')+' 제외.':'');
- const row=(t,lab,m,i)=>`<div class="mrow"><span class="sub" style="min-width:52px">${lab}</span><span style="flex:1;min-width:0">${m.n}${m.fm?'<span class="fm">고포드맵 주의</span>':''}<span class="sub"> · 단백질 ${m.p}g</span></span><button data-t="${t}" data-i="${i}" aria-label="메뉴 바꾸기">↻</button></div>`;
+ const row=(t,lab,m,i)=>`<div class="mrow"><span class="sub" style="min-width:52px">${lab}</span><span style="flex:1;min-width:0">${m.n}${m.fm?'<span class="fm">고포드맵 주의</span>':''}<span class="sub"> · 단백질 ${m.p}g${LC()&&m.c?' · 탄수 ~'+m.c+'g':''}</span></span><button data-t="${t}" data-i="${i}" aria-label="메뉴 바꾸기">↻</button></div>`;
  $('#wmenu').innerHTML=DN.map((d,i)=>`<div class="meal" style="display:block"><b>${d}</b>${row('L',sc.w[0],POOL.L[wk.L[i]],i)}${row('D',sc.w[1],POOL.D[wk.D[i]],i)}</div>`).join('');
  $$('#wmenu button').forEach(b=>b.onclick=()=>{const t=b.dataset.t,i=+b.dataset.i,f=free(t,wk[t]);if(!f.length)return toast('교체할 메뉴가 없어요');wk[t][i]=rnd(f);wmenu()});
  if(typeof posterUI==='function')posterUI();
@@ -451,6 +454,7 @@ $('#wipe').onclick=()=>{wiped=true;try{localStorage.removeItem(SK)}catch(e){}toa
 /* poster */
 function posterUI(){
  const pg=window.PROT||0,cg=window.CARBMIN||130,ok=pg>0;
+ $('#pmsm').textContent=LC()?'탄수 1은 끼니마다 꼭 · 종류는 매일 바꿔도 OK':'단백질은 끼니마다 나눠서';
  $('.pright').textContent=SV.done?TY[typeOf()].e+' '+TY[typeOf()].n+' 루틴':'직장인 현실 루틴';tyUI();
  $('#pt1').textContent=G.weeks%4==0?(G.weeks/4)+'달':G.weeks+'주';$('#pt2').textContent='−'+G.kg+'kg';
  $('#pstats').innerHTML=[[ok?cg+'g↑':'-','탄수'],[ok?pg+'g':'-','단백질'],[(G.water/1000).toFixed(1)+'L','물'],[G.steps.toLocaleString(),'걸음']].map(([a,b])=>`<div class="pst"><b>${a}</b><span>${b}</span></div>`).join('');
@@ -499,7 +503,7 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  y+=250;tx('주간 루틴',L,y,54,900,C.ink);y+=30;
  const wk=[...document.querySelectorAll('#pweek > div')],cg=14,cw=(CW-6*cg)/7;
  wk.forEach((e,i)=>{const bx=L+i*(cw+cg),k=e.className.includes('p')?C.blush:e.className.includes('w')?C.lilac:C.card;rr(bx,y,cw,160,34,k,C.ink);tx(e.querySelector('b').textContent,bx+cw/2,y+68,42,900,C.ink,'center');tx(e.lastChild.textContent,bx+cw/2,y+120,30,500,C.sub,'center')});
- y+=240;tx('하루 식단',L,y,54,900,C.ink);tx('단백질은 끼니마다 나눠서',L+270,y,32,500,C.sub);y+=30;
+ y+=240;tx('하루 식단',L,y,54,900,C.ink);tx($('#pmsm').textContent,L+270,y,32,500,C.sub);y+=30;
  const pm=[...document.querySelectorAll('#pmeals .pm')],cols=[C.sky,C.leaf,C.blush,C.lilac],mg=24,mw=(CW-mg)/2;
  pm.forEach((e,i)=>{const bx=L+(i%2)*(mw+mg),by=y+Math.floor(i/2)*(230+mg);rr(bx,by,mw,230,36,cols[i]);
   tx(e.firstElementChild.firstChild.textContent,bx+34,by+66,46,900,C.ink);const sm=e.querySelector('small').textContent;tx(sm,bx+mw-34,by+68,30,500,C.sub,'right');
