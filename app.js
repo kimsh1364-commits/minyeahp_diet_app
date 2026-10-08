@@ -4,6 +4,97 @@ $('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;$$('#tabs
 const DW=['월','화','수','목','금','토','일'],DN=DW.slice(0,5);
 let lowfm=false,phase=null,consent=false,water=0,steps=0,synced=false,exDone=false,claimed=false,badged=false;
 let G={kg:5,weeks:8,water:2000,steps:5000,meals:3};
+let SV={done:false,skip:false,diet:'mix',sched:'day',meals:3,stage:'new',cook:'cook',hard:'none',gut:false,avoid:[]};
+/* survey · 식단 타입 */
+// 식단 스타일(탄수 균형 vs 단백·지방 중심) × 생활 리듬(주간 고정 vs 유연) → 동물 4타입. 정체기·비건·끼니 수 등은 타입 위 보정값.
+const LC=()=>['lchf','keto','carn'].includes(SV.diet);
+const typeOf=(a=SV)=>{const f=['lchf','keto','carn'].includes(a.diet),r=a.sched=='day';return f?(r?'lion':'owl'):(r?'bear':'squirrel')};
+const TY={
+ bear:{e:'🐻',n:'곰형',t:'든든한 세 끼 균형형',d:'정해진 시간에 밥·단백질·채소를 고루 먹을 때 가장 잘 맞아요.',tips:['끼니마다 밥 ⅔공기 + 단백질 1 + 채소 2','아침을 거르지 않아야 저녁 과식이 줄어요','저녁은 잠들기 3시간 전에 마무리해요']},
+ squirrel:{e:'🐿️',n:'다람쥐형',t:'비축 도시락형',d:'생활 시간이 들쭉날쭉해서, 미리 소분해 두고 나눠 먹을 때 잘 맞아요.',tips:['일어나서 1~2시간 안에 첫 끼를 먹어요','3~4시간 간격으로 조금씩 나눠 먹어요','가방에 비상 간식(두유·삶은 달걀·견과)을 챙겨요']},
+ lion:{e:'🦁',n:'사자형',t:'단백질 사냥형',d:'고기·생선·달걀로 든든하게 먹을 때 만족도가 높아요.',tips:['끼니마다 단백질과 채소를 먼저 먹어요','밥은 ½공기, 고구마·현미처럼 천천히 오르는 탄수로 골라요','탄수화물은 하루 130g 아래로 줄이지 않아요']},
+ owl:{e:'🦉',n:'부엉이형',t:'내 리듬 단백질형',d:'근무·생활 리듬에 맞춰 단백질 위주로 간단히 챙길 때 잘 맞아요.',tips:['끼니 시간은 시계 말고 일어난 시각 기준으로 잡아요','근무 중엔 달걀·그릭요거트·두부 같은 단백질 간식을 챙겨요','퇴근 후 잠들기 전 끼니는 가볍게 먹어요']}};
+const SCH={day:{n:'주간 고정',m:['아침','점심','저녁','간식'],w:['점심','저녁'],last:'8시 전'},
+ free:{n:'프리랜서·불규칙',m:['첫 끼','둘째 끼','셋째 끼','간식'],w:['둘째 끼','셋째 끼'],last:'잠들기 3시간 전'},
+ shift:{n:'교대 근무',m:['근무 전','근무 중','근무 후','비상 간식'],w:['근무 중','근무 후'],last:'가볍게'},
+ night:{n:'야간 고정',m:['출근 전','근무 중','퇴근 후','비상 간식'],w:['근무 중','퇴근 후'],last:'가볍게'}};
+const DIETN={mix:'🍚 일반식',vegan:'🌱 비건·채식',lchf:'🥑 저탄고지',keto:'🥓 키토',carn:'🥩 카니보어'};
+const DIETM={
+ mix:[['그릭요거트+바나나','또는 달걀2+고구마'],['밥 ⅔공기+단백질 1','+채소 2 도시락'],['밥 ⅔공기+단백질 1','채소 듬뿍'],['두유+견과 한 줌','근력 운동 날 쉐이크']],
+ vegan:[['두유 오트밀+바나나','또는 두부 스크램블+토스트'],['현미밥 ⅔+두부·템페','+채소 2 도시락'],['잡곡밥 ⅔+콩·렌틸 요리','채소 듬뿍'],['두유+견과 한 줌','에다마메 한 컵']],
+ lc:[['달걀2+아보카도','+작은 고구마 1개'],['밥 ½공기+단백질 1.5','+채소 2 도시락'],['밥 ½공기+생선·고기','채소 듬뿍+올리브유'],['그릭요거트+베리','견과 한 줌']],
+ carn:[['달걀2~3+작은 고구마','또는 우유·요거트'],['고기·생선 1.5+밥 ½','+채소 1접시는 꼭'],['고기·생선 1.5+밥 ½','채소 한 접시'],['삶은 달걀·요거트','+과일 한 줌']]};
+const dietM=()=>DIETM[SV.diet=='carn'?'carn':LC()?'lc':SV.diet=='vegan'?'vegan':'mix'];
+const AVN={d:'유제품',e:'달걀',n:'견과·땅콩',s:'갑각류',w:'밀가루'};
+const SVQ=[
+ {k:'diet',q:'평소 어떤 식단이 가장 편하세요?',o:[['mix','🍚','일반식','가리는 것 없이 다 먹어요'],['vegan','🌱','비건·채식','고기·생선을 먹지 않아요'],['lchf','🥑','저탄고지','탄수는 줄이고 지방·단백질 위주로 먹어요'],['keto','🥓','키토','탄수를 아주 적게 먹는 방식이에요'],['carn','🥩','카니보어','고기·달걀 위주로 먹어요']]},
+ {k:'sched',q:'하루 생활 리듬은 어떤가요?',d:'끼니 시간을 내 리듬에 맞춰 짜 드려요.',o:[['day','🏢','주간 고정','출퇴근 시간이 거의 일정해요'],['free','💻','프리랜서·불규칙','일어나고 일하는 시간이 날마다 달라요'],['shift','🔄','교대 근무','2교대·3교대로 근무 시간이 바뀌어요'],['night','🌙','야간 고정','밤에 일하고 낮에 자요']]},
+ {k:'meals',q:'하루에 보통 몇 번 먹나요?',o:[[2,'🍙','1~2끼','끼니를 자주 거르는 편이에요'],[3,'🍱','3끼','보통 세 끼를 먹어요'],[4,'🥨','조금씩 자주','간식까지 4번 이상 먹어요']]},
+ {k:'stage',q:'지금 다이어트는 어느 단계인가요?',o:[['new','🌱','이제 시작해요',''],['going','📉','잘 빠지고 있어요',''],['plateau','⏸️','4주 넘게 몸무게가 그대로예요','정체기'],['yoyo','🔁','빠졌다 다시 찌는 걸 반복했어요','요요']]},
+ {k:'cook',q:'평일 식사는 주로 어떻게 해결하나요?',o:[['cook','🍳','직접 요리·도시락',''],['conv','🏪','편의점·배달',''],['out','🍽️','구내식당·외식','']]},
+ {k:'hard',q:'가장 무너지기 쉬운 순간은 언제예요?',o:[['sweet','🍫','오후에 단 게 당겨요',''],['binge','🍕','굶다가 몰아먹어요',''],['late','🌃','밤에 야식이 당겨요',''],['drink','🍻','회식·술자리가 많아요',''],['none','🙂','딱히 없어요','']]},
+ {k:'gut',q:'우유·콩·밀가루·양파 등을 먹으면 배가 자주 불편한가요?',d:'“네”를 고르면 고포드맵 메뉴를 빼 드려요. 장 민감 정보로 이 기기에만 저장되고, 설정에서 언제든 지울 수 있어요.',o:[[true,'😣','네, 자주 그래요',''],[false,'🙆','아니요·잘 모르겠어요','']]},
+ {k:'avoid',multi:1,q:'못 먹거나 피해야 하는 음식이 있나요?',d:'여러 개 고를 수 있어요. 알레르기 정보는 이 기기에만 저장되고 설정에서 지울 수 있어요.',o:[['d','🥛','우유·유제품',''],['e','🥚','달걀',''],['n','🥜','견과·땅콩',''],['s','🦐','새우·갑각류',''],['w','🌾','밀가루',''],['none','🙅','없어요','']]},
+ {k:'care',multi:1,q:'해당하는 게 있나요?',d:'이 답은 저장하지 않아요. 결과 화면에서 주의할 점만 알려 드려요.',o:[['preg','🤰','임신 중이거나 수유 중이에요',''],['ed','💬','섭식장애로 진료·상담을 받았거나 받는 중이에요',''],['med','🏥','당뇨·갑상선·다낭성난소증후군 등으로 진료 중이에요',''],['none','🙂','해당 없어요','']]}];
+// 결과 화면·기준 탭 카드에 같이 쓰는 안내 문구
+function svNotes(a){const n=[],lc=['lchf','keto','carn'].includes(a.diet);
+ if(lc)n.push(['','저탄고지·키토·카니보어를 골라도 이 앱은 탄수화물을 하루 <b>130g 아래로 안내하지 않아요.</b> 탄수를 너무 줄이면 월경이 불규칙해질 수 있어서예요. 대신 탄수는 고구마·현미처럼 천천히 오르는 것으로, 나머지는 단백질·좋은 지방으로 채워요.']);
+ if(a.diet=='carn')n.push(['','고기만 먹으면 식이섬유·비타민C가 부족해지기 쉬워요. 고기 위주로 짜되 <b>채소 한 접시</b>는 지켜요.']);
+ if(a.diet=='vegan')n.push(['','비타민 B12는 식물성 식품으로 채우기 어려워요. 보충제는 전문가와 상의해 주세요. 철분이 많은 콩·시금치는 비타민C(과일·파프리카)와 함께 먹어요.']);
+ const c=a.care||[];
+ if(c.includes('preg'))n.push(['warn','임신·수유 중에는 체중 감량 식단을 권하지 않아요. 이 앱의 감량 목표 대신 담당 의료진의 안내를 따라 주세요.']);
+ if(c.includes('ed'))n.push(['warn','먹는 걸 기록하거나 목표를 세우는 일이 부담이 될 수 있어요. 이 앱은 칼로리를 보여주지 않지만, 꼭 담당 전문가와 함께 사용해 주세요. 힘들 땐 혼자 버티지 말고 도움을 요청하세요.']);
+ if(c.includes('med'))n.push(['warn','진료 중인 질환이 있으면 식단·운동을 바꾸기 전에 담당 의사와 먼저 상의해 주세요.']);
+ return n}
+function svTips(a){const T=[...TY[typeOf(a)].tips],lc=['lchf','keto','carn'].includes(a.diet);
+ if(a.diet=='vegan')T.push('단백질은 두부·템페·콩·두유를 끼니마다 섞어서 채워요');
+ if(a.stage=='plateau')T.push('⏸️ 정체기엔 더 줄이지 말고 채워요. 덜 먹을수록 근육이 빠지고 정체가 길어질 수 있어요','⏸️ 몸무게는 하루가 아니라 일주일 평균으로 봐요. 수분 때문에 1~2kg은 오르내려요','⏸️ 걸음 +2,000보, 근력 운동 주 2회, 잠 7시간을 먼저 챙겨요');
+ if(a.stage=='yoyo')T.push('🔁 한 주에 체중의 0.5% 안팎으로 천천히 빼요. 기간을 넉넉히 잡을수록 다시 찌는 위험이 줄어요','🔁 금지보다 “반만 먹고 채우기”로 먹고 싶은 걸 남겨 둬요');
+ if(a.meals==2)T.push('끼니가 적으면 단백질을 다 채우기 어려워요. 간식으로 단백질을 한 번 더 넣어요');
+ if(a.meals==4)T.push('조금씩 자주 먹을 땐 간식도 단백질 위주로(달걀·요거트·두유) 골라요');
+ if(a.cook=='cook')T.push('주말 30분 밀프렙: 단백질 2~3가지를 미리 구워 두면 평일 10분 도시락이 쉬워져요');
+ if(a.cook=='conv')T.push(a.diet=='vegan'?'편의점은 두부바·두유 + 컵샐러드 + 주먹밥, 배달은 비건 포케·두부 샐러드를 골라요':lc?'편의점은 닭가슴살·삶은 달걀 + 컵샐러드 + 군고구마 1개, 배달은 샤브샤브·보쌈(밥 반 공기)을 골라요':'편의점은 삶은 달걀 2 + 컵샐러드 + 주먹밥 1, 배달은 샤브샤브·포케·보쌈(밥 반 공기)을 골라요');
+ if(a.cook=='out')T.push('구내식당·외식에선 단백질 반찬부터 담고, 국물은 적게, 밥은 ⅔공기로 해요');
+ const H={sweet:'오후 3~4시에 단백질 간식(요거트·두유)을 미리 먹으면 단 게 덜 당겨요',binge:'끼니를 거르면 몰아먹기 쉬워요. 첫 끼에 단백질을 꼭 넣어요',late:'저녁에 단백질을 충분히 먹고, 양치를 일찍 하거나 따뜻한 차로 마무리해요',drink:'술자리 전엔 단백질 간식, 술 한 잔에 물 한 잔, 안주는 단백질·채소 위주로 골라요'};
+ if(H[a.hard])T.push(H[a.hard]);return T}
+function svBadges(a){const b=[DIETN[a.diet],SCH[a.sched].n];if(a.stage=='plateau')b.push('⏸️ 정체기 모드');if(a.stage=='yoyo')b.push('🔁 천천히 모드');if((a.avoid||[]).length)b.push('🚫 '+a.avoid.map(k=>AVN[k]).join('·'));return b.map(x=>`<span class="svbadge">${x}</span>`).join('')}
+let svA=null,svI=0;
+function svOpen(){svA=JSON.parse(JSON.stringify(SV));svA.care=[];svI=0;svDraw();$('#sv').hidden=false;$('#sv').scrollTop=0}
+function svClose(){$('#sv').hidden=true;if(!profileDone)onbOpen()}
+function svDraw(){const box=$('#svin');
+ if(svI>=SVQ.length){const ty=TY[typeOf(svA)];
+  box.innerHTML=`<div class="svres"><div class="sub">나의 식단 타입은</div><div class="svbig">${ty.e}</div><div class="svq" style="margin-top:4px">${ty.n} <span class="sub" style="font-size:16px">${ty.t}</span></div><div class="sub">${ty.d}</div><div class="svbadges">${svBadges(svA)}</div></div>
+  <div class="svnote"><b>이렇게 먹어요</b><ul>${svTips(svA).map(t=>`<li>${t}</li>`).join('')}</ul></div>
+  ${svNotes(svA).map(([c,t])=>`<div class="svnote ${c}">${t}</div>`).join('')}
+  <button class="pri" id="svok" style="width:100%;margin-top:16px;padding:12px">${ty.e} ${ty.n}으로 시작하기</button>
+  <button id="svre" style="width:100%;margin-top:8px">처음부터 다시 하기</button>
+  <div class="sub" style="margin-top:10px">성향에 맞춰 식단을 고르기 쉽게 나눈 참고용 분류예요. 진단이 아니에요.</div>`;
+  $('#svok').onclick=svApply;$('#svre').onclick=()=>{svI=0;svDraw()};return}
+ const Q=SVQ[svI],v=svA[Q.k],on=o=>Q.multi?(o==='none'?!v.length:v.includes(o)):v===o;
+ box.innerHTML=`<div class="svtop"><button id="svback">${svI?'‹ 이전':''}</button><span class="sub">${svI+1} / ${SVQ.length}</span><button id="svskip">나중에 할게요</button></div>
+  <div class="bar" style="margin-top:8px"><i style="width:${svI/SVQ.length*100}%"></i></div>
+  <div class="svq">${Q.q}</div>${Q.d?`<div class="sub">${Q.d}</div>`:''}
+  ${Q.o.map(([val,e,t,s],i)=>`<button class="svo ${on(val)?'on':''}" data-i="${i}"><span class="e">${e}</span><span><b>${t}</b>${s?`<small>${s}</small>`:''}</span></button>`).join('')}
+  ${Q.multi?'<button class="pri" id="svnext" style="width:100%;margin-top:14px;padding:12px">다음</button>':''}`;
+ $('#svback').onclick=()=>{if(svI){svI--;svDraw()}};
+ $('#svskip').onclick=()=>{if(!SV.done)SV.skip=true;svClose();tyUI()};
+ $$('#svin .svo').forEach(b=>b.onclick=()=>{const val=Q.o[+b.dataset.i][0];
+  if(Q.multi){svA[Q.k]=val==='none'?[]:v.includes(val)?v.filter(x=>x!==val):[...v,val];svDraw()}
+  else{svA[Q.k]=val;svI++;svDraw();$('#sv').scrollTop=0}});
+ if(Q.multi)$('#svnext').onclick=()=>{svI++;svDraw();$('#sv').scrollTop=0}}
+function svApply(){const prev=SV.done?TY[typeOf()].n:null;const{care,...a}=svA;SV={...a,done:true,skip:false};
+ lowfm=SV.gut;$$('.lowfm').forEach(x=>x.checked=lowfm);$('#c2').checked=lowfm;
+ G.meals=SV.meals;$('#gm').value=G.meals;
+ const ty=TY[typeOf()];logChg(prev&&prev!=ty.n?`식단 타입 ${prev}→${ty.n}`:`식단 타입: ${ty.n}`);G0={...G};
+ applyLow();wmenu();calc();goalMsg();refresh();tyUI();const first=!profileDone;svClose();scrollTo(0,0);if(!first)toast(`${ty.e} ${ty.n} 루틴으로 맞췄어요`)}
+function tyUI(){const e=$('#tycard');if(!e)return;
+ if(!SV.done){e.innerHTML=`<summary><div><h2>내 식단 타입 찾기</h2><div class="sub">1분 설문으로 식단 구성을 나에게 맞춰요</div></div></summary><button class="pri" id="tygo" style="width:100%">설문 시작하기</button>`;$('#tygo').onclick=svOpen;return}
+ const ty=TY[typeOf()];
+ e.innerHTML=`<summary><div><h2>${ty.e} ${ty.n} · ${ty.t}</h2><div class="sub">${ty.d}</div></div></summary>
+  <div class="svbadges" style="justify-content:flex-start">${svBadges(SV)}</div>
+  <ul class="tytips">${svTips(SV).map(t=>`<li>${t}</li>`).join('')}</ul>
+  ${svNotes(SV).map(([c,t])=>`<div class="svnote ${c}">${t}</div>`).join('')}
+  <button id="tyre" style="width:100%;margin-top:10px">설문 다시 하기</button>`;$('#tyre').onclick=svOpen}
 let todayIdx=(new Date().getDay()+6)%7,dayDone=[0,0,0,0,0,0,0],PL={s:[1,4],c:[5]};
 /* 1. baseline */
 function calc(){
@@ -12,12 +103,13 @@ function calc(){
  const eer=Math.round(354-6.91*age+pa*(9.36*wt+726*ht));
  const deficit=deficitOf();const target=Math.max(eer-deficit,1400);
  const carbMin=Math.max(130*4,target*.5);
- const cLo=Math.round(carbMin/4),cHi=Math.round(target*.65/4);
- const fLo=Math.round(target*.15/9),fHi=Math.round(target*.30/9);
  const prot=Math.max(50,Math.round(wt*1.2/5)*5);
+ let cLo=Math.round(carbMin/4),cHi=Math.round(target*.65/4),fLo=Math.round(target*.15/9),fHi=Math.round(target*.30/9);
+ // 단백·지방 중심 타입(저탄고지·키토·카니보어): 탄수는 하한 130g에 맞추고 나머지를 지방으로
+ if(LC()){cLo=130;cHi=150;fLo=Math.round(Math.max(0,target-cHi*4-prot*4)/9);fHi=Math.round(Math.max(0,target-cLo*4-prot*4)/9)}
  window.TARGET=target;window.CARBMIN=cLo;window.PROT=prot;
- $('#calc').innerHTML=`<div class="grid2" style="font-size:13px"><div>탄수화물 <b>${cLo}g 이상</b><div class="sub">넉넉히 ${cLo}–${cHi}g</div></div><div>단백질 <b>${prot}g</b><div class="sub">체중 kg당 약 1.2g</div></div><div>지방 <b>${fLo}–${fHi}g</b><div class="sub">견과·생선·올리브유 등 좋은 지방</div></div><div>식이섬유 <b>20g</b><div class="sub">채소 3접시 + 잡곡</div></div></div>
- <div class="sub" style="margin-top:6px">※ 한국인 영양소 섭취기준(2025)의 비율 범위(탄 50–65·단 10–20·지 15–30%)를 바탕으로 하되, 감량 중 근육을 지키려고 단백질은 체중 기준으로 잡은 예시예요. 개인 상태에 맞는 조정은 전문가 상담이 필요해요.</div>`;
+ $('#calc').innerHTML=`<div class="grid2" style="font-size:13px"><div>탄수화물 <b>${cLo}g 이상</b><div class="sub">넉넉히 ${cLo}–${cHi}g</div></div><div>단백질 <b>${prot}g</b><div class="sub">체중 kg당 약 1.2g</div></div><div>지방 <b>${fLo}–${fHi}g</b><div class="sub">${LC()?'넉넉히 · ':''}견과·생선·올리브유 등 좋은 지방</div></div><div>식이섬유 <b>20g</b><div class="sub">채소 3접시 + 잡곡</div></div></div>
+ <div class="sub" style="margin-top:6px">※ 한국인 영양소 섭취기준(2025)의 비율 범위(탄 50–65·단 10–20·지 15–30%)를 바탕으로 하되, 감량 중 근육을 지키려고 단백질은 체중 기준으로 잡은 예시예요. 개인 상태에 맞는 조정은 전문가 상담이 필요해요.${LC()?' 저탄고지·키토를 골라도 탄수화물은 월경 불순 예방을 위해 130g 아래로 내리지 않아요.':''}</div>`;
  $('#csum').textContent=`탄수 ${cLo}g↑ · 단백질 ${prot}g · 채소 3접시`;if(typeof posterUI==='function')posterUI();
  tot();
 }
@@ -26,16 +118,19 @@ function calc(){
 
 /* menus */
 const POOL={
-L:[{n:'닭가슴살 달걀 볼 + 현미밥',m:10,k:480,p:34,fm:0},{n:'참치 마요 샌드위치 + 방울토마토',m:8,k:430,p:28,fm:1},{n:'두부 계란 덮밥',m:10,k:470,p:30,fm:0},{n:'연어 포케 볼',m:10,k:520,p:30,fm:0},{n:'소고기 야채 비빔밥',m:7,k:530,p:29,fm:0},{n:'닭가슴살 월남쌈 + 잡곡밥',m:10,k:450,p:31,fm:1},{n:'오트밀 요거트 볼 + 삶은 달걀',m:5,k:400,p:26,fm:1},{n:'새우 달걀 볶음밥',m:10,k:500,p:27,fm:0},{n:'병아리콩 샐러드 + 통밀 토르티야',m:8,k:460,p:22,fm:1},{n:'소불고기 쌈 도시락',m:10,k:510,p:32,fm:0}],
-D:[{n:'닭가슴살 스테이크 + 구운 채소',m:15,k:470,p:38,fm:0},{n:'두부김치 볶음 + 잡곡밥',m:15,k:490,p:28,fm:1},{n:'연어 구이 + 샐러드 + 밥',m:15,k:540,p:36,fm:0},{n:'소고기 야채 볶음 + 밥',m:15,k:520,p:32,fm:0},{n:'순두부찌개 + 밥',m:15,k:480,p:26,fm:0},{n:'새우 야채 볶음 + 잡곡밥',m:15,k:500,p:30,fm:0},{n:'달걀찜 + 두부 + 나물 + 밥',m:12,k:450,p:28,fm:0},{n:'닭볶음탕(소) + 밥 ½',m:20,k:520,p:34,fm:1}],
-S:[{n:'그릭요거트 + 베리',m:2,k:150,c:14,p:15,fm:0},{n:'삶은 달걀 2개 + 방울토마토',m:3,k:190,c:6,p:14,fm:0},{n:'고구마 ½ + 우유',m:5,k:210,c:40,p:8,fm:0},{n:'두유 + 견과 한 줌',m:1,k:200,c:12,p:10,fm:0},{n:'땅콩버터 토스트 ½ + 바나나',m:4,k:230,c:32,p:8,fm:1}]};
+L:[{n:'닭가슴살 달걀 볼 + 현미밥',al:'e',m:10,k:480,p:34,fm:0},{n:'참치 마요 샌드위치 + 방울토마토',al:'ew',m:8,k:430,p:28,fm:1},{n:'두부 계란 덮밥',al:'e',m:10,k:470,p:30,fm:0},{n:'연어 포케 볼',m:10,k:520,p:30,fm:0},{n:'소고기 야채 비빔밥',al:'e',m:7,k:530,p:29,fm:0},{n:'닭가슴살 월남쌈 + 잡곡밥',m:10,k:450,p:31,fm:1},{n:'오트밀 요거트 볼 + 삶은 달걀',al:'de',m:5,k:400,p:26,fm:1},{n:'새우 달걀 볶음밥',al:'se',m:10,k:500,p:27,fm:0},{n:'병아리콩 샐러드 + 통밀 토르티야',v:1,al:'w',m:8,k:460,p:22,fm:1},{n:'소불고기 쌈 도시락',m:10,k:510,p:32,fm:0},{n:'두부·템페 현미 포케 볼',v:1,m:10,k:480,p:24,fm:0},{n:'렌틸콩 커리 + 현미밥',v:1,m:10,k:500,p:22,fm:1},{n:'두부면 비빔국수 + 에다마메',v:1,m:8,k:430,p:26,fm:0},{n:'병아리콩 후무스 랩 + 채소스틱',v:1,al:'w',m:8,k:460,p:18,fm:1},{n:'소고기 스테이크 샐러드 + 고구마 ½',lc:1,m:10,k:500,p:36,fm:0},{n:'연어 아보카도 볼 (밥 ½공기)',lc:1,m:10,k:520,p:32,fm:0},{n:'닭다리살 구이 + 달걀 + 채소 + 밥 ½',lc:1,al:'e',m:10,k:510,p:38,fm:0},{n:'고등어구이 + 쌈채소 + 밥 ½',lc:1,m:10,k:480,p:30,fm:0},{n:'목살 수육 + 쌈채소 + 밥 ½',lc:1,m:10,k:520,p:34,fm:0}],
+D:[{n:'닭가슴살 스테이크 + 구운 채소',lc:1,m:15,k:470,p:38,fm:0},{n:'두부김치 볶음 + 잡곡밥',m:15,k:490,p:28,fm:1},{n:'연어 구이 + 샐러드 + 밥',m:15,k:540,p:36,fm:0},{n:'소고기 야채 볶음 + 밥',m:15,k:520,p:32,fm:0},{n:'순두부찌개 + 밥',al:'e',m:15,k:480,p:26,fm:0},{n:'새우 야채 볶음 + 잡곡밥',al:'s',m:15,k:500,p:30,fm:0},{n:'달걀찜 + 두부 + 나물 + 밥',al:'e',m:12,k:450,p:28,fm:0},{n:'닭볶음탕(소) + 밥 ½',lc:1,m:20,k:520,p:34,fm:1},{n:'두부 스테이크 + 구운 채소 + 현미밥',v:1,m:15,k:470,p:26,fm:0},{n:'콩불고기 덮밥',v:1,m:15,k:490,p:27,fm:1},{n:'템페 채소 볶음 + 잡곡밥',v:1,m:15,k:480,p:25,fm:0},{n:'채식 버섯 순두부 + 현미밥',v:1,m:15,k:450,p:22,fm:1},{n:'병아리콩 토마토 스튜 + 통밀빵',v:1,al:'w',m:20,k:470,p:20,fm:1},{n:'소고기 채소 구이 + 고구마 ½',lc:1,m:15,k:500,p:36,fm:0},{n:'연어 스테이크 + 아스파라거스 + 밥 ½',lc:1,m:15,k:510,p:34,fm:1},{n:'닭가슴살 샤브샤브 + 채소 + 밥 ½',lc:1,m:15,k:450,p:38,fm:0},{n:'고등어 김치찜 + 밥 ½',lc:1,m:20,k:480,p:30,fm:1}],
+S:[{n:'그릭요거트 + 베리',al:'d',m:2,k:150,c:14,p:15,fm:0},{n:'삶은 달걀 2개 + 방울토마토',al:'e',m:3,k:190,c:6,p:14,fm:0},{n:'고구마 ½ + 우유',al:'d',m:5,k:210,c:40,p:8,fm:0},{n:'두유 + 견과 한 줌',v:1,al:'n',m:1,k:200,c:12,p:10,fm:0},{n:'땅콩버터 토스트 ½ + 바나나',v:1,al:'nw',m:4,k:230,c:32,p:8,fm:1}]};
 let wk={L:[0,2,3,4,7],D:[0,2,3,4,5]};
-const free=(t,ex)=>POOL[t].map((m,i)=>i).filter(i=>!ex.includes(i)&&(!lowfm||!POOL[t][i].fm));
+// 메뉴 태그: v 비건, lc 단백·지방 중심(밥 ½ 이하), al 알레르기(d 유제품·e 달걀·n 견과·s 갑각류·w 밀)
+const okM=(t,i)=>{const m=POOL[t][i];return !!m&&(!lowfm||!m.fm)&&(SV.diet!='vegan'||m.v)&&(!LC()||m.lc)&&![...(m.al||'')].some(a=>SV.avoid.includes(a))};
+const free=(t,ex)=>POOL[t].map((m,i)=>i).filter(i=>!ex.includes(i)&&okM(t,i));
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
-function applyLow(){if(!lowfm)return;['L','D'].forEach(t=>wk[t].forEach((id,i)=>{if(POOL[t][id].fm){const f=free(t,wk[t]);if(f.length)wk[t][i]=rnd(f)}}))}
+function applyLow(){['L','D'].forEach(t=>wk[t].forEach((id,i)=>{if(!okM(t,id)){const f=free(t,wk[t]),all=POOL[t].map((m,j)=>j).filter(j=>okM(t,j));wk[t][i]=f.length?rnd(f):all.length?rnd(all):id}}))}
 function wmenu(){
- const row=(t,lab,m,i)=>`<div class="mrow"><span class="sub" style="min-width:34px">${lab}</span><span style="flex:1;min-width:0">${m.n}${m.fm?'<span class="fm">고포드맵 주의</span>':''}<span class="sub"> · 단백질 ${m.p}g</span></span><button data-t="${t}" data-i="${i}" aria-label="메뉴 바꾸기">↻</button></div>`;
- $('#wmenu').innerHTML=DN.map((d,i)=>`<div class="meal" style="display:block"><b>${d}</b>${row('L','점심',POOL.L[wk.L[i]],i)}${row('D','저녁',POOL.D[wk.D[i]],i)}</div>`).join('');
+ applyLow();const sc=SCH[SV.sched]||SCH.day;$('#wmsub').textContent=(SV.sched=='day'?'점심 도시락(10분 안팎)·저녁':sc.w.join('·'))+' 메뉴예요. ↻로 바꿔요.'+(SV.diet=='vegan'?' 🌱 비건 메뉴만 골랐어요.':LC()?' 단백질 중심 메뉴로 골랐어요.':'')+(SV.avoid.length?' 🚫 '+SV.avoid.map(k=>AVN[k]).join('·')+' 제외.':'');
+ const row=(t,lab,m,i)=>`<div class="mrow"><span class="sub" style="min-width:52px">${lab}</span><span style="flex:1;min-width:0">${m.n}${m.fm?'<span class="fm">고포드맵 주의</span>':''}<span class="sub"> · 단백질 ${m.p}g</span></span><button data-t="${t}" data-i="${i}" aria-label="메뉴 바꾸기">↻</button></div>`;
+ $('#wmenu').innerHTML=DN.map((d,i)=>`<div class="meal" style="display:block"><b>${d}</b>${row('L',sc.w[0],POOL.L[wk.L[i]],i)}${row('D',sc.w[1],POOL.D[wk.D[i]],i)}</div>`).join('');
  $$('#wmenu button').forEach(b=>b.onclick=()=>{const t=b.dataset.t,i=+b.dataset.i,f=free(t,wk[t]);if(!f.length)return toast('교체할 메뉴가 없어요');wk[t][i]=rnd(f);wmenu()});
  if(typeof posterUI==='function')posterUI();
 }
@@ -60,7 +155,7 @@ function phasesUI(){phinfoUI();
 }
 function setConsent(v){consent=v;$('#c1').checked=v;$('#c1x').checked=v;if(!v&&Object.keys(cyc).length){cyc={};phase=null;toast('동의 철회 → 주기 기록 삭제');upd()}phasesUI();pmsBn();sens()}
 $('#c1x').onchange=e=>setConsent(e.target.checked);$('#c1').onchange=e=>setConsent(e.target.checked);
-$('#c2').onchange=e=>{if(!e.target.checked&&lowfm){lowfm=false;$$('.lowfm').forEach(x=>x.checked=false);wmenu()}sens()};
+$('#c2').onchange=e=>{if(!e.target.checked&&lowfm){lowfm=false;SV.gut=false;$$('.lowfm').forEach(x=>x.checked=false);wmenu()}sens()};
 
 /* daily required */
 function planned(){const wd=(rd.getDay()+6)%7;return PL.s.includes(wd)?'근력':PL.c.includes(wd)?'유산소':null}
@@ -187,9 +282,9 @@ function quickUI(){
  btn.disabled=!y.length;btn.textContent=(key(rd)==key(sim)?'어제':'전날')+'와 같음'+(y.length?` (${y.length}개)`:' (기록 없음)');
  btn.onclick=()=>{y.forEach(l=>logs.push({...l,n:nm(l)}));tot();toast('전날 기록을 가져왔어요')}}
 const SK='dietproto_v1';
-function saveState(){if(wiped)return;try{stash();localStorage.setItem(SK,JSON.stringify({profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,age:$('#age').value,pa:$('#pa').value,ht:$('#ht').value,wt:$('#wt').value}))}catch(e){}}
+function saveState(){if(wiped)return;try{stash();localStorage.setItem(SK,JSON.stringify({SV,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,age:$('#age').value,pa:$('#pa').value,ht:$('#ht').value,wt:$('#wt').value}))}catch(e){}}
 function loadState(){try{const t=localStorage.getItem(SK);if(!t)return;const o=JSON.parse(t);
- ({profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart}=Object.assign({profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart},o));
+ ({SV,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart}=Object.assign({SV,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart},o));
  sim=new Date();sim.setDate(sim.getDate()+simOff);todayIdx=(sim.getDay()+6)%7;rd=new Date(sim.getFullYear(),sim.getMonth(),sim.getDate());
  const d0=days[key(rd)];if(d0){logs=d0.logs||[];water=d0.water||0;steps=d0.steps||0;exDone=!!d0.exDone}
  ['age','pa','ht','wt'].forEach(i=>{if(o[i]!=null)$('#'+i).value=o[i]});if(wlog.length)$('#wt').value=wlog[wlog.length-1].v;
@@ -331,11 +426,11 @@ $('#nextday').onclick=()=>{stash();sim.setDate(sim.getDate()+1);simOff++;todayId
 $('#demodone').onclick=()=>{while(logs.length<G.meals)logs.push({n:'(데모) 식사',k:400,c:60,p:20,v:1,e:rnd(FOODS)});water=G.water;if(planned())exDone=true;else steps=Math.max(steps,G.steps);waterUI();stepsUI();exUI();tot()};
 
 /* sensitive */
-function sens(){const L=[];if(Object.keys(cyc).length)L.push('생리주기 기록 '+Object.keys(cyc).length+'일');if(lowfm)L.push('장 민감(고포드맵) 제외 설정: 켜짐');if(wlog.length)L.push('몸무게 기록 '+wlog.length+'건');if(Object.keys(cond).length)L.push('컨디션 기록 '+Object.keys(cond).length+'일');
+function sens(){const L=[];if(Object.keys(cyc).length)L.push('생리주기 기록 '+Object.keys(cyc).length+'일');if(lowfm)L.push('장 민감(고포드맵) 제외 설정: 켜짐');if(SV.avoid.length)L.push('피해야 할 음식(알레르기): '+SV.avoid.map(k=>AVN[k]).join('·'));if(wlog.length)L.push('몸무게 기록 '+wlog.length+'건');if(Object.keys(cond).length)L.push('컨디션 기록 '+Object.keys(cond).length+'일');
  $('#sens').innerHTML=L.length?L.map(v=>`<div class="meal"><div class="sub" style="color:var(--ink)">${v}</div></div>`).join(''):'<div class="ok">저장된 민감정보가 없어요.</div>'}
 $('#del1').onclick=()=>{$('#del2').hidden=false;$('#del1').hidden=true};
 $('#delno').onclick=()=>{$('#del2').hidden=true;$('#del1').hidden=false};
-$('#delok').onclick=()=>{phase=null;cyc={};lowfm=false;wlog=[];cond={};$$('.lowfm').forEach(x=>x.checked=false);['c1','c1x','c2'].forEach(i=>$('#'+i).checked=false);consent=false;phasesUI();pmsBn();wmenu();tot();sens();upd();condUI();$('#del2').hidden=true;$('#del1').hidden=false;toast('민감정보를 삭제했어요')};
+$('#delok').onclick=()=>{phase=null;cyc={};lowfm=false;SV.gut=false;SV.avoid=[];wlog=[];cond={};$$('.lowfm').forEach(x=>x.checked=false);['c1','c1x','c2'].forEach(i=>$('#'+i).checked=false);consent=false;phasesUI();pmsBn();wmenu();tot();sens();upd();condUI();$('#del2').hidden=true;$('#del1').hidden=false;toast('민감정보를 삭제했어요')};
 $$('[data-t]').forEach(b=>{if(b.closest('#shoptabs'))return;b.onclick=()=>{const t=b.dataset.t;t?document.documentElement.setAttribute('data-theme',t):document.documentElement.removeAttribute('data-theme')}});
 
 function deficitOf(){return Math.min(500,Math.round(G.kg*7700/(G.weeks*7)))}
@@ -356,10 +451,11 @@ $('#wipe').onclick=()=>{wiped=true;try{localStorage.removeItem(SK)}catch(e){}toa
 /* poster */
 function posterUI(){
  const pg=window.PROT||0,cg=window.CARBMIN||130,ok=pg>0;
+ $('.pright').textContent=SV.done?TY[typeOf()].e+' '+TY[typeOf()].n+' 루틴':'직장인 현실 루틴';tyUI();
  $('#pt1').textContent=G.weeks%4==0?(G.weeks/4)+'달':G.weeks+'주';$('#pt2').textContent='−'+G.kg+'kg';
  $('#pstats').innerHTML=[[ok?cg+'g↑':'-','탄수'],[ok?pg+'g':'-','단백질'],[(G.water/1000).toFixed(1)+'L','물'],[G.steps.toLocaleString(),'걸음']].map(([a,b])=>`<div class="pst"><b>${a}</b><span>${b}</span></div>`).join('');
  $('#pweek').innerHTML=DW.map((d,i)=>{let t='걷기',c='';if(PL.s.includes(i)){t='근력';c='p'}else if(PL.c.includes(i)){t='유산소';c='w'}return `<div class="${c} ${i==todayIdx?'t':''}"><b>${d}</b>${t}</div>`}).join('');
- const sh=[.25,.3,.3,.15].map(r=>ok?Math.round(pg*r/5)*5:0),M=[['아침','그릭요거트+바나나<br>또는 달걀2+고구마','--sky'],['점심','밥 ⅔공기+단백질 1<br>+채소 2 도시락','--leaf-soft'],['저녁','밥 ⅔공기+단백질 1<br>채소 듬뿍, 8시 전','--blush'],['간식','두유+견과 한 줌<br>근력 운동 날 쉐이크','--lilac']];
+ const sh=[.25,.3,.3,.15].map(r=>ok?Math.round(pg*r/5)*5:0),sc=SCH[SV.sched]||SCH.day,M=dietM().map(([a,b],i)=>[sc.m[i],a+'<br>'+b+(i==2?', '+sc.last:''),['--sky','--leaf-soft','--blush','--lilac'][i]]);
  $('#pmeals').innerHTML=M.map(([n,t,c],i)=>`<div class="pm" style="background:var(${c})"><div>${n}<small>${sh[i]?'단백질 ~'+sh[i]+'g':''}</small></div>${t}</div>`).join('');
 }
 const _wr=weekRender;weekRender=function(){_wr();posterUI()};
@@ -396,7 +492,7 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  x.font=`900 140px ${F}`;const w1=x.measureText($('#pt1').textContent).width;
  const t2=$('#pt2').textContent;x.font=`900 110px ${F}`;const w2=x.measureText(t2).width+70;
  rr(L+w1+30,y,w2,150,40,C.yel);tx(t2,L+w1+30+w2/2,y+112,110,900,C.yt,'center');
- tx('직장인 현실 루틴',W-L,y+112,40,500,C.sub,'right');
+ tx($('.pright').textContent,W-L,y+112,40,500,C.sub,'right');
  y+=200;
  const st=[...document.querySelectorAll('#pstats .pst')].map(e=>[e.querySelector('b').textContent,e.querySelector('span').textContent]),g=24,bw=(CW-3*g)/4;
  st.forEach(([a,b],i)=>{const bx=L+i*(bw+g);rr(bx,y,bw,170,36,C.card,C.ink);tx(a,bx+bw/2,y+86,a.length>6?44:54,900,C.ink,'center');tx(b,bx+bw/2,y+138,32,500,C.sub,'center')});
@@ -425,5 +521,5 @@ $('#onbgo').onclick=()=>{const age=+$('#oage').value,ht=+$('#oht').value,wt=+$('
  G.kg=Math.min(20,Math.max(1,+$('#okg').value||5));G.weeks=Math.min(52,Math.max(2,Math.round(+$('#owk').value)||8));$('#gkg').value=G.kg;$('#gwk').value=G.weeks;
 
  if(!profileDone)wlog=[];logWeight(wt);logChg(profileDone?'기본정보 다시 입력':'기본정보 입력');G0={...G};profileDone=true;$('#onb').hidden=true;goalMsg();calc();refresh();scrollTo(0,0);toast('내 루틴을 만들었어요')};
-if(!profileDone)onbOpen();checkHash();chgUI();posterUI();lockUI();
+if(!SV.done&&!SV.skip)svOpen();else if(!profileDone)onbOpen();checkHash();chgUI();posterUI();lockUI();
 setInterval(saveState,1500);addEventListener('pagehide',saveState);document.addEventListener('visibilitychange',saveState);

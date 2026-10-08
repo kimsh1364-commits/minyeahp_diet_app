@@ -108,3 +108,15 @@ details.fold summary h2{margin:0}
 .wbn{background:var(--sky);border-radius:16px;padding:12px 14px;margin:12px 0 4px}.wbn-t{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}.wbn-r{display:flex;flex-direction:column;align-items:flex-end;gap:4px;text-align:right}.wbn-r b{font-size:13.5px}.wbn-r button{padding:3px 10px;font-size:12px}.wdrop{width:68px;height:68px;border-radius:50%;padding:0;display:grid;place-items:center;background:var(--card);border:2.5px solid var(--ink);transition:transform .12s}.wdrop:active{transform:scale(.9)}.wdrop svg{width:38px;height:38px}.wdrop path{fill:var(--drop)}.wdrop path.hl{fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round;opacity:.8}.wdrop.pop{animation:wpop .35s}@keyframes wpop{50%{transform:scale(1.15)}}.wdrops{display:flex;flex-wrap:wrap;gap:2px;font-size:18px;margin:6px 0}
 #wpov{position:fixed;inset:0;background:var(--bg);z-index:30;overflow:auto;padding:16px 16px calc(24px + env(safe-area-inset-bottom,0px));text-align:center}
 #wpov img{max-width:100%;max-height:70vh;border-radius:18px;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+
+/* survey */
+#sv{position:fixed;inset:0;background:var(--bg);z-index:21;overflow:auto;padding:24px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.svtop{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:30px}.svtop button{border:none;background:none;color:var(--sub);padding:4px 0;min-width:72px;text-align:left}.svtop button:last-child{text-align:right}
+.svq{font-size:22px;font-weight:900;line-height:1.35;margin:18px 0 6px}
+.svo{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 14px;margin-top:10px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);font-size:15px}
+.svo.on{border-color:var(--leaf);background:var(--leaf-soft)}.svo .e{font-size:24px;flex:none;width:32px;text-align:center}
+.svo b{display:block;font-size:15px}.svo small{display:block;color:var(--sub);font-size:12.5px;font-weight:400}
+.svres{text-align:center}.svbig{font-size:76px;line-height:1.15;margin-top:8px}
+.svbadges{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0}.svbadge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--leaf-soft);color:var(--ink)}
+.svnote{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13.5px;margin-top:10px;text-align:left}.svnote.warn{border-color:var(--warn)}
+.svnote ul,.tytips{margin:6px 0 0;padding-left:18px;font-size:13.5px}.svnote li,.tytips li{margin-top:4px}

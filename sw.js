@@ -1,5 +1,5 @@
 // 앱을 새로 배포할 때마다 VERSION 숫자를 올리면 이전 캐시가 정리돼요.
-const VERSION = 'v3';
+const VERSION = 'v4';
 const CACHE = 'diet-app-' + VERSION;
 const FILES = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png'];
 
