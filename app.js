@@ -366,12 +366,12 @@ const _wr=weekRender;weekRender=function(){_wr();posterUI()};
 /* lock screen */
 function todayData(){return key(rd)==key(sim)?{water,steps}:(days[key(sim)]||{water:0,steps:0})}
 function lockUI(){if(!$('#wbn'))return;const t=todayData(),gc=Math.max(1,Math.ceil(G.water/200)),cups=Math.floor(t.water/200);
- $('#wbs').textContent=`${t.water} / ${G.water}ml · ${cups}/${gc}잔 (1잔 200ml)`;
+ $('#wbs').textContent=`오늘 ${cups}/${gc}잔`;
  $('#wdrops').innerHTML=Array.from({length:Math.max(gc,cups)},(_,i)=>`<span style="opacity:${i<cups?1:.25}">💧</span>`).join('');
  $('#wbar2').style.width=Math.min(100,t.water/G.water*100)+'%'}
 function todayRec(){return key(rd)==key(sim)?null:(days[key(sim)]||(days[key(sim)]={logs:[],water:0,steps:0,exDone:false}))}
 function addWaterToday(ml){const o=todayRec();if(!o){water=Math.max(0,water+ml);waterUI();renderReq()}else{o.water=Math.max(0,o.water+ml);lockUI()}}
-$('#wplus').onclick=()=>{addWaterToday(200);toast('💧 물 1잔 기록! ('+Math.floor(todayData().water/200)+'잔)')};
+$('#wplus').onclick=()=>{const b=$('#wplus');b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');addWaterToday(200);toast('💧 물 1잔 기록! ('+Math.floor(todayData().water/200)+'잔)')};
 $('#wminus').onclick=()=>{addWaterToday(-200)};
 function checkHash(){if(location.hash!=='#water')return;try{const t=Date.now(),l=+sessionStorage.getItem('wlast')||0;if(t-l<4000)return;sessionStorage.setItem('wlast',t)}catch(e){}addWaterToday(200);toast('💧 물 1잔 기록!');try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
 addEventListener('hashchange',checkHash);
@@ -384,12 +384,13 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  const tx=(t,a,b,sz,wt,col,al)=>{x.font=`${wt} ${sz}px ${F}`;x.fillStyle=col;x.textAlign=al||'left';x.textBaseline='alphabetic';x.fillText(t,a,b)};
  x.fillStyle=C.bg;x.fillRect(0,0,W,H);
  const L=70,CW=W-2*L;
- // 잠금화면 위젯 줄(시계 바로 아래 가운데)에 물 1잔 단축어 위젯이 놓일 자리를 비워 둔다
+ // 잠금화면 위젯 줄(시계 바로 아래 가운데)에 물 1잔 단축어 위젯이 놓이도록 물방울 버튼 자리를 맞춘다(앱 첫 화면 #wbn과 같은 배치)
  const wy=640,wh=200,cx=W/2,cy=wy+wh/2,cr=96;
  rr(L,wy,CW,wh,56,C.sky);
- x.save();x.beginPath();x.arc(cx,cy,cr,0,Math.PI*2);x.fillStyle=C.bg;x.fill();x.setLineDash([16,14]);x.lineWidth=6;x.strokeStyle=C.ink;x.stroke();x.restore();
+ x.beginPath();x.arc(cx,cy,cr,0,Math.PI*2);x.fillStyle=C.card;x.fill();x.lineWidth=7;x.strokeStyle=C.ink;x.stroke();
+ x.save();x.translate(cx-12*5.2,cy-12*5.2-6);x.scale(5.2,5.2);x.fillStyle=D?'#6FB6EE':'#3B8ED0';x.fill(new Path2D('M12 2.5C12 2.5 5 10.3 5 15a7 7 0 0 0 14 0c0-4.7-7-12.5-7-12.5z'));x.strokeStyle='rgba(255,255,255,.8)';x.lineWidth=1.6;x.lineCap='round';x.stroke(new Path2D('M9 15.5a3 3 0 0 0 3 3'));x.restore();
  tx('💧 물 마시기',L+44,cy-8,46,900,C.ink);tx('하루 '+Math.round(G.water/200)+'잔',L+44,cy+52,34,500,C.sub);
- tx('가운데 위젯을',W-L-44,cy-8,38,700,C.ink,'right');tx('누르면 +1잔',W-L-44,cy+52,38,700,C.ink,'right');
+ tx('누르면',W-L-44,cy-8,38,700,C.ink,'right');tx('+1잔',W-L-44,cy+52,38,700,C.ink,'right');
  let y=880;
  tx($('#pt1').textContent,L,y+120,140,900,C.ink);
  x.font=`900 140px ${F}`;const w1=x.measureText($('#pt1').textContent).width;
