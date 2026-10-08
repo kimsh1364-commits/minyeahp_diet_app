@@ -383,23 +383,30 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  const rr=(a,b,w,h,r,fill,stroke)=>{x.beginPath();x.roundRect(a,b,w,h,r);if(fill){x.fillStyle=fill;x.fill()}if(stroke){x.lineWidth=6;x.strokeStyle=stroke;x.stroke()}};
  const tx=(t,a,b,sz,wt,col,al)=>{x.font=`${wt} ${sz}px ${F}`;x.fillStyle=col;x.textAlign=al||'left';x.textBaseline='alphabetic';x.fillText(t,a,b)};
  x.fillStyle=C.bg;x.fillRect(0,0,W,H);
- const L=70,CW=W-2*L;let y=830;
- tx($('#pt1').textContent,L,y+120,150,900,C.ink);
- x.font=`900 150px ${F}`;const w1=x.measureText($('#pt1').textContent).width,pw=x.measureText?0:0;
- const t2=$('#pt2').textContent;x.font=`900 120px ${F}`;const w2=x.measureText(t2).width+70;
- rr(L+w1+30,y-5,w2,170,40,C.yel);tx(t2,L+w1+30+w2/2,y+120,120,900,C.yt,'center');
- tx('직장인 현실 루틴',L,y+215,40,500,C.sub);
- y+=290;
+ const L=70,CW=W-2*L;
+ // 잠금화면 위젯 줄(시계 바로 아래 가운데)에 물 1잔 단축어 위젯이 놓일 자리를 비워 둔다
+ const wy=640,wh=200,cx=W/2,cy=wy+wh/2,cr=96;
+ rr(L,wy,CW,wh,56,C.sky);
+ x.save();x.beginPath();x.arc(cx,cy,cr,0,Math.PI*2);x.fillStyle=C.bg;x.fill();x.setLineDash([16,14]);x.lineWidth=6;x.strokeStyle=C.ink;x.stroke();x.restore();
+ tx('💧 물 마시기',L+44,cy-8,46,900,C.ink);tx('하루 '+Math.round(G.water/200)+'잔',L+44,cy+52,34,500,C.sub);
+ tx('가운데 위젯을',W-L-44,cy-8,38,700,C.ink,'right');tx('누르면 +1잔',W-L-44,cy+52,38,700,C.ink,'right');
+ let y=880;
+ tx($('#pt1').textContent,L,y+120,140,900,C.ink);
+ x.font=`900 140px ${F}`;const w1=x.measureText($('#pt1').textContent).width;
+ const t2=$('#pt2').textContent;x.font=`900 110px ${F}`;const w2=x.measureText(t2).width+70;
+ rr(L+w1+30,y,w2,150,40,C.yel);tx(t2,L+w1+30+w2/2,y+112,110,900,C.yt,'center');
+ tx('직장인 현실 루틴',W-L,y+112,40,500,C.sub,'right');
+ y+=200;
  const st=[...document.querySelectorAll('#pstats .pst')].map(e=>[e.querySelector('b').textContent,e.querySelector('span').textContent]),g=24,bw=(CW-3*g)/4;
- st.forEach(([a,b],i)=>{const bx=L+i*(bw+g);rr(bx,y,bw,200,36,C.card,C.ink);tx(a,bx+bw/2,y+98,a.length>6?44:56,900,C.ink,'center');tx(b,bx+bw/2,y+158,32,500,C.sub,'center')});
- y+=290;tx('주간 루틴',L,y,58,900,C.ink);y+=36;
+ st.forEach(([a,b],i)=>{const bx=L+i*(bw+g);rr(bx,y,bw,170,36,C.card,C.ink);tx(a,bx+bw/2,y+86,a.length>6?44:54,900,C.ink,'center');tx(b,bx+bw/2,y+138,32,500,C.sub,'center')});
+ y+=250;tx('주간 루틴',L,y,54,900,C.ink);y+=30;
  const wk=[...document.querySelectorAll('#pweek > div')],cg=14,cw=(CW-6*cg)/7;
- wk.forEach((e,i)=>{const bx=L+i*(cw+cg),k=e.className.includes('p')?C.blush:e.className.includes('w')?C.lilac:C.card;rr(bx,y,cw,170,34,k,C.ink);tx(e.querySelector('b').textContent,bx+cw/2,y+72,42,900,C.ink,'center');tx(e.lastChild.textContent,bx+cw/2,y+126,30,500,C.sub,'center')});
- y+=260;tx('하루 식단',L,y,58,900,C.ink);tx('단백질은 끼니마다 나눠서',L+290,y,32,500,C.sub);y+=36;
+ wk.forEach((e,i)=>{const bx=L+i*(cw+cg),k=e.className.includes('p')?C.blush:e.className.includes('w')?C.lilac:C.card;rr(bx,y,cw,160,34,k,C.ink);tx(e.querySelector('b').textContent,bx+cw/2,y+68,42,900,C.ink,'center');tx(e.lastChild.textContent,bx+cw/2,y+120,30,500,C.sub,'center')});
+ y+=240;tx('하루 식단',L,y,54,900,C.ink);tx('단백질은 끼니마다 나눠서',L+270,y,32,500,C.sub);y+=30;
  const pm=[...document.querySelectorAll('#pmeals .pm')],cols=[C.sky,C.leaf,C.blush,C.lilac],mg=24,mw=(CW-mg)/2;
- pm.forEach((e,i)=>{const bx=L+(i%2)*(mw+mg),by=y+Math.floor(i/2)*(250+mg);rr(bx,by,mw,250,36,cols[i]);
-  tx(e.firstElementChild.firstChild.textContent,bx+34,by+70,46,900,C.ink);const sm=e.querySelector('small').textContent;tx(sm,bx+mw-34,by+68,30,500,C.sub,'right');
-  e.innerHTML.replace(/^<div>.*?<\/div>/,'').split('<br>').forEach((ln,j)=>tx(ln.replace(/<[^>]+>/g,'').trim(),bx+34,by+128+j*46,34,500,C.ink))});
+ pm.forEach((e,i)=>{const bx=L+(i%2)*(mw+mg),by=y+Math.floor(i/2)*(230+mg);rr(bx,by,mw,230,36,cols[i]);
+  tx(e.firstElementChild.firstChild.textContent,bx+34,by+66,46,900,C.ink);const sm=e.querySelector('small').textContent;tx(sm,bx+mw-34,by+68,30,500,C.sub,'right');
+  e.innerHTML.replace(/^<div>.*?<\/div>/,'').split('<br>').forEach((ln,j)=>tx(ln.replace(/<[^>]+>/g,'').trim(),bx+34,by+120+j*44,34,500,C.ink))});
  return c.toDataURL('image/png')}
 async function wpOpen(theme){wpTheme=theme||wpTheme;try{await document.fonts.load("900 40px 'Noto Sans KR'");await document.fonts.load("500 40px 'Noto Sans KR'")}catch(e){}
  $('#wpimg').src=wpDraw(wpTheme);$$('[data-wp]').forEach(b=>b.classList.toggle('on',b.dataset.wp==wpTheme));$('#wpov').hidden=false}
