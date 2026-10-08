@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>다이어트 앱 체크</title>
+<meta name="theme-color" content="#2F7D5B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="다이어트">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+<!-- 기준 -->
+<section class="view on" id="v0">
+ <div class="poster">
+  <div class="ptitle"><span id="pt1">2달</span><span class="pill" id="pt2">−5kg</span><span class="pright">직장인 현실 루틴</span></div>
+  <div class="wbn" id="wbn"><div class="wbn-t"><div><b>💧 물 마시기</b><div class="sub" id="wbs"></div></div><div class="row" style="flex-wrap:nowrap;gap:6px"><button id="wminus" aria-label="한 잔 취소">−</button><button class="pri" id="wplus">+1잔</button></div></div><div id="wdrops" class="wdrops"></div><div class="bar"><i id="wbar2" style="width:0"></i></div></div>
+  <div class="psec">오늘의 목표 <small>탄·단·지를 고루</small></div>
+  <div class="pstats" id="pstats"></div>
+  <div class="psec">주간 루틴 <small>근력·유산소 요일은 설정 탭에서</small></div><div class="pweek" id="pweek"></div>
+  <div class="psec">하루 식단 <small>단백질은 끼니마다 나눠서</small></div><div class="pmeals" id="pmeals"></div>
+  <button id="wpbtn" style="width:100%;margin-top:12px">🖼 이 루틴을 아이폰 배경화면으로 저장</button>
+ </div>
+ <div style="height:14px"></div>
+  <details class="card fold"><summary><div><h2>몸무게 추이</h2><div class="sub" id="wsl"></div></div></summary>
+  <div class="row" style="flex-wrap:nowrap"><input id="wnew" type="number" step="0.1" placeholder="오늘 몸무게(kg)"><button class="pri" id="wadd" style="flex:none">기록</button></div>
+  <div id="wsum" class="grid2" style="margin:10px 0;font-size:13px"></div>
+  <svg id="wchart" viewBox="0 0 300 130" width="100%" role="img" aria-label="몸무게 추이"></svg>
+  <div id="wleg" class="row" style="gap:10px;margin-top:2px"></div>
+  <div class="sub" id="wnote" style="margin-top:6px"></div>
+  <div class="row" style="margin-top:8px"><button id="wseed">예시 기록 채우기(데모)</button><button id="wdel">마지막 기록 삭제</button></div>
+ </details>
+ <details class="card fold"><summary><div><h2>내 기준 계산</h2><div class="sub" id="csum"></div></div></summary>
+  <div class="grid2">
+   <div><label>나이</label><input id="age" type="number" value="0" onfocus="this.select()"></div>
+   <div><label>활동량</label><select id="pa"><option value="1.0">거의 안 움직임</option><option value="1.12" selected>가벼운 활동</option><option value="1.27">활동적</option></select></div>
+   <div><label>키(cm)</label><input id="ht" type="number" value="0" onfocus="this.select()"></div>
+   <div><label>몸무게(kg)</label><input id="wt" type="number" value="0" onfocus="this.select()"></div>
+  </div>
+  <div class="sub" style="margin-top:8px">탄수화물·단백질·지방을 <b>고루</b> 채우는 게 목표예요. 탄수는 <b>130g</b> 아래로 내려가지 않게, 단백질은 근육을 지키도록 체중 기준으로 잡아요. 열량 숫자는 보여주지 않아요.</div>
+  <div id="calc" style="margin-top:10px"></div>
+ </details>
+ <div class="card">
+  <h2>생리주기 체크 <span class="tag">선택 · 민감정보</span></h2>
+  <label class="row" style="color:var(--ink);font-size:14px"><input type="checkbox" id="c1x" style="width:auto"> 생리주기 기록 저장에 동의</label>
+  <div class="row" id="phases" style="margin-top:8px"></div>
+  <div class="sub" id="phnote" style="margin-top:8px"></div>
+  <div id="phinfo"></div>
+ </div>
+ <div class="demo">베타 테스트용이에요. 영양 수치는 평균 추정치이고 걸음수는 직접 입력해요. 입력한 기록은 이 브라우저에만 저장되고 서버로 가지 않아요.</div>
+</section>
+
+<!-- 기록 -->
+<section class="view" id="v1">
+ <div class="card" id="datecard">
+  <h2>기록 날짜</h2>
+  <div class="dates" id="dates"></div>
+  <div class="sub" id="datenote" style="margin-top:6px"></div>
+ </div>
+ <div class="card">
+  <h2>식단 기록 <span class="tag">3탭</span></h2>
+  <label>⚡ 빠른 기록 <span class="sub">(★ 즐겨찾기 · 최근 먹은 것)</span></label>
+  <div class="row" id="qrow" style="margin-bottom:6px"></div>
+  <button id="sameyd" style="margin-bottom:6px">어제와 같음</button>
+  <div class="row" style="margin:6px 0 4px"><button class="chip on" data-m="n">검색해서 기록</button><button class="chip" data-m="h">반만 먹고 채우기</button></div>
+  <div id="mn"><div id="fsrch"><div class="sub">음식 이름을 검색하면 <b>평균적인 탄·단·지 영양</b>(1인분 기준 추정치)을 불러와요. 없으면 직접 입력.</div>
+  <input id="fq" type="search" placeholder="🔍 음식 검색 (예: 김밥, 샐러드, 라떼)" autocomplete="off" style="margin-top:8px"><div id="fres" style="margin-top:6px"></div></div>
+  <div id="s2" hidden><div id="custom" style="margin-top:8px"><input id="cname" placeholder="메뉴 이름 (예: 마라탕)"><div class="row" style="margin-top:6px" id="csize"></div><div class="sub">직접 입력은 크기로 대략 추정해요(근사치).</div></div></div>
+  <div id="s3" hidden><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><b id="pk"></b><button id="pkx" style="flex:none">다시 검색</button></div><label style="margin-top:10px">양</label><div class="row" id="portions"></div>
+   <label style="margin-top:10px">추가한 것 (빠른 선택)</label><div class="row" id="adds"></div>
+   <div class="row" style="margin-top:6px;flex-wrap:nowrap"><input id="xname" placeholder="추가 메뉴 직접 입력 (예: 아보카도)"><button id="xadd" style="flex:none">추가</button></div>
+   <div id="xlist" class="sub" style="margin-top:4px"></div>
+   <div class="row" style="justify-content:space-between;margin-top:10px"><div>단백질 <span class="big" id="rk">0</span> g</div><div class="sub" id="rm"></div></div>
+   <button class="pri" id="save" style="width:100%;margin-top:8px">저장하기</button></div>
+ </div>
+  <div id="mh" hidden>
+   <div class="sub">먹고 싶은 걸 참지 말고 반만 먹고, 부족한 단백질·채소를 더해요. 누르면 바로 기록돼요.</div>
+   <div class="row" id="crave" style="margin:10px 0"></div>
+   <div id="halfout"></div>
+  </div>
+ </div>
+ <div class="card">
+  <h2>오늘 기록</h2>
+  <div id="log" class="sub">아직 기록이 없어요.</div>
+  <div id="tot" style="margin-top:10px"></div>
+ </div>
+<div class="card">
+  <h2>오늘의 접시</h2>
+  <div class="stage2" style="align-items:center"><svg id="plate" viewBox="0 0 200 200" width="100%" role="img" aria-label="오늘의 접시"></svg><div id="ptxt" style="font-size:13px;min-width:0"></div></div>
+  <div class="sub" style="margin-top:6px">목표량은 예시 기준이에요(탄수 하한·단백질 권장 범위·채소 3접시).</div>
+ </div>
+ <div class="card">
+  <h2>🏃 운동 · 걸음</h2>
+  <div id="exinfo"></div>
+  <div class="row" style="justify-content:space-between;margin-top:12px"><span>👟 <b id="stp">0</b>보</span><span class="sub" id="stg"></span></div>
+  <div class="bar"><i id="sbar" style="width:0"></i></div>
+  <div class="row" id="stedit" style="margin-top:8px;flex-wrap:nowrap"><input id="stin" type="number" placeholder="걸음수 직접 입력(대략)"><button id="stok" style="flex:none">입력</button></div>
+  <div class="sub" style="margin-top:6px">걸음수는 직접 입력해요. 건강앱 자동 연동은 앱 버전에서 만들 예정이에요.</div>
+ </div>
+ <div class="card">
+  <h2><span id="condt">오늘</span> 컨디션 <span class="tag">1탭</span></h2>
+  <div id="cond"></div>
+  <div class="sub">체중 말고 몸이 어떤지 체크해요. 추이는 주간 탭에서 봐요.</div>
+ </div>
+ <div class="card">
+  <h2><span id="reqt">오늘</span>의 필수 행동 <span class="tag">자동 반영</span></h2>
+  <div id="req"></div>
+  <div id="stampbox" style="margin-top:8px;font-size:14px"></div>
+  <div class="sub" style="margin-top:6px">기록하면 자동으로 체크돼요. 모두 채우면 스티커가 붙어요.</div>
+ </div>
+ </section>
+
+<!-- 추천 -->
+<section class="view" id="v2">
+ <details class="card fold" open><summary><div><h2>이번주 메뉴 추천</h2><div class="sub">점심 도시락(10분 안팎)·저녁 메뉴예요. ↻로 바꿔요.</div></div></summary>
+  <label class="row" style="color:var(--ink);font-size:13px"><input type="checkbox" class="lowfm" style="width:auto"> 고포드맵 표시 메뉴 제외</label>
+  <div id="wmenu"></div>
+ </details>
+<div class="card">
+  <h2>PMS 간식 메뉴 <span class="tag">PMS</span></h2>
+  <div id="pmsbn" class="sub" style="margin-bottom:6px"></div>
+  <div class="row" style="margin:8px 0"><button class="chip" data-s="crave">단 게 당겨요</button><button class="chip" data-s="bloat">붓고 더부룩해요</button><button class="chip" data-s="tired">기운이 없어요</button></div>
+  <div id="pms" class="sub"></div>
+ </div>
+</section>
+
+<!-- 주간 -->
+<section class="view" id="v3">
+ <div class="card">
+  <h2>주간 루틴</h2>
+  <div class="week" id="week"></div>
+  <div class="sub" style="margin-top:8px" id="todaylbl"></div>
+   </div>
+ <div class="card">
+  <h2>이번 주 달성</h2>
+  <div class="row" style="justify-content:space-between"><span class="sub">필수 행동을 모두 채운 날</span><b id="wkn">0/5</b></div>
+  <div class="bar"><i id="wkbar" style="width:0"></i></div>
+  <div class="row" id="wkd" style="margin-top:8px;gap:4px"></div>
+  <div class="sub" style="margin-top:6px">주 5일을 채우면 🏅 뱃지. 연속 달성이 아니라 주 단위라서 하루 빠져도 괜찮아요.</div>
+ </div>
+ <div class="card">
+  <div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0" id="calt">도장판</h2><b id="calc2"></b></div>
+  <div class="cal" id="calh"></div><div class="cal" id="cal" style="margin-top:4px"></div>
+  <div class="sub" style="margin-top:6px">필수 행동을 채운 날 스티커가 붙어요. 🥗 균형 식사(탄수 하한·단백질·채소 3회분) · 💪 운동 완료 · 👟 걸음 목표 · 🌙 숙면(수면 "좋음") · ⭐ 기본. 2개 이상 받은 날은 🌟로 표시돼요. 체중 달성은 기준이 아니에요. 빈 날이 있어도 괜찮아요.</div>
+ </div>
+ <div class="card">
+  <h2>컨디션 추이 <span class="tag">최근 14일</span></h2>
+  <svg id="cchart" viewBox="0 0 290 90" width="100%" role="img" aria-label="컨디션 추이"></svg>
+  <div id="cins" class="sub" style="margin-top:6px"></div>
+  <button id="cseed" style="margin-top:8px">예시 데이터 채우기(데모)</button>
+ </div>
+ <div class="card">
+  <h2>기간별 목표 단계 (8주)</h2>
+  <div class="stage"><b>1–2주</b><div>기록 습관 만들기 · 물 챙기기</div></div>
+  <div class="stage"><b>3–4주</b><div>반만 먹고 채우기 주 3회 · 걸음 기본 유지</div></div>
+  <div class="stage"><b>5–6주</b><div>단백질 매끼 포함 · 근력 운동 유지</div></div>
+  <div class="stage"><b>7–8주</b><div>외식·배달 메뉴 고르는 법 익히기 · 유지 루틴 정리</div></div>
+  <div class="sub" style="margin-top:8px">보상은 <b>행동</b>에만. 체중 달성에는 보상 없음.</div>
+ </div>
+ <div class="card">
+  <h2>8주 완성 카드 미리보기</h2>
+  <div class="dexgrid" id="sumg" style="grid-template-columns:repeat(2,1fr)"></div>
+  <div class="sub" style="margin-top:8px">8주가 끝나면 이 카드를 이미지로 저장·공유할 수 있게 만들 예정이에요.</div>
+ </div>
+</section>
+
+<!-- 리포트 -->
+<section class="view" id="v4">
+ <div class="card">
+  <div class="row" style="justify-content:space-between"><h2 style="margin:0">주간 리포트</h2><span class="tag" id="rrange"></span></div>
+  <div class="sub" style="margin-top:4px">기록한 내용으로 만들어요. 최근 7일(오늘 포함) 기준이고, 영양은 식단을 다 기록한 날만 평가해요.</div>
+  <button id="rseed" style="margin-top:8px">예시 한 주 채우기(데모)</button>
+ </div>
+ <div class="card" id="rhero"></div>
+ <div class="card"><h2>이번 주 달성도</h2><div id="rgood"></div></div>
+ <div class="card"><h2>하루별 한눈에</h2><div class="hm" id="rhm"></div><div class="sub" style="margin-top:6px">초록=달성 · 노랑=보통 · 분홍=아쉬움 · 회색=기록 없음</div></div>
+ <div class="card"><h2>컨디션 · 몸무게</h2><div id="rcond"></div></div>
+ <div class="card"><h2>보완할 점과 조언</h2><div id="radv"></div>
+  <details style="margin-top:10px"><summary class="sub">근거와 한계 보기</summary>
+   <div class="sub" style="margin-top:6px">· 수면 부족과 식욕 호르몬(렙틴↓·그렐린↑)·허기 증가: Spiegel et al., Ann Intern Med 2004<br>· 식사량을 줄이는 중 수면 시간이 짧으면 지방 감소가 줄고 제지방 감소가 늘어난 연구: Nedeltcheva et al., Ann Intern Med 2010<br>· 하룻밤 수면 제한 후 인슐린 민감성 저하: Donga et al., J Clin Endocrinol Metab 2010<br>· 수분 2,100mL·식이섬유 20g·단백질 50–55g: 한국인 영양소 섭취기준(성인 여성)<br><b>한계</b>: 위 수면 연구는 해외 소규모 연구예요. 한국 여성 대상 근거는 아직 확인하지 못했고, 문구는 출시 전 전문가 검토가 필요해요. 경향일 뿐 개인차가 크고 의료 조언이 아니에요.</div>
+  </details>
+ </div>
+</section>
+
+<!-- 설정 -->
+<section class="view" id="v5">
+ <div class="card"><h2>테스트 도구 <span class="tag">베타</span></h2><div class="sub">날짜를 넘기며 기능을 확인할 때 써요.</div><div class="row" style="margin-top:8px"><button id="nextday">다음 날로(데모)</button><button id="demodone">오늘 필수 행동 완료(데모)</button></div></div>
+ <div class="card"><h2>기본정보</h2><div class="sub">처음 입력한 기본정보를 다시 입력하면 몸무게 추이에 새 기록이 쌓여요.</div><button id="onbre" style="margin-top:8px">기본정보 다시 입력</button></div>
+ <details class="card fold"><summary><div><h2>목표 설정</h2><div class="sub" id="gsum"></div></div></summary>
+  <div class="grid2">
+   <div><label>감량 목표(kg)</label><input id="gkg" type="number" value="5" min="1" max="20" step="0.5"></div>
+   <div><label>기간(주)</label><input id="gwk" type="number" value="8" min="2" max="52"></div>
+  </div>
+  <div id="gmsg" style="margin:8px 0 12px;font-size:13px"></div>
+  <label>필수 행동 기준</label>
+  <div class="grid2">
+   <div><label>식단 기록</label><select id="gm"><option value="2">하루 2번</option><option value="3" selected>하루 3번</option></select></div>
+   <div><label>물 <b id="gwv">2.0L</b></label><input id="gw" type="range" min="500" max="2000" step="100" value="2000" style="padding:0"></div>
+   <div><label>운동 없는 날 걸음</label><select id="gs"><option value="4000">4,000보</option><option value="5000" selected>5,000보</option><option value="6000">6,000보</option><option value="8000">8,000보</option></select></div>
+  </div>
+  <label style="margin-top:10px">운동 요일 <span class="sub">(눌러서 선택)</span></label>
+  <div id="plbox"></div>
+ <div class="sub" style="margin-top:12px"><b>변경 이력</b><div id="chg"></div></div>
+ </details>
+ <div class="card">
+  <h2>⑦ 민감정보 · 동의 · 삭제</h2>
+  <div class="sub" style="margin-bottom:8px">생리주기·장 상태는 선택 입력이며 동의한 경우에만 저장됩니다.</div>
+  <label class="row" style="color:var(--ink);font-size:14px"><input type="checkbox" id="c1" style="width:auto"> 생리주기·증상 기록 저장에 동의</label>
+  <label class="row" style="color:var(--ink);font-size:14px;margin-top:6px"><input type="checkbox" id="c2" style="width:auto"> 장 민감 식재료(고포드맵) 표시 저장에 동의</label>
+  <div id="sens" style="margin-top:10px"></div>
+ </div>
+ <div class="card" style="border-color:var(--warn)">
+  <h2>민감정보 삭제</h2>
+  <div class="sub">삭제 대상: 생리주기·증상 기록, 장 민감 표시, 몸무게. 삭제하면 <b>복구할 수 없어요.</b></div>
+  <button class="danger" id="del1" style="margin-top:10px">삭제하기</button>
+  <div id="del2" hidden style="margin-top:10px"><div class="bad" style="margin-bottom:6px">정말 삭제할까요? 되돌릴 수 없습니다.</div><div class="row"><button class="danger" id="delok">네, 영구 삭제</button><button id="delno">취소</button></div></div>
+ </div>
+ <div class="card"><h2>이 기기에 저장</h2><div class="sub">입력한 기록은 이 브라우저에만 저장돼요(서버 전송 없음).</div><button class="danger" id="wipe" style="margin-top:8px">저장된 데이터 모두 지우기(데모)</button></div>
+ <div class="card"><h2>화면 모드</h2><div class="row"><button class="chip" data-t="">시스템</button><button class="chip" data-t="light">라이트</button><button class="chip" data-t="dark">다크</button></div></div>
+</section>
+</div>
+
+<div id="wpov" hidden><div style="max-width:420px;margin:0 auto"><h2 style="margin:4px 0 8px">아이폰 배경화면</h2>
+ <div class="row" style="justify-content:center;margin-bottom:10px"><button class="chip on" data-wp="light">밝게</button><button class="chip" data-wp="dark">어둡게</button></div>
+ <img id="wpimg" alt="내 루틴 배경화면">
+ <div class="sub" style="margin:10px 0">이미지를 <b>길게 눌러</b> “사진에 추가”(또는 이미지 저장)를 고른 뒤, 사진 앱에서 <b>공유 → 배경화면으로 사용</b>을 누르세요. 시계가 놓이는 위쪽은 비워 뒀어요.</div>
+ <button class="pri" id="wpshare" style="width:100%">공유 시도하기</button>
+ <button id="wpclose" style="width:100%;margin-top:8px">닫기</button></div></div>
+<div id="onb" hidden><div class="onbin">
+ <div class="ptitle" style="font-size:30px">시작해볼까요?</div>
+ <div class="sub" style="margin:6px 0 14px">기본 정보를 넣으면 나에게 맞는 루틴이 첫 화면에 만들어져요. 나중에 언제든 바꿀 수 있어요.</div>
+ <div class="grid2"><div><label>나이 (19세 이상)</label><input id="oage" type="number" value="0" onfocus="this.select()"></div><div><label>활동량</label><select id="opa"><option value="1.0">거의 안 움직임</option><option value="1.12" selected>가벼운 활동</option><option value="1.27">활동적</option></select></div>
+ <div><label>키(cm)</label><input id="oht" type="number" value="0" onfocus="this.select()"></div><div><label>몸무게(kg)</label><input id="owt" type="number" step="0.1" value="0" onfocus="this.select()"></div>
+ <div><label>감량 목표(kg)</label><input id="okg" type="number" step="0.5" value="5"></div><div><label>기간(주)</label><input id="owk" type="number" value="8"></div></div>
+ <label style="margin-top:12px">운동 요일 <span class="sub">(눌러서 선택)</span></label>
+ <div id="oplbox"></div>
+ <div id="onbmsg" class="bad" style="margin-top:8px;font-size:13px"></div>
+ <button class="pri" id="onbgo" style="width:100%;margin-top:12px;padding:12px">시작하기</button>
+ <div class="sub" style="margin-top:10px">한국인 영양소 섭취기준(19세 이상 성인) 기반 예시 계산이에요. 개인 상태에 맞는 조정은 전문가 상담이 필요해요. 입력한 정보는 이 기기에만 저장돼요.</div>
+</div></div>
+<nav class="tabs" id="tabs">
+ <button class="on" data-v="0"><span>🏠</span>기준</button>
+ <button data-v="1"><span>✏️</span>기록</button>
+ <button data-v="2"><span>🍱</span>추천</button>
+ <button data-v="3"><span>📅</span>주간</button>
+ <button data-v="4"><span>📊</span>리포트</button>
+ <button data-v="5"><span>🔒</span>설정</button>
+</nav>
+<script src="app.js"></script>
+<script>
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
