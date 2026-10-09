@@ -88,7 +88,8 @@ function svDraw(){const box=$('#svin');
  if(Q.multi)$('#svnext').onclick=()=>{svI++;svDraw();$('#sv').scrollTop=0}}
 function svApply(){const prev=SV.done?TY[typeOf()].n:null;const{care,...a}=svA;SV={...a,done:true,skip:false};
  lowfm=SV.gut;$$('.lowfm').forEach(x=>x.checked=lowfm);$('#c2').checked=lowfm;
- G.meals=SV.meals;$('#gm').value=G.meals;
+ // 필수 식단 기록은 최대 3번(간식까지 기록하라고 하지 않음). '조금씩 자주'는 팁으로만 반영
+ G.meals=Math.min(3,SV.meals);$('#gm').value=G.meals;
  const ty=TY[typeOf()];logChg(prev&&prev!=ty.n?`식단 타입 ${prev}→${ty.n}`:`식단 타입: ${ty.n}`);G0={...G};
  applyLow();wmenu();calc();goalMsg();refresh();tyUI();svClose(true);scrollTo(0,0)}
 function tyUI(){const e=$('#tycard');if(!e)return;
@@ -449,7 +450,7 @@ function logChg(t){chg.unshift({t:Date.now(),txt:t});if(chg.length>20)chg.length
 function chgUI(){const e=$('#chg');if(!e)return;e.innerHTML=chg.length?chg.slice(0,5).map(c=>{const d=new Date(c.t);return `<div>${d.getMonth()+1}/${d.getDate()} · ${c.txt}</div>`}).join(''):'아직 변경 이력이 없어요.'}
 ['gkg','gwk','gw','gs','gm'].forEach(i=>{$('#'+i).oninput=goalIn;$('#'+i).onchange=()=>{goalIn();goalLog()}});
 function refresh(){posterUI();lockUI();phase=(cyc[key(sim)]||{}).p||null;phasesUI();pmsBn();dateUI();quickUI();waterUI();stepsUI();exUI();weekRender();show();upd();condUI();tot();sens()}
-loadState();if(!PL||!PL.s)PL={s:[...((PL&&PL.p)||[]),...((PL&&PL.w!=null)?[PL.w]:[])],c:[]};G.water=Math.min(2000,Math.max(500,G.water||2000));$('#gw').value=G.water;plBoxes();G0={...G};goalMsg();if(!wlog.length&&profileDone)logWeight(+$('#wt').value);calc();wmenu();phasesUI();pmsBn();refresh();
+loadState();if(!PL||!PL.s)PL={s:[...((PL&&PL.p)||[]),...((PL&&PL.w!=null)?[PL.w]:[])],c:[]};G.water=Math.min(2000,Math.max(500,G.water||2000));$('#gw').value=G.water;G.meals=Math.min(3,G.meals||3);$('#gm').value=G.meals;plBoxes();G0={...G};goalMsg();if(!wlog.length&&profileDone)logWeight(+$('#wt').value);calc();wmenu();phasesUI();pmsBn();refresh();
 $('#wipe').onclick=()=>{wiped=true;try{localStorage.removeItem(SK)}catch(e){}toast('삭제했어요. 다시 불러와요');try{location.reload()}catch(e){}};
 
 /* poster */
