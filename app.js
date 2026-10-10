@@ -13,12 +13,14 @@ const THMIG={natural:'romantic',ballet:'romantic',oldmoney:'vintage',gorp:'minim
 let thm='minimal',thmSet=false,scm='';// scm: 화면 모드 ''(시스템)|'light'|'dark'
 const sysDark=matchMedia('(prefers-color-scheme: dark)');
 const curMode=()=>scm||(sysDark.matches?'dark':'light');
+// 다크 모드에서는 테마와 상관없이 무채색 다크(클린 미니멀)로 보여 준다. 고른 테마는 그대로 저장
+const effTh=(mode)=>(mode||curMode())=='dark'?'minimal':thm;
 const combo=()=>(SV.done?TY[typeOf()].e+' '+TY[typeOf()].n:'내 루틴')+' × '+THEMES[thm].n;
-function applyTheme(){const r=document.documentElement;if(!THEMES[thm])thm='minimal';r.setAttribute('data-theme',thm);r.setAttribute('data-mode',curMode());
+function applyTheme(){const r=document.documentElement;if(!THEMES[thm])thm='minimal';r.setAttribute('data-theme',effTh());r.setAttribute('data-mode',curMode());
  const m=$('meta[name="theme-color"]');if(m)m.content=getComputedStyle(r).getPropertyValue('--bg').trim();
  $$('[data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md===scm));thUI()}
 // 미리보기 카드는 각자 data-theme을 달아 그 테마 색으로 그려진다
-function thUI(){const md=curMode(),html=Object.entries(THEMES).map(([k,t])=>`<button class="thc ${k==thm?'on':''}" data-th="${k}" data-theme="${k}" data-mode="${md}"><span class="thsw"><i style="background:var(--bg)"></i><i style="background:var(--accent)"></i><i style="background:var(--accent-soft)"></i><i style="background:var(--c-sky)"></i></span><b>${k==thm?'✓ ':''}${t.n}</b><small>${t.tags.join(' ')}</small></button>`).join('');
+function thUI(){const md='light',html=Object.entries(THEMES).map(([k,t])=>`<button class="thc ${k==thm?'on':''}" data-th="${k}" data-theme="${k}" data-mode="${md}"><span class="thsw"><i style="background:var(--bg)"></i><i style="background:var(--accent)"></i><i style="background:var(--accent-soft)"></i><i style="background:var(--c-sky)"></i></span><b>${k==thm?'✓ ':''}${t.n}</b><small>${t.tags.join(' ')}</small></button>`).join('');
  ['#thlist','#thplist'].forEach(sel=>{const e=$(sel);if(!e)return;e.innerHTML=html;e.querySelectorAll('[data-th]').forEach(b=>b.onclick=()=>{thm=b.dataset.th;thmSet=true;applyTheme();if(typeof posterUI==='function')posterUI();saveState()})})}
 let thpFrom=false;
 function thpOpen(fromSv){thpFrom=!!fromSv;$('#thpstep').textContent=fromSv?'다음 단계 · 내 앱 꾸미기':'내 앱 꾸미기';$('#thpok').textContent=fromSv||!profileDone?'다음: 기본 정보':'이 테마로 할게요';thUI();$('#thp').hidden=false;$('#thp').scrollTop=0}
@@ -550,7 +552,7 @@ function nbUI(){const box=$('#nbmb');if(!box)return;const P=nb.photos,n=P.length
  let h='';
  if(nbView){h+=`<div class="advc"><img data-src="${nbView}" alt="" style="width:100%;border-radius:8px"><div class="row" style="justify-content:space-between;margin-top:6px"><span class="sub">${md2(tk(nbView))} 눈바디</span><span><button id="nbvdel" class="danger">이 사진 삭제</button> <button id="nbvx">닫기</button></span></div></div>`}
  if(n>=2)h+=`<div class="sub" style="margin-top:10px">처음 vs 최근</div><div class="nbcmp">${nbFig(P[0])}${nbFig(P[n-1])}</div>`;
- if(n){const sh=P.slice().reverse().slice(0,12),em=Math.max(6,Math.ceil(sh.length/3)*3)-sh.length;h+=`<div class="sub" style="margin-top:10px">${thm=='vintage'?'눈바디 스크랩':'무드보드'}</div><div class="mb">${sh.map(k=>nbFig(k)).join('')}${'<div class="mbempty"></div>'.repeat(em)}</div>`}
+ if(n){const sh=P.slice().reverse().slice(0,12),em=Math.max(6,Math.ceil(sh.length/3)*3)-sh.length;h+=`<div class="sub" style="margin-top:10px">${effTh()=='vintage'?'눈바디 스크랩':'무드보드'}</div><div class="mb">${sh.map(k=>nbFig(k)).join('')}${'<div class="mbempty"></div>'.repeat(em)}</div>`}
  else h+='<div class="sub" style="margin-top:10px">아직 사진이 없어요. 촬영 가이드의 실루엣에 맞춰 찍으면 다음에도 같은 구도로 비교할 수 있어요.</div>';
  box.innerHTML=h;
  box.querySelectorAll('img[data-src]').forEach(im=>idbGet(im.dataset.src).then(u=>{if(u)im.src=u}).catch(()=>{}));
@@ -629,7 +631,7 @@ addEventListener('hashchange',checkHash);
 /* wallpaper */
 let wpTheme=null;
 // 배경화면 색은 style.css 테마 토큰을 그대로 읽어 온다(밝게/어둡게는 data-mode로 고름)
-function thVars(mode){const d=document.createElement('div');d.setAttribute('data-theme',thm);d.setAttribute('data-mode',mode);d.style.display='none';document.body.appendChild(d);
+function thVars(mode){const d=document.createElement('div');d.setAttribute('data-theme',effTh(mode));d.setAttribute('data-mode',mode);d.style.display='none';document.body.appendChild(d);
  const cs=getComputedStyle(d),o={};['bg','surface','text','text-sub','accent','accent-2','accent-soft','line','c-sky','c-blush','c-lilac','c-lemon','drop','radius','page-bg'].forEach(k=>o[k]=cs.getPropertyValue('--'+k).trim());d.remove();return o}
 const WPS={star:'M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.2l7.1-.6z',spark:'M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9L1.5 12l7.9-2.6z',petal:'M12 2C6 6 3.5 11.5 6 16.5c2.4 4.4 8.6 5.8 12 1.6 3.4-4.4.8-11.6-6-16.1z',clover:'M12 3a4 4 0 0 1 0 8 4 4 0 0 1 0-8zM17 8a4 4 0 0 1 0 8 4 4 0 0 1 0-8zM12 13a4 4 0 0 1 0 8 4 4 0 0 1 0-8zM7 8a4 4 0 0 1 0 8 4 4 0 0 1 0-8z'};
 // 배경 이미지·무늬는 미리 불러 둔다(배경화면을 그릴 때 바로 쓰게)
@@ -637,13 +639,13 @@ const WPI={};
 function wpSrc(mode){return [...(thVars(mode)['page-bg']||'').matchAll(/url\((?:"([^"]+)"|([^)"]+))\)/g)].map(m=>m[1]||m[2])}
 function wpPrep(mode){return Promise.all(wpSrc(mode).map(s=>WPI[s]?WPI[s]:(WPI[s]=new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>ok(null);im.src=s}))))}
 async function wpLoad(mode){const ims=await wpPrep(mode);wpSrc(mode).forEach((s,i)=>WPI[s+'#img']=ims[i])}
-function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),D=theme=='dark',v=thVars(D?'dark':'light');
+function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),D=theme=='dark',v=thVars(D?'dark':'light'),T=effTh(D?'dark':'light');
  const C={bg:v.bg,ink:v.text,card:v.surface,yel:v['c-lemon'],yt:v.text,sky:v['c-sky'],leaf:v['accent-soft'],blush:v['c-blush'],lilac:v['c-lilac'],sub:v['text-sub'],line:v.line,accent:v.accent};
- const F="'Noto Sans KR','Apple SD Gothic Neo',system-ui,sans-serif",MONO="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace",R=Math.max(12,(parseFloat(v.radius)||8)*3),IMGT=thm=='y2k'||thm=='romantic'||thm=='vintage';
+ const F="'Noto Sans KR','Apple SD Gothic Neo',system-ui,sans-serif",MONO="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace",R=Math.max(12,(parseFloat(v.radius)||8)*3),IMGT=T=='y2k'||T=='romantic'||T=='vintage';
  // 테마별 카드: 미니멀 얇은 선 / Y2K 1.5px 진한 테두리 / 로맨틱 테두리 없이 옅은 그림자 / 빈티지 얇은 선 + 아래 그림자
- const FR={minimal:{w:3,c:C.line},y2k:{w:4.5,c:C.ink},romantic:{w:0,sh:['rgba(90,62,54,.10)',60,18]},vintage:{w:3,c:C.line,sh:['rgba(74,59,51,.08)',0,6]}}[thm]||{w:3,c:C.line};
+ const FR={minimal:{w:3,c:C.line},y2k:{w:4.5,c:C.ink},romantic:{w:0,sh:['rgba(90,62,54,.10)',60,18]},vintage:{w:3,c:C.line,sh:['rgba(74,59,51,.08)',0,6]}}[T]||{w:3,c:C.line};
  const rr=(a,b,w,h,r,fill,stroke)=>{x.save();if(stroke&&FR.sh&&fill){x.shadowColor=FR.sh[0];x.shadowBlur=FR.sh[1];x.shadowOffsetY=FR.sh[2]}x.beginPath();x.roundRect(a,b,w,h,r);if(fill){x.fillStyle=fill;x.fill()}x.restore();if(stroke&&FR.w){x.beginPath();x.roundRect(a,b,w,h,r);x.lineWidth=FR.w;x.strokeStyle=FR.c;x.stroke()}};
- const glitch=thm=='y2k';
+ const glitch=T=='y2k';
  const tx=(t,a,b,sz,wt,col,al,fam)=>{x.font=`${wt} ${sz}px ${fam||F}`;x.textAlign=al||'left';x.textBaseline='alphabetic';if(glitch&&wt>=900&&sz>=50){x.fillStyle='#73D9D2';x.fillText(t,a-6,b);x.fillStyle='#F2A7D0';x.fillText(t,a+6,b)}x.fillStyle=col;x.fillText(t,a,b)};
  // 배경 위 글자 아래에 면 색 라벨(명암비 유지)
  const lbl=(a,b,w,sz)=>{if(IMGT)rr(a-18,b-sz*1.02,w+36,sz*1.36,Math.min(R,sz*.6),C.card)};
@@ -655,8 +657,8 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  // 배경
  x.fillStyle=C.bg;x.fillRect(0,0,W,H);
  const src=wpSrc(D?'dark':'light'),im=src.length&&WPI[src[0]+'#img'];
- if(im&&thm!='vintage'){const k=Math.max(W/im.width,H/im.height),iw=im.width*k,ih=im.height*k;x.drawImage(im,(W-iw)/2,(H-ih)/2,iw,ih);if(D){x.fillStyle=thm=='y2k'?'rgba(16,20,22,.86)':'rgba(28,20,18,.84)';x.fillRect(0,0,W,H)}}
- if(im&&thm=='vintage'){const p=x.createPattern(im,'repeat');p.setTransform(new DOMMatrix().scale(3));x.fillStyle=p;x.fillRect(0,0,W,H)}
+ if(im&&T!='vintage'){const k=Math.max(W/im.width,H/im.height),iw=im.width*k,ih=im.height*k;x.drawImage(im,(W-iw)/2,(H-ih)/2,iw,ih);if(D){x.fillStyle=T=='y2k'?'rgba(16,20,22,.86)':'rgba(28,20,18,.84)';x.fillRect(0,0,W,H)}}
+ if(im&&T=='vintage'){const p=x.createPattern(im,'repeat');p.setTransform(new DOMMatrix().scale(3));x.fillStyle=p;x.fillRect(0,0,W,H)}
  const L=70,CW=W-2*L;
  // 잠금화면 위젯 줄(시계 바로 아래 가운데)에 물 1잔 단축어 위젯이 놓이도록 물방울 버튼 자리를 맞춘다(앱 첫 화면 #wbn과 같은 배치)
  const wy=640,wh=200,cx=W/2,cy=wy+wh/2,cr=96;
@@ -684,10 +686,10 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
   e.innerHTML.replace(/^<div>.*?<\/div>/,'').split('<br>').forEach((ln,j)=>tx(ln.replace(/<[^>]+>/g,'').trim(),bx+34,by+120+o+j*(o?40:44),34,500,C.ink))});
  const end=y+2*230+mg;
  // 장식(정적): 글자와 겹치지 않는 자리, 아래쪽 손전등·카메라 버튼 자리는 피함
- if(thm=='y2k'){const sk=D?'#EEF2F3':'#24232B';icon(WPS.spark,W-L-90,wy-70,110,chrome(W-L-90,wy-70,110),sk,0,.8);icon(WPS.spark,W/2-36,end+30,72,chrome(W/2-36,end+30,72),sk,0,.9);
+ if(T=='y2k'){const sk=D?'#EEF2F3':'#24232B';icon(WPS.spark,W-L-90,wy-70,110,chrome(W-L-90,wy-70,110),sk,0,.8);icon(WPS.spark,W/2-36,end+30,72,chrome(W/2-36,end+30,72),sk,0,.9);
   x.save();x.lineWidth=16;x.strokeStyle=chrome(L-10,wy-80,100);x.beginPath();x.arc(L+40,wy-30,38,0,Math.PI*2);x.stroke();x.lineWidth=2.5;x.strokeStyle=sk;x.beginPath();x.arc(L+40,wy-30,47,0,Math.PI*2);x.stroke();x.beginPath();x.arc(L+40,wy-30,29,0,Math.PI*2);x.stroke();x.restore()}
- if(thm=='romantic'){const pc=D?['#C98F7E','#B98273','#D49C8A']:['#F6C9B8','#F8D5C6','#F3BFAC'];icon(WPS.petal,L-20,wy-110,110,pc[0],null,-30);icon(WPS.petal,W-L-110,wy-100,96,pc[2],null,60);icon(WPS.petal,W/2-45,end+24,90,pc[1],null,20)}
- if(thm=='vintage'){const sk=D?'#F3E9DC':'#4A3B33';tape(L+30,wy-26,150,-6,'#F2A7C3','#FBE3EC');tape(W-L-200,y-22,150,5,'#A9CBEB','#E4EEF7');
+ if(T=='romantic'){const pc=D?['#C98F7E','#B98273','#D49C8A']:['#F6C9B8','#F8D5C6','#F3BFAC'];icon(WPS.petal,L-20,wy-110,110,pc[0],null,-30);icon(WPS.petal,W-L-110,wy-100,96,pc[2],null,60);icon(WPS.petal,W/2-45,end+24,90,pc[1],null,20)}
+ if(T=='vintage'){const sk=D?'#F3E9DC':'#4A3B33';tape(L+30,wy-26,150,-6,'#F2A7C3','#FBE3EC');tape(W-L-200,y-22,150,5,'#A9CBEB','#E4EEF7');
   icon(WPS.star,W-L-80,wy-90,70,'#F2A7C3',sk,0,1);icon(WPS.star,W/2+60,end+34,56,'#A9CBEB',sk,0,1);icon(WPS.clover,W/2-120,end+30,60,'#9DB69A',null);tx('· + ·',W/2-10,end+76,40,700,D?'#E08A64':'#C2483D','center')}
  return c.toDataURL('image/png')}
 async function wpOpen(theme){wpTheme=theme||wpTheme||curMode();try{await document.fonts.load("900 40px 'Noto Sans KR'");await document.fonts.load("500 40px 'Noto Sans KR'")}catch(e){}await wpLoad(wpTheme);
