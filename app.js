@@ -60,8 +60,8 @@ const SVQ=[
  {st:1,k:'avoid',multi:1,q:'못 먹거나 피해야 하는 음식이 있나요?',d:'여러 개 고를 수 있어요. 고른 음식은 바꿔 먹는 팁으로 알려 드려요. 알레르기 정보는 이 기기에만 저장되고 설정에서 지울 수 있어요.',o:[['d','🥛','우유·유제품',''],['e','🥚','달걀',''],['n','🥜','견과·땅콩',''],['s','🦐','새우·갑각류',''],['w','🌾','밀가루',''],['none','🙅','없어요','']]},
  {st:1,k:'past',multi:1,q:'다이어트하면서 힘들었던 적이 있나요?',d:'여러 개 고를 수 있어요. 답에 맞춰 팁의 강도와 화면을 바꿔 드려요. 민감정보로 이 기기에만 저장되고 설정에서 지울 수 있어요.',o:[['injury','🩹','부상·통증',''],['hair','💇','탈모·피부 트러블',''],['period','🩸','생리불순',''],['yoyo','🔁','요요',''],['guilt','💭','먹는 것에 대한 강박·죄책감',''],['none','🙂','없어요','']]},
  {st:1,req:1,k:'care',multi:1,q:'지금 해당하는 게 있나요?',d:'이 답은 저장하지 않아요. 결과 화면에서 주의할 점만 알려 드려요.',o:[['preg','🤰','임신 중이거나 수유 중이에요',''],['ed','💬','먹는 일로 오래 마음이 힘들었던 적이 있어요',''],['med','🏥','당뇨·갑상선·다낭성난소증후군 등으로 몸을 관리하고 있어요',''],['none','🙂','해당 없어요','']]},
- {st:2,k:'goals',multi:1,q:'어떤 변화를 보고 싶어요?',d:'여러 개 고를 수 있어요.',o:[['fit','👖','옷 핏',''],['cond','🌿','붓기·컨디션',''],['weight','⚖️','체중',''],['habit','✅','습관 만들기','']]},
- {st:2,k:'view',q:'몸무게 기록은 어떻게 볼까요?',d:'설정에서 언제든 바꿀 수 있어요.',o:[['daily','📈','매일 숫자 보기','하루하루 몸무게 숫자를 봐요'],['trend','📊','주간 평균 추세만','하루 변동 대신 일주일 평균으로 봐요 (기본)'],['hide','🙈','숫자 숨기고 눈바디만','몸무게 숫자는 보지 않고 사진·옷 핏으로 봐요']]}];
+ {st:2,k:'goals',multi:1,q:'어떤 변화를 보고 싶어요?',d:'여러 개 고를 수 있어요. 옷 핏·붓기 같은 변화는 눈바디 탭에서 같은 구도로 사진을 찍고 기준 옷 핏을 남기면 한눈에 볼 수 있어요.',o:[['fit','👖','옷 핏',''],['cond','🌿','붓기·컨디션',''],['weight','⚖️','체중',''],['habit','✅','습관 만들기','']]},
+ {st:2,k:'view',q:'몸무게 기록은 어떻게 볼까요?',d:'설정에서 언제든 바꿀 수 있어요.',o:[['daily','📈','매일 숫자 보기','하루하루 몸무게 숫자를 봐요'],['trend','📊','주간 평균 추세만','하루 변동 대신 일주일 평균으로 봐요 (기본)'],['hide','🙈','숫자 숨기고 눈바디만','몸무게 숫자는 보지 않고, 눈바디 탭에서 사진·옷 핏으로 기록해요']]}];
 const VWN={daily:'매일 숫자 보기',trend:'주간 평균 추세만',hide:'숫자 숨기고 눈바디만'};
 const hasP=(a,k)=>(a.past||[]).includes(k);
 // 결과 화면·기준 탭 카드에 같이 쓰는 안내 문구
@@ -92,7 +92,9 @@ function svTips(a){const T=[...TY[typeOf(a)].tips],lc=a.diet=='lowcarb',inj=hasP
  const H={sweet:'오후 3~4시에 단백질 간식(요거트·두유)을 미리 먹으면 단 게 덜 당겨요',binge:'끼니를 거르면 몰아먹기 쉬워요. 첫 끼에 단백질을 꼭 넣어요',late:'저녁에 단백질을 충분히 먹고, 양치를 일찍 하거나 따뜻한 차로 마무리해요',drink:'술자리 전엔 단백질 간식, 술 한 잔에 물 한 잔, 안주는 단백질·채소 위주로 골라요',
   stress:'😮‍💨 먹기 전에 “배가 고픈 건지, 마음이 힘든 건지” 10초만 살펴요. 먹는다면 접시에 반만 덜어 천천히 먹고, 산책·샤워·통화처럼 먹지 않고 마음을 푸는 방법도 하나 정해 둬요',
   pms:'🌙 생리 전 식욕이 느는 건 호르몬 때문이라 자연스러워요. 고구마·바나나·요거트 같은 든든한 간식을 미리 챙기고, 참기보다 “반만 먹고 채우기”로 먹어요'};
- if(H[a.hard])T.push(H[a.hard]);return T}
+ if(H[a.hard])T.push(H[a.hard]);
+ const g=a.goals||[];if(a.view=='hide'||g.includes('fit')||g.includes('cond'))T.push('📸 눈바디 탭에서 촬영 가이드에 맞춰 같은 자리·같은 거리로 사진을 찍고, 기준 옷을 입었을 때 느낌(꽉 낌·딱 맞음·여유 있음)을 남겨 봐요. 숫자보다 변화가 잘 보여요');
+ return T}
 function svBadges(a){const b=[DIETN[a.diet],SCH[a.sched].n];if(a.stage=='plateau')b.push('⏸️ 정체기 모드');if(a.stage=='yoyo')b.push('🔁 천천히 모드');if(hasP(a,'injury'))b.push('🩹 저강도 운동');if((a.avoid||[]).length)b.push('🚫 '+a.avoid.map(k=>AVN[k]).join('·'));b.push('👀 '+VWN[a.view||'trend']);return b.map(x=>`<span class="svbadge">${x}</span>`).join('')}
 let svA=null,svI=0,svT=new Set();
 function svOpen(){svA=JSON.parse(JSON.stringify({...SVDEF,...SV}));svA.care=[];svI=0;svT=new Set();svDraw();$('#sv').hidden=false;$('#sv').scrollTop=0}
@@ -487,11 +489,8 @@ function wUI(){const c=$('#wcard');if(c)c.hidden=SV.view=='hide';if(SV.view=='hi
 function wsl(){const e=$('#wsl');if(!e)return;if(!wlog.length){e.textContent='기록하면 추이가 보여요';return}
  if(SV.view=='trend'){const W=wkAvg(),l=W[W.length-1],p=W[W.length-2];e.textContent='이번 주 평균 '+l.v+'kg'+(p?' · 지난주 대비 '+(l.v-p.v>0?'+':'')+(l.v-p.v).toFixed(1)+'kg':'');return}
  e.textContent='현재 '+wlog[wlog.length-1].v+'kg'+(wlog.length>1?' · 처음 대비 '+((wlog[wlog.length-1].v-wlog[0].v)>0?'+':'')+(wlog[wlog.length-1].v-wlog[0].v).toFixed(1)+'kg':'')}
-// 보고 싶은 변화에 체중이 없거나 숫자를 숨기면 눈바디를 앞에
-function bodyOrder(){const nb=$('#nbcard'),w=$('#wcard');if(!nb||!w||nb.parentNode!==w.parentNode)return;const g=SV.goals||[],photo=SV.view=='hide'||(g.length&&!g.includes('weight'));
- if(photo){if(nb.nextElementSibling!==w)w.parentNode.insertBefore(nb,w);nb.open=true}else{if(w.nextElementSibling!==nb)nb.parentNode.insertBefore(w,nb)}}
 function vwUI(){const e=$('#vwset');if(!e)return;e.innerHTML=Object.entries(VWN).map(([k,n])=>`<button class="chip ${SV.view==k?'on':''}" data-vw="${k}">${n}</button>`).join('');
- $('#vwnote').textContent={daily:'매일 기록한 몸무게 숫자를 그대로 보여줘요.',trend:'하루 변동 대신 주간 평균과 지난주 대비 변화만 보여줘요.',hide:'몸무게 카드와 목표 kg을 숨기고, 첫 화면에 눈바디를 앞에 둬요.'}[SV.view];
+ $('#vwnote').textContent={daily:'매일 기록한 몸무게 숫자를 그대로 보여줘요.',trend:'하루 변동 대신 주간 평균과 지난주 대비 변화만 보여줘요.',hide:'몸무게 카드와 목표 kg을 숨겨요. 변화는 눈바디 탭에서 사진과 기준 옷 핏으로 기록해요.'}[SV.view];
  e.querySelectorAll('[data-vw]').forEach(b=>b.onclick=()=>{SV.view=b.dataset.vw;logChg('기록 보는 방식: '+VWN[SV.view]);vwUI();posterUI();upd();saveState()})}
 
 /* 생리주기 예측 — 모든 날짜는 '예상'. 식단·운동 목표(탄수 하한 등)는 주기에 따라 바꾸지 않는다 */
@@ -610,7 +609,7 @@ $('#wipe').onclick=()=>{wiped=true;try{localStorage.removeItem(SK)}catch(e){}toa
 function posterUI(){
  const pg=window.PROT||0,cg=window.CARBMIN||130,ok=pg>0;
  $('#pmsm').textContent=LC()?'탄수 1은 끼니마다 꼭 · 종류는 매일 바꿔도 OK':'단백질은 끼니마다 나눠서';
- $('.pright').textContent=combo();bodyOrder();tyUI();
+ $('.pright').textContent=combo();tyUI();
  $('#pt1').textContent=G.weeks%4==0?(G.weeks/4)+'달':G.weeks+'주';$('#pt2').textContent=SV.view=='hide'?'🌿 내 페이스':'−'+G.kg+'kg';
  $('#pstats').innerHTML=[[ok?cg+'g↑':'-','탄수'],[ok?pg+'g':'-','단백질'],[(G.water/1000).toFixed(1)+'L','물'],[G.steps.toLocaleString(),'걸음']].map(([a,b])=>`<div class="pst"><b>${a}</b><span>${b}</span></div>`).join('');
  $('#pweek').innerHTML=DW.map((d,i)=>{let t='걷기',c='';if(PL.s.includes(i)){t='근력';c='p'}else if(PL.c.includes(i)){t='유산소';c='w'}return `<div class="${c} ${i==todayIdx?'t':''}"><b>${d}</b>${t}</div>`}).join('');
