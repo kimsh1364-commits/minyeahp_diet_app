@@ -60,7 +60,7 @@ const SVQ=[
  {st:1,k:'avoid',multi:1,q:'못 먹거나 피해야 하는 음식이 있나요?',d:'여러 개 고를 수 있어요. 알레르기 정보는 이 기기에만 저장되고 설정에서 지울 수 있어요.',o:[['d','🥛','우유·유제품',''],['e','🥚','달걀',''],['n','🥜','견과·땅콩',''],['s','🦐','새우·갑각류',''],['w','🌾','밀가루',''],['none','🙅','없어요','']]},
  {st:1,k:'past',multi:1,q:'다이어트하면서 힘들었던 적이 있나요?',d:'여러 개 고를 수 있어요. 답에 맞춰 팁의 강도와 화면을 바꿔 드려요. 민감정보로 이 기기에만 저장되고 설정에서 지울 수 있어요.',o:[['injury','🩹','부상·통증',''],['hair','💇','탈모·피부 트러블',''],['period','🩸','생리불순',''],['yoyo','🔁','요요',''],['guilt','💭','먹는 것에 대한 강박·죄책감',''],['none','🙂','없어요','']]},
  {st:1,req:1,k:'care',multi:1,q:'지금 해당하는 게 있나요?',d:'이 답은 저장하지 않아요. 결과 화면에서 주의할 점만 알려 드려요.',o:[['preg','🤰','임신 중이거나 수유 중이에요',''],['ed','💬','섭식장애로 진료·상담을 받았거나 받는 중이에요',''],['med','🏥','당뇨·갑상선·다낭성난소증후군 등으로 진료 중이에요',''],['none','🙂','해당 없어요','']]},
- {st:2,k:'goals',multi:1,q:'어떤 변화를 보고 싶어요?',d:'여러 개 고를 수 있어요. 첫 화면에서 눈바디와 숫자 중 무엇을 앞에 둘지 정해요.',o:[['fit','👖','옷 핏',''],['cond','🌿','붓기·컨디션',''],['weight','⚖️','체중',''],['habit','✅','습관 만들기','']]},
+ {st:2,k:'goals',multi:1,q:'어떤 변화를 보고 싶어요?',d:'여러 개 고를 수 있어요. 체중보다 다른 변화를 보고 싶다면 첫 화면에서 눈바디로 바로 가게 해 드려요.',o:[['fit','👖','옷 핏',''],['cond','🌿','붓기·컨디션',''],['weight','⚖️','체중',''],['habit','✅','습관 만들기','']]},
  {st:2,k:'view',q:'몸무게 기록은 어떻게 볼까요?',d:'설정에서 언제든 바꿀 수 있어요.',o:[['daily','📈','매일 숫자 보기','하루하루 몸무게 숫자를 봐요'],['trend','📊','주간 평균 추세만','하루 변동 대신 일주일 평균으로 봐요 (기본)'],['hide','🙈','숫자 숨기고 눈바디만','몸무게 숫자는 보지 않고 사진·옷 핏으로 봐요']]}];
 const VWN={daily:'매일 숫자 보기',trend:'주간 평균 추세만',hide:'숫자 숨기고 눈바디만'};
 const hasP=(a,k)=>(a.past||[]).includes(k);
@@ -170,7 +170,7 @@ const free=(t,ex)=>POOL[t].map((m,i)=>i).filter(i=>!ex.includes(i)&&okM(t,i));
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
 function applyLow(){['L','D'].forEach(t=>wk[t].forEach((id,i)=>{if(!okM(t,id)){const f=free(t,wk[t]),all=POOL[t].map((m,j)=>j).filter(j=>okM(t,j));wk[t][i]=f.length?rnd(f):all.length?rnd(all):id}}))}
 function wmenu(){
- applyLow();const sc=SCH[SV.sched]||SCH.day;$('#wmsub').textContent=(SV.sched=='day'?'점심 도시락(10분 안팎)·저녁':sc.w.join('·'))+' 메뉴예요. ↻로 바꿔요.'+(SV.diet=='vegan'?' 🌱 비건 메뉴만 골랐어요.':LC()?' 단백질 중심 메뉴로 골랐어요.':'')+(SV.avoid.length?' 🚫 '+SV.avoid.map(k=>AVN[k]).join('·')+' 제외.':'');
+ applyLow();if(!$('#wmenu'))return;const sc=SCH[SV.sched]||SCH.day;$('#wmsub').textContent=(SV.sched=='day'?'점심 도시락(10분 안팎)·저녁':sc.w.join('·'))+' 메뉴예요. ↻로 바꿔요.'+(SV.diet=='vegan'?' 🌱 비건 메뉴만 골랐어요.':LC()?' 단백질 중심 메뉴로 골랐어요.':'')+(SV.avoid.length?' 🚫 '+SV.avoid.map(k=>AVN[k]).join('·')+' 제외.':'');
  const row=(t,lab,m,i)=>`<div class="mrow"><span class="sub" style="min-width:52px">${lab}</span><span style="flex:1;min-width:0">${m.n}${m.fm?'<span class="fm">고포드맵 주의</span>':''}<span class="sub"> · 단백질 ${m.p}g${LC()&&m.c?' · 탄수 ~'+m.c+'g':''}</span></span><button data-t="${t}" data-i="${i}" aria-label="메뉴 바꾸기">↻</button></div>`;
  $('#wmenu').innerHTML=DN.map((d,i)=>`<div class="meal" style="display:block"><b>${d}</b>${row('L',`<span class="en">${sc.en[1]} · </span>`+sc.w[0],POOL.L[wk.L[i]],i)}${row('D',`<span class="en">${sc.en[2]} · </span>`+sc.w[1],POOL.D[wk.D[i]],i)}</div>`).join('');
  $$('#wmenu button').forEach(b=>b.onclick=()=>{const t=b.dataset.t,i=+b.dataset.i,f=free(t,wk[t]);if(!f.length)return toast('교체할 메뉴가 없어요');wk[t][i]=rnd(f);wmenu()});
@@ -180,7 +180,7 @@ $$('.lowfm').forEach(c=>c.onchange=()=>{lowfm=c.checked;$$('.lowfm').forEach(x=>
 
 const PMS={crave:['요거트 + 베리 + 견과','다크초콜릿 2조각 + 우유','고구마 ½ + 달걀'],bloat:['바나나 + 무가당 요거트','오이·토마토 + 두부','따뜻한 보리차 + 삶은 달걀'],tired:['달걀 + 통밀빵 ½','두유 + 견과','연어 주먹밥 소형']};
 $$('[data-s]').forEach(b=>b.onclick=()=>{$$('[data-s]').forEach(x=>x.classList.toggle('on',x===b));$('#pms').innerHTML='<ul style="margin:6px 0;padding-left:18px;color:var(--ink);font-size:14px">'+PMS[b.dataset.s].map(x=>`<li>${x}</li>`).join('')+'</ul><span class="sub">메뉴 제안일 뿐, 치료·진단이 아니에요.</span>'});
-function pmsBn(){$('#pmsbn').innerHTML=(phase=='황체기'||phase=='월경기')?`<b class="ok">지금 ${phase}예요.</b> 증상이 있으면 아래에서 골라보세요.`:'생리주기를 체크하면 해당 시기에 이 메뉴를 먼저 안내해요.'}
+function pmsBn(){if(!$('#pmsbn'))return;$('#pmsbn').innerHTML=(phase=='황체기'||phase=='월경기')?`<b class="ok">지금 ${phase}예요.</b> 증상이 있으면 아래에서 골라보세요.`:'생리주기를 체크하면 해당 시기에 이 메뉴를 먼저 안내해요.'}
 
 /* cycle */
 const PH=['월경기','난포기','배란기','황체기','모름/불규칙'];
@@ -486,7 +486,7 @@ function wsl(){const e=$('#wsl');if(!e)return;if(!wlog.length){e.textContent='�
  if(SV.view=='trend'){const W=wkAvg(),l=W[W.length-1],p=W[W.length-2];e.textContent='이번 주 평균 '+l.v+'kg'+(p?' · 지난주 대비 '+(l.v-p.v>0?'+':'')+(l.v-p.v).toFixed(1)+'kg':'');return}
  e.textContent='현재 '+wlog[wlog.length-1].v+'kg'+(wlog.length>1?' · 처음 대비 '+((wlog[wlog.length-1].v-wlog[0].v)>0?'+':'')+(wlog[wlog.length-1].v-wlog[0].v).toFixed(1)+'kg':'')}
 // 보고 싶은 변화에 체중이 없거나 숫자를 숨기면 눈바디를 앞에
-function bodyOrder(){const nb=$('#nbcard'),w=$('#wcard');if(!nb||!w)return;const g=SV.goals||[],photo=SV.view=='hide'||(g.length&&!g.includes('weight'));
+function bodyOrder(){const gl=SV.goals||[],go=$('#nbgo');if(go)go.hidden=!(SV.view=='hide'||(gl.length&&!gl.includes('weight')));const nb=$('#nbcard'),w=$('#wcard');if(!nb||!w||nb.parentNode!==w.parentNode)return;const g=SV.goals||[],photo=SV.view=='hide'||(g.length&&!g.includes('weight'));
  if(photo){if(nb.nextElementSibling!==w)w.parentNode.insertBefore(nb,w);nb.open=true}else{if(w.nextElementSibling!==nb)nb.parentNode.insertBefore(w,nb)}}
 function vwUI(){const e=$('#vwset');if(!e)return;e.innerHTML=Object.entries(VWN).map(([k,n])=>`<button class="chip ${SV.view==k?'on':''}" data-vw="${k}">${n}</button>`).join('');
  $('#vwnote').textContent={daily:'매일 기록한 몸무게 숫자를 그대로 보여줘요.',trend:'하루 변동 대신 주간 평균과 지난주 대비 변화만 보여줘요.',hide:'몸무게 카드와 목표 kg을 숨기고, 첫 화면에 눈바디를 앞에 둬요.'}[SV.view];
@@ -574,7 +574,8 @@ async function camOpen(){if(!(navigator.mediaDevices&&navigator.mediaDevices.get
 function camClose(){camStop();$('#cam').hidden=true}
 function camGhUI(){const g=$('#camghost'),last=nb.photos[nb.photos.length-1];$('#camghostb').disabled=!last;g.hidden=!(camGh&&last);if(camGh&&last)idbGet(last).then(u=>{if(u)g.src=u}).catch(()=>{});$('#camghostb').textContent=camGh?'지난 사진 끄기':'지난 사진';$('#camtimer').textContent=camTimer?'⏱ 3초 켬':'⏱ 3초'}
 function camShoot(){const v=$('#camv');if(!v.videoWidth)return toast('카메라가 아직 준비 중이에요');nbSave(shrink(v,v.videoWidth,v.videoHeight,camFace=='user'));camClose()}
-$('#nbshot').onclick=camOpen;$('#camx').onclick=camClose;
+$('#nbshot').onclick=camOpen;
+$('#nbgo').onclick=()=>{const b=document.querySelector('#tabs [data-v="2"]');if(b)b.click()};$('#camx').onclick=camClose;
 $('#camflip').onclick=()=>{camFace=camFace=='user'?'environment':'user';camStart()};
 $('#camtimer').onclick=()=>{camTimer=!camTimer;camGhUI()};$('#camghostb').onclick=()=>{camGh=!camGh;camGhUI()};
 $('#camgo').onclick=()=>{if(!camTimer)return camShoot();let n=3;const c=$('#camcnt'),tick=()=>{if(n==0){c.textContent='';return camShoot()}c.textContent=n;n--;setTimeout(tick,1000)};tick()};
@@ -612,7 +613,7 @@ function posterUI(){
  $('#pt1').textContent=G.weeks%4==0?(G.weeks/4)+'달':G.weeks+'주';$('#pt2').textContent=SV.view=='hide'?'🌿 내 페이스':'−'+G.kg+'kg';
  $('#pstats').innerHTML=[[ok?cg+'g↑':'-','탄수'],[ok?pg+'g':'-','단백질'],[(G.water/1000).toFixed(1)+'L','물'],[G.steps.toLocaleString(),'걸음']].map(([a,b])=>`<div class="pst"><b>${a}</b><span>${b}</span></div>`).join('');
  $('#pweek').innerHTML=DW.map((d,i)=>{let t='걷기',c='';if(PL.s.includes(i)){t='근력';c='p'}else if(PL.c.includes(i)){t='유산소';c='w'}return `<div class="${c} ${i==todayIdx?'t':''}"><b>${d}</b>${t}</div>`}).join('');
- const sh=[.25,.3,.3,.15].map(r=>ok?Math.round(pg*r/5)*5:0),sc=SCH[SV.sched]||SCH.day,M=dietM().map(([a,b],i)=>[`<span class="en">${sc.en[i]} · </span><span class="pmn">${sc.m[i]}</span>`,a+'<br>'+b+(i==2?', '+sc.last:''),['--sky','--leaf-soft','--blush','--lilac'][i]]);
+ const sh=[.25,.3,.3,.15].map(r=>ok?Math.round(pg*r/5)*5:0),sc=SCH[SV.sched]||SCH.day,M=dietM().map(([a,b],i)=>[`<span class="en">${sc.en[i]}</span><span class="pmn">${sc.m[i]}</span>`,a+'<br>'+b+(i==2?', '+sc.last:''),['--sky','--leaf-soft','--blush','--lilac'][i]]);
  $('#pmeals').innerHTML=M.map(([n,t,c],i)=>`<div class="pm" style="background:var(${c})"><div><span>${n}</span><small>${sh[i]?'단백질 ~'+sh[i]+'g':''}</small></div>${t}</div>`).join('');
 }
 const _wr=weekRender;weekRender=function(){_wr();posterUI()};
@@ -645,8 +646,8 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  // 테마별 카드: 미니멀 얇은 선 / Y2K 1.5px 진한 테두리 / 로맨틱 테두리 없이 옅은 그림자 / 빈티지 얇은 선 + 아래 그림자
  const FR={minimal:{w:3,c:C.line},y2k:{w:4.5,c:C.ink},romantic:{w:0,sh:['rgba(90,62,54,.10)',60,18]},vintage:{w:3,c:C.line,sh:['rgba(74,59,51,.08)',0,6]}}[T]||{w:3,c:C.line};
  const rr=(a,b,w,h,r,fill,stroke)=>{x.save();if(stroke&&FR.sh&&fill){x.shadowColor=FR.sh[0];x.shadowBlur=FR.sh[1];x.shadowOffsetY=FR.sh[2]}x.beginPath();x.roundRect(a,b,w,h,r);if(fill){x.fillStyle=fill;x.fill()}x.restore();if(stroke&&FR.w){x.beginPath();x.roundRect(a,b,w,h,r);x.lineWidth=FR.w;x.strokeStyle=FR.c;x.stroke()}};
- const glitch=T=='y2k';
- const tx=(t,a,b,sz,wt,col,al,fam)=>{x.font=`${wt} ${sz}px ${fam||F}`;x.textAlign=al||'left';x.textBaseline='alphabetic';if(glitch&&wt>=900&&sz>=50){x.fillStyle='#73D9D2';x.fillText(t,a-6,b);x.fillStyle='#F2A7D0';x.fillText(t,a+6,b)}x.fillStyle=col;x.fillText(t,a,b)};
+ const isY=T=='y2k';
+ const tx=(t,a,b,sz,wt,col,al,fam)=>{x.font=`${wt} ${sz}px ${fam||F}`;x.textAlign=al||'left';x.textBaseline='alphabetic';x.fillStyle=col;x.fillText(t,a,b)};
  // 배경 위 글자 아래에 면 색 라벨(명암비 유지)
  const lbl=(a,b,w,sz)=>{if(IMGT)rr(a-18,b-sz*1.02,w+36,sz*1.36,Math.min(R,sz*.6),C.card)};
  const tw=(t,sz,wt)=>{x.font=`${wt} ${sz}px ${F}`;return x.measureText(t).width};
@@ -680,7 +681,7 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  wk.forEach((e,i)=>{const bx=L+i*(cw+cg),k=e.className.includes('p')?C.blush:e.className.includes('w')?C.lilac:C.card;rr(bx,y,cw,160,Math.min(R,34),k,1);tx(e.querySelector('b').textContent,bx+cw/2,y+68,42,900,C.ink,'center');tx(e.lastChild.textContent,bx+cw/2,y+120,30,500,C.sub,'center')});
  y+=240;const ms=$('#pmsm').textContent,w3=tw('하루 식단',54,900);lbl(L,y,w3+30+tw(ms,32,500),54);tx('하루 식단',L,y,54,900,C.ink);tx(ms,L+w3+30,y,32,500,C.sub);y+=30;
  const pm=[...document.querySelectorAll('#pmeals .pm')],cols=[C.sky,C.leaf,C.blush,C.lilac],mg=24,mw=(CW-mg)/2;
- pm.forEach((e,i)=>{const bx=L+(i%2)*(mw+mg),by=y+Math.floor(i/2)*(230+mg),en=glitch?(e.querySelector('.en')||{}).textContent:'';rr(bx,by,mw,230,R,cols[i],1);
+ pm.forEach((e,i)=>{const bx=L+(i%2)*(mw+mg),by=y+Math.floor(i/2)*(230+mg),en=isY?(e.querySelector('.en')||{}).textContent:'';rr(bx,by,mw,230,R,cols[i],1);
   const o=en?24:0;if(en)tx(en.replace(/[ ·]+$/,''),bx+34,by+46,26,700,C.sub,'left',MONO);
   tx((e.querySelector('.pmn')||e.firstElementChild).textContent,bx+34,by+66+o,46,900,C.ink);const sm=e.querySelector('small').textContent;tx(sm,bx+mw-34,by+68+o,30,500,C.sub,'right');
   e.innerHTML.replace(/^<div>.*?<\/div>/,'').split('<br>').forEach((ln,j)=>tx(ln.replace(/<[^>]+>/g,'').trim(),bx+34,by+120+o+j*(o?40:44),34,500,C.ink))});
