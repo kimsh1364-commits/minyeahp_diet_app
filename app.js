@@ -59,26 +59,26 @@ const SVQ=[
  {st:1,k:'gut',q:'우유·콩·밀가루·양파 등을 먹으면 배가 자주 불편한가요?',d:'“네”를 고르면 고포드맵 메뉴를 빼 드려요. 장 민감 정보로 이 기기에만 저장되고, 설정에서 언제든 지울 수 있어요.',o:[[true,'😣','네, 자주 그래요',''],[false,'🙆','아니요·잘 모르겠어요','']]},
  {st:1,k:'avoid',multi:1,q:'못 먹거나 피해야 하는 음식이 있나요?',d:'여러 개 고를 수 있어요. 알레르기 정보는 이 기기에만 저장되고 설정에서 지울 수 있어요.',o:[['d','🥛','우유·유제품',''],['e','🥚','달걀',''],['n','🥜','견과·땅콩',''],['s','🦐','새우·갑각류',''],['w','🌾','밀가루',''],['none','🙅','없어요','']]},
  {st:1,k:'past',multi:1,q:'다이어트하면서 힘들었던 적이 있나요?',d:'여러 개 고를 수 있어요. 답에 맞춰 팁의 강도와 화면을 바꿔 드려요. 민감정보로 이 기기에만 저장되고 설정에서 지울 수 있어요.',o:[['injury','🩹','부상·통증',''],['hair','💇','탈모·피부 트러블',''],['period','🩸','생리불순',''],['yoyo','🔁','요요',''],['guilt','💭','먹는 것에 대한 강박·죄책감',''],['none','🙂','없어요','']]},
- {st:1,req:1,k:'care',multi:1,q:'지금 해당하는 게 있나요?',d:'이 답은 저장하지 않아요. 결과 화면에서 주의할 점만 알려 드려요.',o:[['preg','🤰','임신 중이거나 수유 중이에요',''],['ed','💬','섭식장애로 진료·상담을 받았거나 받는 중이에요',''],['med','🏥','당뇨·갑상선·다낭성난소증후군 등으로 진료 중이에요',''],['none','🙂','해당 없어요','']]},
- {st:2,k:'goals',multi:1,q:'어떤 변화를 보고 싶어요?',d:'여러 개 고를 수 있어요. 체중보다 다른 변화를 보고 싶다면 첫 화면에서 눈바디로 바로 가게 해 드려요.',o:[['fit','👖','옷 핏',''],['cond','🌿','붓기·컨디션',''],['weight','⚖️','체중',''],['habit','✅','습관 만들기','']]},
+ {st:1,req:1,k:'care',multi:1,q:'지금 해당하는 게 있나요?',d:'이 답은 저장하지 않아요. 결과 화면에서 주의할 점만 알려 드려요.',o:[['preg','🤰','임신 중이거나 수유 중이에요',''],['ed','💬','먹는 일로 오래 마음이 힘들었던 적이 있어요',''],['med','🏥','당뇨·갑상선·다낭성난소증후군 등으로 몸을 관리하고 있어요',''],['none','🙂','해당 없어요','']]},
+ {st:2,k:'goals',multi:1,q:'어떤 변화를 보고 싶어요?',d:'여러 개 고를 수 있어요. 고른 변화에 맞춰 보여 드릴게요.',o:[['fit','👖','옷 핏',''],['cond','🌿','붓기·컨디션',''],['weight','⚖️','체중',''],['habit','✅','습관 만들기','']]},
  {st:2,k:'view',q:'몸무게 기록은 어떻게 볼까요?',d:'설정에서 언제든 바꿀 수 있어요.',o:[['daily','📈','매일 숫자 보기','하루하루 몸무게 숫자를 봐요'],['trend','📊','주간 평균 추세만','하루 변동 대신 일주일 평균으로 봐요 (기본)'],['hide','🙈','숫자 숨기고 눈바디만','몸무게 숫자는 보지 않고 사진·옷 핏으로 봐요']]}];
 const VWN={daily:'매일 숫자 보기',trend:'주간 평균 추세만',hide:'숫자 숨기고 눈바디만'};
 const hasP=(a,k)=>(a.past||[]).includes(k);
 // 결과 화면·기준 탭 카드에 같이 쓰는 안내 문구
 function svNotes(a){const n=[],lc=a.diet=='lowcarb';
- if(hasP(a,'period'))n.push(['warn','🩸 <b>생리불순을 겪었다면 탄수 130g 하한이 특히 중요해요.</b> 탄수와 먹는 양이 크게 부족하면 몸이 에너지를 아끼려고 생리를 늦추거나 멈출 수 있어요. 그래서 이 앱은 어떤 타입이든 탄수를 하루 130g 아래로 안내하지 않고, 끼니마다 탄수 1을 넣어요. 생리불순이 계속되면 산부인과 진료를 권해요.']);
+ if(hasP(a,'period'))n.push(['warn','🩸 <b>생리불순을 겪었다면 탄수 130g 하한이 특히 중요해요.</b> 탄수와 먹는 양이 크게 부족하면 몸이 에너지를 아끼려고 생리를 늦추거나 멈출 수 있어요. 그래서 이 앱은 어떤 타입이든 탄수를 하루 130g 아래로 안내하지 않고, 끼니마다 탄수 1을 넣어요. 주기가 계속 들쭉날쭉하다면, 혼자 고민하기보다 몸 상태를 한 번 살펴봐 두면 마음이 한결 편해질 수 있어요.']);
  if(lc&&!hasP(a,'period'))n.push(['','저탄수·고단백을 골라도 이 앱은 탄수화물을 하루 <b>130g 아래로 안내하지 않아요.</b> 여자 몸은 탄수가 부족하면 월경이 불규칙해질 수 있어서예요. 탄수는 꼭 밥이 아니어도 돼요. 고구마·감자·단호박·귀리·과일처럼 좋아하는 걸로 끼니마다 1번씩 넣고, 나머지는 단백질·좋은 지방으로 채워요.']);
- if(a.diet=='vegan')n.push(['','비타민 B12는 식물성 식품으로 채우기 어려워요. 보충제는 전문가와 상의해 주세요. 철분이 많은 콩·시금치는 비타민C(과일·파프리카)와 함께 먹어요.']);
- if(hasP(a,'guilt'))n.push(['soft','💭 먹는 일로 마음이 힘들었다면, 그건 의지가 약해서가 아니에요. 그래서 몸무게 숫자는 숨기고 행동만 체크하도록 맞춰 뒀어요(설정에서 바꿀 수 있어요). 먹는 생각이 하루를 많이 차지하거나 죄책감이 계속된다면, 정신건강의학과나 상담센터에서 편하게 이야기해 보는 것도 좋아요. 혼자 힘들 땐 정신건강 상담전화 1577-0199도 있어요.']);
+ if(a.diet=='vegan')n.push(['','비타민 B12는 식물성 식품으로 채우기 어려워요. 보충제가 필요한지는 내 몸에 맞게 한 번 알아봐 두면 좋아요. 철분이 많은 콩·시금치는 비타민C(과일·파프리카)와 함께 먹어요.']);
+ if(hasP(a,'guilt'))n.push(['soft','💭 먹는 일로 마음이 힘들었다면, 그건 의지가 약해서가 아니에요. 그래서 몸무게 숫자는 숨기고 행동만 체크하도록 맞춰 뒀어요(설정에서 바꿀 수 있어요). 먹는 생각이 하루를 많이 차지하거나 마음이 계속 무겁다면, 믿을 수 있는 누군가와 이야기를 나눠 보는 것만으로도 한결 가벼워질 수 있어요.']);
  const c=a.care||[];
- if(c.includes('preg'))n.push(['warn','임신·수유 중에는 체중 감량 식단을 권하지 않아요. 이 앱의 감량 목표 대신 담당 의료진의 안내를 따라 주세요.']);
- if(c.includes('ed'))n.push(['warn','먹는 걸 기록하거나 목표를 세우는 일이 부담이 될 수 있어요. 이 앱은 칼로리를 보여주지 않지만, 꼭 담당 전문가와 함께 사용해 주세요. 힘들 땐 혼자 버티지 말고 도움을 요청하세요.']);
- if(c.includes('med'))n.push(['warn','진료 중인 질환이 있으면 식단·운동을 바꾸기 전에 담당 의사와 먼저 상의해 주세요.']);
+ if(c.includes('preg'))n.push(['warn','임신·수유 중에는 감량보다 몸을 든든히 채우는 게 먼저예요. 이 앱의 감량 목표보다 지금 받고 있는 안내를 우선해 주세요.']);
+ if(c.includes('ed'))n.push(['warn','먹는 걸 기록하거나 목표를 세우는 일이 부담이 될 수 있어요. 이 앱은 칼로리를 보여주지 않고 행동만 가볍게 체크해요. 기록이 마음을 무겁게 하면 언제든 쉬어 가도 괜찮고, 혼자 버티지 않아도 돼요.']);
+ if(c.includes('med'))n.push(['warn','관리 중인 몸 상태가 있다면, 식단·운동을 크게 바꾸기 전에 지금 받고 있는 안내와 한 번 맞춰 보면 좋아요.']);
  return n}
 function svTips(a){const T=[...TY[typeOf(a)].tips],lc=a.diet=='lowcarb',inj=hasP(a,'injury');
  if(lc)T.push('🍠 탄수 1은 끼니마다 꼭 넣어요. 밥이 아니어도 돼요: 고구마·감자·단호박·귀리·퀴노아·과일 중에서 매일 바꿔 골라요');
  if(a.diet=='vegan')T.push('단백질은 두부·템페·콩·두유를 끼니마다 섞어서 채워요');
- if(inj)T.push('🩹 운동은 통증 없는 범위에서 걷기·스트레칭부터 해요. 점프·달리기·무거운 무게는 쉬고, 통증이 계속되면 진료를 먼저 받아요');
+ if(inj)T.push('🩹 운동은 통증 없는 범위에서 걷기·스트레칭부터 해요. 점프·달리기·무거운 무게는 쉬고, 통증이 계속되면 운동보다 몸을 먼저 살펴 줘요');
  if(hasP(a,'hair'))T.push('💇 탈모·피부 트러블은 단백질·철분과 먹는 양이 부족할 때 생기기 쉬워요. 단백질 목표와 탄수 하한을 꼭 채워요');
  if(a.stage=='plateau')T.push('⏸️ 정체기엔 더 줄이지 말고 채워요. 덜 먹을수록 근육이 빠지고 정체가 길어질 수 있어요','⏸️ 몸무게는 하루가 아니라 일주일 평균으로 봐요. 수분 때문에 1~2kg은 오르내려요',inj?'⏸️ 걸음은 통증 없는 만큼만, 근력 운동은 가벼운 밴드·맨몸 위주로, 잠 7시간을 먼저 챙겨요':'⏸️ 걸음 +2,000보, 근력 운동 주 2회, 잠 7시간을 먼저 챙겨요');
  if(a.stage=='yoyo'||hasP(a,'yoyo'))T.push('🔁 한 주에 체중의 0.5% 안팎으로 천천히 빼요. 기간을 넉넉히 잡을수록 다시 찌는 위험이 줄어요','🔁 금지보다 “반만 먹고 채우기”로 먹고 싶은 걸 남겨 둬요');
@@ -151,7 +151,7 @@ function calc(){
  if(LC()){cLo=130;cHi=150;fLo=Math.round(Math.max(0,target-cHi*4-prot*4)/9);fHi=Math.round(Math.max(0,target-cLo*4-prot*4)/9)}
  window.TARGET=target;window.CARBMIN=cLo;window.PROT=prot;
  $('#calc').innerHTML=`<div class="grid2" style="font-size:13px"><div>탄수화물 <b>${cLo}g 이상</b><div class="sub">넉넉히 ${cLo}–${cHi}g</div></div><div>단백질 <b>${prot}g</b><div class="sub">체중 kg당 약 1.2g</div></div><div>지방 <b>${fLo}–${fHi}g</b><div class="sub">${LC()?'넉넉히 · ':''}견과·생선·올리브유 등 좋은 지방</div></div><div>식이섬유 <b>20g</b><div class="sub">채소 3접시 + 잡곡</div></div></div>
- <div class="sub" style="margin-top:6px">※ 한국인 영양소 섭취기준(2025)의 비율 범위(탄 50–65·단 10–20·지 15–30%)를 바탕으로 하되, 감량 중 근육을 지키려고 단백질은 체중 기준으로 잡은 예시예요. 개인 상태에 맞는 조정은 전문가 상담이 필요해요.${hasP(SV,'period')?'<div class="svnote warn">🩸 생리불순을 겪었다면 탄수 130g 하한이 특히 중요해요. 탄수와 먹는 양이 크게 부족하면 생리가 늦어지거나 멈출 수 있어요.</div>':''}${LC()?' 저탄수·고단백을 골라도 탄수화물은 월경 불순 예방을 위해 130g 아래로 내리지 않아요. 밥 대신 고구마·감자·단호박·귀리·과일로 채워도 돼요.':''}</div>`;
+ <div class="sub" style="margin-top:6px">※ 한국인 영양소 섭취기준(2025)의 비율 범위(탄 50–65·단 10–20·지 15–30%)를 바탕으로 하되, 감량 중 근육을 지키려고 단백질은 체중 기준으로 잡은 예시예요. 몸 상태에 따라 맞는 양은 달라질 수 있어요.${hasP(SV,'period')?'<div class="svnote warn">🩸 생리불순을 겪었다면 탄수 130g 하한이 특히 중요해요. 탄수와 먹는 양이 크게 부족하면 생리가 늦어지거나 멈출 수 있어요.</div>':''}${LC()?' 저탄수·고단백을 골라도 탄수화물은 월경 불순 예방을 위해 130g 아래로 내리지 않아요. 밥 대신 고구마·감자·단호박·귀리·과일로 채워도 돼요.':''}</div>`;
  $('#csum').textContent=`탄수 ${cLo}g↑ · 단백질 ${prot}g · 채소 3접시`;if(typeof posterUI==='function')posterUI();
  tot();
 }
@@ -188,7 +188,7 @@ const PHI={'월경기':['에스트로겐·프로게스테론이 모두 낮은 �
 '난포기':['에스트로겐이 서서히 오르는 시기','기분·에너지가 안정되고 운동이 잘 되는 느낌을 받는 사람이 많아요(개인차).','컨디션이 좋아도 평소 루틴을 유지해요. 식사는 규칙적으로.'],
 '배란기':['에스트로겐이 정점을 찍고 LH가 급상승해 배란이 일어나는 시기','체온이 약간 오르고 하복부 불편·식욕 변화를 느끼는 사람도 있어요.','불편하면 강도를 낮추고, 물을 충분히 마셔요.'],
 '황체기':['프로게스테론이 높아지고 후반에 호르몬이 떨어지는 시기','식욕·단 음식 당김이 늘고, 수분이 몰려 붓거나 체중이 일시적으로 오를 수 있어요(지방이 늘어난 게 아니에요). 졸림·장 예민·PMS(예민함·두통)도 흔해요.','체중 숫자보다 추이를 봐요. 탄수를 억지로 줄이지 말고(하한 유지) 단백질·식이섬유와 PMS 간식 메뉴를 활용해요.'],
-'모름/불규칙':['주기가 불규칙하면 호르몬 시기를 단정하기 어려워요','기록을 쌓으면 내 패턴을 볼 수 있어요.','몇 달째 월경이 없거나 매우 불규칙하면 진료 상담을 권해요.']};
+'모름/불규칙':['주기가 불규칙하면 호르몬 시기를 단정하기 어려워요','기록을 쌓으면 내 패턴을 볼 수 있어요.','몇 달째 월경이 없거나 많이 불규칙하면, 몸 상태를 한 번 살펴봐 두면 마음이 편해요.']};
 function phinfoUI(){const p=PHI[(cyc[key(sim)]||{}).p];$('#phinfo').innerHTML=p?`<div class="advc" style="margin-top:8px"><b>${phase}</b><div class="sub" style="margin-top:4px">🧬 ${p[0]}</div><div class="sub" style="margin-top:4px">🫧 ${p[1]}</div><div class="sub" style="margin-top:4px">🌿 ${p[2]}</div><div class="sub" style="margin-top:6px;opacity:.8">일반적인 경향이며 개인차가 커요. 진단이 아니에요.</div></div>`:(consent?'<div class="sub" style="margin-top:8px">주기를 누르면 그 시기의 호르몬과 몸 상태를 간단히 알려줘요.</div>':'')}
 function phasesUI(){phinfoUI();
  $('#phases').innerHTML=PH.map(p=>`<button class="chip ${(cyc[key(sim)]||{}).p==p?'on':''}" data-p="${p}" ${consent?'':'disabled style="opacity:.5"'}>${p}</button>`).join('');
@@ -388,7 +388,7 @@ const ADV={
  water:{n:'물',fx:'수분이 부족하면 피로감이 커지고 변비가 생기기 쉬워요. 한국인 영양소 섭취기준 수분 충분섭취량은 하루 약 2,100mL(식사 속 수분 포함)예요. 장이 예민하다면 식이섬유를 늘릴 때 물도 같이 늘려요.',tips:['컵 단위(200ml)로 바로 기록하기','식사 전 한 컵 먼저','보리차·무가당 차도 좋아요']},
  move:{n:'움직임',fx:'걷기와 운동은 소비 에너지를 늘리고, 근력운동은 감량 중 근육을 지키는 데 도움이 돼요. 몰아서 하기보다 자주 움직이는 쪽이 오래 가요.',tips:['점심 후 10분 걷기','운동 없는 날은 걸음 목표만 채우기','운동 요일이 버겁다면 목표 설정에서 현실적으로 다시 정하기']},
  carb:{n:'탄수 하한',fx:'탄수화물을 너무 줄이면 컨디션과 지속력이 떨어져요. 이 앱은 하루 130g 아래로 내려가지 않게 안내해요. 줄이는 게 아니라 채우는 게 목표예요.',tips:['매끼 탄수 1은 꼭: 밥이 아니어도 고구마·감자·단호박·귀리·과일로 채워도 돼요','잡곡·고구마처럼 천천히 오르는 탄수 고르기','탄수만 먹지 말고 단백질·채소와 함께']},
- prot:{n:'단백질',fx:'단백질은 포만감을 높이고 감량 중 근육 유지에 도움이 돼요. 한국인 영양소 섭취기준 권장섭취량(성인 여성 50–55g)은 최소선이에요. 감량 중 근육이 빠지지 않게 앱 목표는 체중 kg당 약 1.2g으로 잡았어요(개인 상태에 따라 전문가 상담이 필요해요).',tips:['달걀·두부·닭가슴살 중 하나를 매끼에','간식도 요거트·삶은 달걀로','반만 먹고 채울 때 단백질부터 추가하기']},
+ prot:{n:'단백질',fx:'단백질은 포만감을 높이고 감량 중 근육 유지에 도움이 돼요. 한국인 영양소 섭취기준 권장섭취량(성인 여성 50–55g)은 최소선이에요. 감량 중 근육이 빠지지 않게 앱 목표는 체중 kg당 약 1.2g으로 잡았어요(몸 상태에 따라 달라질 수 있어요).',tips:['달걀·두부·닭가슴살 중 하나를 매끼에','간식도 요거트·삶은 달걀로','반만 먹고 채울 때 단백질부터 추가하기']},
  veg:{n:'채소',fx:'채소는 식이섬유(성인 여성 충분섭취량 20g)와 포만감을 채워줘요. 먹고 싶은 음식을 ½만 먹고 샐러드를 더하는 방식이 부담이 가장 적어요.',tips:['도시락에 샐러드 한 컵 더하기','반찬에 채소 한 가지 추가','장이 예민하면 고포드맵 표시 확인']},
  meal:{n:'식단 기록',fx:'기록이 비면 리포트와 추천이 정확하지 않아요. 완벽할 필요 없이 한 끼만 3탭으로 남겨도 충분해요.',tips:['카테고리 → 메뉴 → 양 3탭','먹은 직후 바로 기록하기']}};
 function reportUI(){
@@ -422,10 +422,10 @@ function reportUI(){
  // advice
  const weak=have.filter(r=>r.ratio<.6).sort((a,b)=>(a.k=='sleep'?-1:b.k=='sleep'?1:0)||a.ratio-b.ratio).slice(0,3);
  let adv='';
- weak.forEach(r=>{const a=r.k=='move'&&hasP(SV,'injury')?{...ADV.move,tips:['통증 없는 범위에서 걷기·스트레칭부터','점프·달리기·무거운 무게는 쉬어요','통증이 계속되면 운동보다 진료를 먼저 받아요']}:ADV[r.k];adv+=`<div class="advc"><b>${a.n} · ${r.t}${r.k=='sleep'?` (좋음 ${r.sl[0]} · 보통 ${r.sl[1]} · 별로 ${r.sl[2]})`:''}</b><div class="sub" style="margin-top:4px">${a.fx}</div><ul>${a.tips.map(t=>`<li>${t}</li>`).join('')}</ul></div>`});
+ weak.forEach(r=>{const a=r.k=='move'&&hasP(SV,'injury')?{...ADV.move,tips:['통증 없는 범위에서 걷기·스트레칭부터','점프·달리기·무거운 무게는 쉬어요','통증이 계속되면 운동보다 몸을 먼저 살펴 줘요']}:ADV[r.k];adv+=`<div class="advc"><b>${a.n} · ${r.t}${r.k=='sleep'?` (좋음 ${r.sl[0]} · 보통 ${r.sl[1]} · 별로 ${r.sl[2]})`:''}</b><div class="sub" style="margin-top:4px">${a.fx}</div><ul>${a.tips.map(t=>`<li>${t}</li>`).join('')}</ul></div>`});
  if(!sl.length)adv+='<div class="advc"><b>수면 기록이 없어요</b><div class="sub" style="margin-top:4px">기록 탭의 "오늘 컨디션"에서 수면을 체크하면, 수면이 식욕과 다이어트에 미치는 영향을 리포트에 반영해요.</div></div>';
  if(!weak.length&&sl.length)adv+='<div class="advc"><b>🎉 큰 보완점이 없어요</b><div class="sub" style="margin-top:4px">이번 주 패턴을 유지해 봐요. 컨디션이 떨어지는 날이 있으면 수면과 물부터 확인하세요.</div></div>';
- if(avg('en')&&avg('en')<2)adv+='<div class="advc"><b>에너지가 낮은 편이에요</b><div class="sub" style="margin-top:4px">수면·탄수·수분이 부족하면 피로가 커질 수 있어요. 위 항목부터 점검해 보세요. 증상이 계속되면 전문가와 상담하세요.</div></div>';
+ if(avg('en')&&avg('en')<2)adv+='<div class="advc"><b>에너지가 낮은 편이에요</b><div class="sub" style="margin-top:4px">수면·탄수·수분이 부족하면 피로가 커질 수 있어요. 위 항목부터 점검해 보세요. 피곤함이 오래가면 몸이 쉬어 가라는 신호일 수 있어요. 무리하지 말고 몸 상태를 한 번 살펴봐 주세요.</div></div>';
  $('#radv').innerHTML=adv;
 }
 $('#rseed').onclick=()=>{for(let i=1;i<=6;i++){const d=new Date(sim);d.setDate(d.getDate()-i);const k=key(d),wd=(d.getDay()+6)%7,pl=(PL.s.includes(wd)||PL.c.includes(wd))?1:0,m=Math.random()<.85?G.meals:G.meals-1,r=Math.random;
@@ -486,7 +486,7 @@ function wsl(){const e=$('#wsl');if(!e)return;if(!wlog.length){e.textContent='�
  if(SV.view=='trend'){const W=wkAvg(),l=W[W.length-1],p=W[W.length-2];e.textContent='이번 주 평균 '+l.v+'kg'+(p?' · 지난주 대비 '+(l.v-p.v>0?'+':'')+(l.v-p.v).toFixed(1)+'kg':'');return}
  e.textContent='현재 '+wlog[wlog.length-1].v+'kg'+(wlog.length>1?' · 처음 대비 '+((wlog[wlog.length-1].v-wlog[0].v)>0?'+':'')+(wlog[wlog.length-1].v-wlog[0].v).toFixed(1)+'kg':'')}
 // 보고 싶은 변화에 체중이 없거나 숫자를 숨기면 눈바디를 앞에
-function bodyOrder(){const gl=SV.goals||[],go=$('#nbgo');if(go)go.hidden=!(SV.view=='hide'||(gl.length&&!gl.includes('weight')));const nb=$('#nbcard'),w=$('#wcard');if(!nb||!w||nb.parentNode!==w.parentNode)return;const g=SV.goals||[],photo=SV.view=='hide'||(g.length&&!g.includes('weight'));
+function bodyOrder(){const nb=$('#nbcard'),w=$('#wcard');if(!nb||!w||nb.parentNode!==w.parentNode)return;const g=SV.goals||[],photo=SV.view=='hide'||(g.length&&!g.includes('weight'));
  if(photo){if(nb.nextElementSibling!==w)w.parentNode.insertBefore(nb,w);nb.open=true}else{if(w.nextElementSibling!==nb)nb.parentNode.insertBefore(w,nb)}}
 function vwUI(){const e=$('#vwset');if(!e)return;e.innerHTML=Object.entries(VWN).map(([k,n])=>`<button class="chip ${SV.view==k?'on':''}" data-vw="${k}">${n}</button>`).join('');
  $('#vwnote').textContent={daily:'매일 기록한 몸무게 숫자를 그대로 보여줘요.',trend:'하루 변동 대신 주간 평균과 지난주 대비 변화만 보여줘요.',hide:'몸무게 카드와 목표 kg을 숨기고, 첫 화면에 눈바디를 앞에 둬요.'}[SV.view];
@@ -507,9 +507,9 @@ function cyPhase(t){if(!CY||!CY.starts.length)return null;t=dz(t);let S=null;for
  r.p=i<P?'월경기':i>=C?'예정일 지남':(i>=ov-2&&i<=ov+2)?'배란기':i<ov-2?'난포기':'황체기';return r}
 function cyAddStart(t){t=dz(t);CY=CY||{starts:[],cyc:28,len:5};if(!CY.starts.includes(t))CY.starts.push(t);CY.starts.sort((a,b)=>a-b)}
 function cyNotices(){const N=[];if(!CY||!CY.starts.length)return N;const iv=cyInts().slice(-6),C=cyAvg(),since=Math.round((dz(sim.getTime())-CY.starts[CY.starts.length-1])/DAY);
- if(since>=90)N.push(['warn',`마지막 생리 후 ${since}일 동안 기록이 없어요. 임신 가능성이 있다면 임신 테스트로 먼저 확인해 보세요. 3개월 이상 생리가 없으면 산부인과 방문을 권해요.`]);
- if(iv.filter(x=>x>38).length>=3)N.push(['soft','주기가 길게 이어지고 있어요. 한 번 산부인과에서 확인해 보면 마음이 편할 수 있어요.']);
- else if(iv.filter(x=>x<24).length>=2)N.push(['soft','주기가 짧게 이어지고 있어요. 한 번 산부인과에서 확인해 보면 마음이 편할 수 있어요.']);
+ if(since>=90)N.push(['warn',`마지막 생리 후 ${since}일 동안 기록이 없어요. 혹시 몸에 변화가 있었을 수 있다면 테스트로 먼저 확인해 볼 수 있어요. 3개월 넘게 생리가 없을 땐 몸 상태를 한 번 살펴봐 두면 마음이 한결 편해져요.`]);
+ if(iv.filter(x=>x>38).length>=3)N.push(['soft','주기가 길게 이어지고 있어요. 바쁘고 지친 시기엔 흔히 그럴 수 있어요. 마음에 걸린다면 한 번 확인받아 두는 것도 방법이에요.']);
+ else if(iv.filter(x=>x<24).length>=2)N.push(['soft','주기가 짧게 이어지고 있어요. 바쁘고 지친 시기엔 흔히 그럴 수 있어요. 마음에 걸린다면 한 번 확인받아 두는 것도 방법이에요.']);
  N.push(['',C>=24&&C<=38?`평균 주기 ${C}일(예상)로 일반적인 범위(24~38일) 안이에요.`:`평균 주기 ${C}일(예상)로 일반적인 범위(24~38일)를 벗어나 있어요. 기록이 쌓이면 예측이 더 정확해져요.`]);return N}
 const CYT={'월경기':['철분(붉은 고기·두부·시금치)과 단백질을 챙기고 끼니는 거르지 않아요','따뜻한 국물·차로 몸을 편하게 하고, 운동은 걷기·스트레칭 정도로 가볍게 해요','피곤하고 기운이 없을 수 있어요. 잠을 먼저 챙겨요'],
  '난포기':['컨디션이 좋은 사람이 많은 시기예요(개인차). 근력 운동을 하기 좋아요','평소 루틴대로 규칙적으로 먹어요'],
@@ -574,8 +574,7 @@ async function camOpen(){if(!(navigator.mediaDevices&&navigator.mediaDevices.get
 function camClose(){camStop();$('#cam').hidden=true}
 function camGhUI(){const g=$('#camghost'),last=nb.photos[nb.photos.length-1];$('#camghostb').disabled=!last;g.hidden=!(camGh&&last);if(camGh&&last)idbGet(last).then(u=>{if(u)g.src=u}).catch(()=>{});$('#camghostb').textContent=camGh?'지난 사진 끄기':'지난 사진';$('#camtimer').textContent=camTimer?'⏱ 3초 켬':'⏱ 3초'}
 function camShoot(){const v=$('#camv');if(!v.videoWidth)return toast('카메라가 아직 준비 중이에요');nbSave(shrink(v,v.videoWidth,v.videoHeight,camFace=='user'));camClose()}
-$('#nbshot').onclick=camOpen;
-$('#nbgo').onclick=()=>{const b=document.querySelector('#tabs [data-v="2"]');if(b)b.click()};$('#camx').onclick=camClose;
+$('#nbshot').onclick=camOpen;$('#camx').onclick=camClose;
 $('#camflip').onclick=()=>{camFace=camFace=='user'?'environment':'user';camStart()};
 $('#camtimer').onclick=()=>{camTimer=!camTimer;camGhUI()};$('#camghostb').onclick=()=>{camGh=!camGh;camGhUI()};
 $('#camgo').onclick=()=>{if(!camTimer)return camShoot();let n=3;const c=$('#camcnt'),tick=()=>{if(n==0){c.textContent='';return camShoot()}c.textContent=n;n--;setTimeout(tick,1000)};tick()};
