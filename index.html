@@ -10,9 +10,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="다이어트">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@500;700&family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Jua&display=swap">
 <link rel="stylesheet" href="style.css">
-<script>/* 저장된 추구미 테마·화면 모드를 그리기 전에 적용(깜빡임 방지) */(function(){var r=document.documentElement,o={};try{o=JSON.parse(localStorage.getItem('dietproto_v1'))||{}}catch(e){}r.setAttribute('data-theme',o.thm||'minimal');r.setAttribute('data-mode',o.scm||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))})()</script>
+<script>/* 저장된 추구미 테마·화면 모드를 그리기 전에 적용(깜빡임 방지) */(function(){var r=document.documentElement,o={};try{o=JSON.parse(localStorage.getItem('dietproto_v1'))||{}}catch(e){}var m={romantic:'natural',vintage:'oldmoney'};r.setAttribute('data-theme',m[o.thm]||o.thm||'minimal');r.setAttribute('data-mode',o.scm||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))})()</script>
 </head>
 <body data-tab="0">
 <div class="app">
@@ -29,7 +29,16 @@
  </div>
  <div style="height:14px"></div>
  <details class="card fold deco" id="tycard"></details>
-  <details class="card fold"><summary><div><h2>몸무게 추이</h2><div class="sub" id="wsl"></div></div></summary>
+ <div id="bodycards">
+ <details class="card fold" id="nbcard" open><summary><div><h2>📸 눈바디</h2><div class="sub" id="nbsl">같은 자리·같은 거리에서 찍으면 변화가 잘 보여요</div></div></summary>
+  <div class="row"><button class="pri" id="nbshot">📸 촬영 가이드로 찍기</button><label class="chip" style="margin:0;display:inline-block;padding:8px 12px;border:var(--btn-border);border-radius:var(--btn-radius);background:var(--btn-bg);color:var(--text);font-size:13.5px;cursor:pointer">🖼 사진 고르기<input type="file" id="nbfile" accept="image/*" hidden></label></div>
+  <div id="nbmb"></div>
+  <div style="margin-top:12px"><b class="nbh">👖 기준 옷 핏 체크</b><div class="sub">정해 둔 옷 하나를 입었을 때 느낌만 골라요.</div>
+   <div class="row" style="margin-top:6px;flex-wrap:nowrap"><input id="nbcloth" placeholder="기준 옷 (예: 즐겨 입는 청바지)"><button id="nbclothok" style="flex:none">저장</button></div>
+   <div class="fitrow" id="nbfit"></div><div class="sub" id="nbfith" style="margin-top:6px"></div></div>
+  <div class="sub" style="margin-top:10px">사진·핏 기록은 이 기기에만 저장되고 서버로 가지 않아요. 설정의 민감정보 삭제로 함께 지워져요.</div>
+ </details>
+  <details class="card fold" id="wcard"><summary><div><h2>몸무게 추이</h2><div class="sub" id="wsl"></div></div></summary>
   <div class="row" style="flex-wrap:nowrap"><input id="wnew" type="number" step="0.1" placeholder="오늘 몸무게(kg)"><button class="pri" id="wadd" style="flex:none">기록</button></div>
   <div id="wsum" class="grid2" style="margin:10px 0;font-size:13px"></div>
   <svg id="wchart" viewBox="0 0 300 130" width="100%" role="img" aria-label="몸무게 추이"></svg>
@@ -37,6 +46,7 @@
   <div class="sub" id="wnote" style="margin-top:6px"></div>
   <div class="row" style="margin-top:8px"><button id="wseed">예시 기록 채우기(데모)</button><button id="wdel">마지막 기록 삭제</button></div>
  </details>
+ </div>
  <details class="card fold"><summary><div><h2>내 기준 계산</h2><div class="sub" id="csum"></div></div></summary>
   <div class="grid2">
    <div><label>나이</label><input id="age" type="number" value="0" onfocus="this.select()"></div>
@@ -48,11 +58,14 @@
   <div id="calc" style="margin-top:10px"></div>
  </details>
  <div class="card">
-  <h2>생리주기 체크 <span class="tag">선택 · 민감정보</span></h2>
+  <h2>생리주기 <span class="tag">선택 · 민감정보</span></h2>
   <label class="row" style="color:var(--ink);font-size:14px"><input type="checkbox" id="c1x" style="width:auto"> 생리주기 기록 저장에 동의</label>
-  <div class="row" id="phases" style="margin-top:8px"></div>
+  <div id="cybox"></div>
+  <details style="margin-top:10px" id="phman"><summary class="sub">예측과 다르면 오늘 상태 직접 고르기</summary>
+  <div class="row" id="phases" style="margin-top:8px"></div></details>
   <div class="sub" id="phnote" style="margin-top:8px"></div>
   <div id="phinfo"></div>
+  <div class="cyfoot">예측은 참고용이며 피임 수단으로 사용할 수 없어요. 의학적 진단을 대신하지 않아요.</div>
  </div>
  <div class="demo">베타 테스트용이에요. 영양 수치는 평균 추정치이고 걸음수는 직접 입력해요. 입력한 기록은 이 브라우저에만 저장되고 서버로 가지 않아요.</div>
 </section>
@@ -211,19 +224,20 @@
  </details>
  <div class="card">
   <h2>⑦ 민감정보 · 동의 · 삭제</h2>
-  <div class="sub" style="margin-bottom:8px">생리주기·장 상태·알레르기는 선택 입력이며 동의하거나 직접 고른 경우에만 저장됩니다.</div>
+  <div class="sub" style="margin-bottom:8px">생리주기·장 상태·알레르기·힘들었던 경험·눈바디 사진은 선택 입력이며 동의하거나 직접 고른 경우에만 저장됩니다.</div>
   <label class="row" style="color:var(--ink);font-size:14px"><input type="checkbox" id="c1" style="width:auto"> 생리주기·증상 기록 저장에 동의</label>
   <label class="row" style="color:var(--ink);font-size:14px;margin-top:6px"><input type="checkbox" id="c2" style="width:auto"> 장 민감 식재료(고포드맵) 표시 저장에 동의</label>
   <div id="sens" style="margin-top:10px"></div>
  </div>
  <div class="card" style="border-color:var(--warn)">
   <h2>민감정보 삭제</h2>
-  <div class="sub">삭제 대상: 생리주기·증상 기록, 장 민감 표시, 알레르기(피해야 할 음식), 몸무게. 삭제하면 <b>복구할 수 없어요.</b></div>
+  <div class="sub">삭제 대상: 생리주기 정보·기록, 장 민감 표시, 알레르기(피해야 할 음식), 다이어트로 힘들었던 경험, 눈바디 사진·기준 옷 핏 기록, 몸무게. 삭제하면 <b>복구할 수 없어요.</b></div>
   <button class="danger" id="del1" style="margin-top:10px">삭제하기</button>
   <div id="del2" hidden style="margin-top:10px"><div class="bad" style="margin-bottom:6px">정말 삭제할까요? 되돌릴 수 없습니다.</div><div class="row"><button class="danger" id="delok">네, 영구 삭제</button><button id="delno">취소</button></div></div>
  </div>
  <div class="card"><h2>이 기기에 저장</h2><div class="sub">입력한 기록은 이 브라우저에만 저장돼요(서버 전송 없음).</div><button class="danger" id="wipe" style="margin-top:8px">저장된 데이터 모두 지우기(데모)</button></div>
- <div class="card"><h2>추구미 테마</h2><div class="sub">앱 색·첫 화면·배경화면에 적용돼요. 언제든 바꿀 수 있어요.</div><div id="thlist" class="thlist"></div></div>
+ <div class="card"><h2>내 앱 꾸미기</h2><div class="sub">앱 색·폰트·첫 화면·배경화면·결과 카드·눈바디 무드보드에 적용돼요.</div><div id="thlist" class="thlist"></div></div>
+ <div class="card"><h2>기록 보는 방식</h2><div class="sub">몸무게를 어떻게 볼지 골라요. 언제든 바꿀 수 있어요.</div><div class="row" id="vwset" style="margin-top:8px"></div><div class="sub" id="vwnote" style="margin-top:6px"></div></div>
  <div class="card"><h2>화면 모드</h2><div class="row"><button class="chip" data-md="">시스템</button><button class="chip" data-md="light">라이트</button><button class="chip" data-md="dark">다크</button></div></div>
 </section>
 </div>
@@ -234,7 +248,14 @@
  <div class="sub" style="margin:10px 0">이미지를 <b>길게 눌러</b> “사진에 추가”(또는 이미지 저장)를 고른 뒤, 사진 앱에서 <b>공유 → 배경화면으로 사용</b>을 누르세요. 시계가 놓이는 위쪽은 비워 뒀어요. 시계 아래 💧 물방울 버튼 위에 “물 1잔” 단축어 위젯을 하나만 넣으면, 누를 때마다 물 1잔이 기록돼요.</div>
  <button class="pri" id="wpshare" style="width:100%">공유 시도하기</button>
  <button id="wpclose" style="width:100%;margin-top:8px">닫기</button></div></div>
-<div id="thp" hidden><div class="onbin"><div class="sub">추구미 테마</div><div class="svq">어떤 분위기가 좋아요?</div><div class="sub">앱 색·첫 화면·배경화면에 적용돼요. 설정에서 언제든 바꿀 수 있어요.</div><div id="thplist" class="thlist"></div><button class="pri" id="thpok" style="width:100%;margin-top:16px;padding:12px">이 테마로 할게요</button></div></div>
+<div id="cam" hidden><div class="cv"><video id="camv" playsinline muted autoplay></video><img class="ghost" id="camghost" alt="" hidden>
+ <svg class="guide" viewBox="0 0 100 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><g fill="none" stroke="#fff" stroke-width=".6" stroke-dasharray="2 2" opacity=".85"><line x1="10" y1="12" x2="90" y2="12"/><line x1="10" y1="188" x2="90" y2="188"/><line x1="50" y1="6" x2="50" y2="194" opacity=".5"/></g>
+ <path d="M50 14a9 10 0 1 0 0.01 0zM50 34c-6 0-10 1-15 3-4 2-6 6-7 11l-4 34c0 3 3 4 5 1l5-28 1 30-3 46-2 40h9l4-38 6-38 6 38 4 38h9l-2-40-3-46 1-30 5 28c2 3 5 2 5-1l-4-34c-1-5-3-9-7-11-5-2-9-3-15-3z" fill="none" stroke="#fff" stroke-width=".9" stroke-dasharray="3 2" opacity=".9"/>
+ <text x="50" y="10" fill="#fff" font-size="4" text-anchor="middle">머리 끝을 이 선에</text><text x="50" y="196" fill="#fff" font-size="4" text-anchor="middle">발끝을 이 선에</text></svg>
+ <div class="cnt" id="camcnt"></div></div>
+ <div class="chint" id="camhint">실루엣에 몸을 맞추고, 매번 같은 자리·같은 거리에서 찍어요</div>
+ <div class="cbar"><button id="camx">닫기</button><button id="camflip">↺ 전환</button><button class="shut" id="camgo" aria-label="촬영">촬영</button><button id="camtimer">⏱ 3초</button><button id="camghostb">지난 사진</button></div></div>
+<div id="thp" hidden><div class="onbin"><div class="sub" id="thpstep">내 앱 꾸미기</div><div class="svq">어떤 분위기가 좋아요?</div><div class="sub">앱 색·폰트·첫 화면·배경화면·결과 카드·눈바디 무드보드에 적용돼요. 설정에서 언제든 바꿀 수 있어요.</div><div id="thplist" class="thlist"></div><button class="pri" id="thpok" style="width:100%;margin-top:16px;padding:12px">이 테마로 할게요</button></div></div>
 <div id="sv" hidden><div class="onbin" id="svin"></div></div>
 <div id="onb" hidden><div class="onbin">
  <div class="sub" id="onbstep" hidden>마지막 단계 · 기본 정보</div>
@@ -245,6 +266,10 @@
  <div><label>감량 목표(kg)</label><input id="okg" type="number" step="0.5" value="5"></div><div><label>기간(주)</label><input id="owk" type="number" value="8"></div></div>
  <label style="margin-top:12px">운동 요일 <span class="sub">(눌러서 선택)</span></label>
  <div id="oplbox"></div>
+ <div class="card" style="margin-top:14px"><label class="row" style="color:var(--ink);font-size:14px;margin:0"><input type="checkbox" id="ocyon" style="width:auto"> 생리주기도 입력할게요 <span class="tag">선택 · 민감정보</span></label>
+ <div id="ocyf" hidden><div class="sub" style="margin:6px 0">주기 단계(예상)와 시기별 식단·컨디션 팁을 알려 드려요. 이 기기에만 저장되고 설정에서 지울 수 있어요.</div>
+ <div class="grid2"><div style="grid-column:1/-1"><label>마지막 생리 시작일</label><input id="ocylast" type="date"></div><div><label>평균 주기(일)</label><input id="ocyc" type="number" value="28" min="15" max="90"></div><div><label>평균 생리 기간(일)</label><input id="ocylen" type="number" value="5" min="1" max="10"></div></div>
+ <div class="sub" style="margin-top:6px">예측은 참고용이며 피임 수단으로 사용할 수 없어요. 의학적 진단을 대신하지 않아요.</div></div></div>
  <div id="onbmsg" class="bad" style="margin-top:8px;font-size:13px"></div>
  <button class="pri" id="onbgo" style="width:100%;margin-top:12px;padding:12px">시작하기</button>
  <button id="onbskip" hidden style="width:100%;margin-top:8px">지금 정보 그대로 둘게요</button>
