@@ -12,12 +12,13 @@
 <meta name="apple-mobile-web-app-title" content="다이어트">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="style.css">
+<script>/* 저장된 추구미 테마·화면 모드를 그리기 전에 적용(깜빡임 방지) */(function(){var r=document.documentElement,o={};try{o=JSON.parse(localStorage.getItem('dietproto_v1'))||{}}catch(e){}r.setAttribute('data-theme',o.thm||'minimal');r.setAttribute('data-mode',o.scm||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))})()</script>
 </head>
-<body>
+<body data-tab="0">
 <div class="app">
 <!-- 기준 -->
 <section class="view on" id="v0">
- <div class="poster">
+ <div class="poster deco">
   <div class="wbn" id="wbn"><div class="wbn-t"><div><b>💧 물 마시기</b><div class="sub" id="wbs"></div></div><button class="wdrop" id="wplus" aria-label="물 1잔 기록"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C12 2.5 5 10.3 5 15a7 7 0 0 0 14 0c0-4.7-7-12.5-7-12.5z"/><path class="hl" d="M9 15.5a3 3 0 0 0 3 3"/></svg></button><div class="wbn-r"><b>누르면 +1잔</b><small class="sub">1잔 200ml</small><button id="wminus" aria-label="한 잔 취소">−1잔</button></div></div><div id="wdrops" class="wdrops"></div><div class="bar"><i id="wbar2" style="width:0"></i></div></div>
   <div class="ptitle"><span id="pt1">2달</span><span class="pill" id="pt2">−5kg</span><span class="pright">직장인 현실 루틴</span></div>
   <div class="psec">오늘의 목표 <small>탄·단·지를 고루</small></div>
@@ -27,7 +28,7 @@
   <button id="wpbtn" style="width:100%;margin-top:12px">🖼 이 루틴을 아이폰 배경화면으로 저장</button>
  </div>
  <div style="height:14px"></div>
- <details class="card fold" id="tycard"></details>
+ <details class="card fold deco" id="tycard"></details>
   <details class="card fold"><summary><div><h2>몸무게 추이</h2><div class="sub" id="wsl"></div></div></summary>
   <div class="row" style="flex-wrap:nowrap"><input id="wnew" type="number" step="0.1" placeholder="오늘 몸무게(kg)"><button class="pri" id="wadd" style="flex:none">기록</button></div>
   <div id="wsum" class="grid2" style="margin:10px 0;font-size:13px"></div>
@@ -222,7 +223,8 @@
   <div id="del2" hidden style="margin-top:10px"><div class="bad" style="margin-bottom:6px">정말 삭제할까요? 되돌릴 수 없습니다.</div><div class="row"><button class="danger" id="delok">네, 영구 삭제</button><button id="delno">취소</button></div></div>
  </div>
  <div class="card"><h2>이 기기에 저장</h2><div class="sub">입력한 기록은 이 브라우저에만 저장돼요(서버 전송 없음).</div><button class="danger" id="wipe" style="margin-top:8px">저장된 데이터 모두 지우기(데모)</button></div>
- <div class="card"><h2>화면 모드</h2><div class="row"><button class="chip" data-t="">시스템</button><button class="chip" data-t="light">라이트</button><button class="chip" data-t="dark">다크</button></div></div>
+ <div class="card"><h2>추구미 테마</h2><div class="sub">앱 색·첫 화면·배경화면에 적용돼요. 언제든 바꿀 수 있어요.</div><div id="thlist" class="thlist"></div></div>
+ <div class="card"><h2>화면 모드</h2><div class="row"><button class="chip" data-md="">시스템</button><button class="chip" data-md="light">라이트</button><button class="chip" data-md="dark">다크</button></div></div>
 </section>
 </div>
 
@@ -232,6 +234,7 @@
  <div class="sub" style="margin:10px 0">이미지를 <b>길게 눌러</b> “사진에 추가”(또는 이미지 저장)를 고른 뒤, 사진 앱에서 <b>공유 → 배경화면으로 사용</b>을 누르세요. 시계가 놓이는 위쪽은 비워 뒀어요. 시계 아래 💧 물방울 버튼 위에 “물 1잔” 단축어 위젯을 하나만 넣으면, 누를 때마다 물 1잔이 기록돼요.</div>
  <button class="pri" id="wpshare" style="width:100%">공유 시도하기</button>
  <button id="wpclose" style="width:100%;margin-top:8px">닫기</button></div></div>
+<div id="thp" hidden><div class="onbin"><div class="sub">추구미 테마</div><div class="svq">어떤 분위기가 좋아요?</div><div class="sub">앱 색·첫 화면·배경화면에 적용돼요. 설정에서 언제든 바꿀 수 있어요.</div><div id="thplist" class="thlist"></div><button class="pri" id="thpok" style="width:100%;margin-top:16px;padding:12px">이 테마로 할게요</button></div></div>
 <div id="sv" hidden><div class="onbin" id="svin"></div></div>
 <div id="onb" hidden><div class="onbin">
  <div class="sub" id="onbstep" hidden>마지막 단계 · 기본 정보</div>

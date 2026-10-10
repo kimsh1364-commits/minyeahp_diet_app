@@ -4,7 +4,7 @@ Claude Code로 이어서 개발하기 위한 메모예요. 정적 웹앱(빌드 
 
 ## 구조
 - `index.html` 화면 마크업 (탭 6개: 기준 / 기록 / 추천 / 주간 / 리포트 / 설정)
-- `style.css` 스타일 (색은 `:root` 토큰, 다크모드는 `prefers-color-scheme` + `[data-theme]`)
+- `style.css` 스타일 (추구미 테마별 `[data-theme]` 토큰 + 화면 모드 `[data-mode]`, 아래 "추구미 테마" 참고)
 - `app.js` 전체 로직 (바닐라 JS, 전역 상태 + `localStorage`)
 - `sw.js` 서비스워커 (배포마다 `VERSION` 올리기), `manifest.webmanifest`, `icons/`
 - 저장 키 `dietproto_v1`. 기록은 사용자 브라우저에만 저장되고 서버로 가지 않아요.
@@ -32,6 +32,15 @@ Claude Code로 이어서 개발하기 위한 메모예요. 정적 웹앱(빌드 
 - 이 타입들은 **탄수를 밥에 고정하지 않는다**: 고구마·감자·단호박·귀리·퀴노아·과일 등으로 날마다 바꿔 제안(`lcM`, 요일별 회전)하되 **끼니마다 탄수 1은 꼭** 넣는다. `lc` 메뉴는 탄수 공급원이 다양하고 `c`(탄수 g 추정)를 표시.
 - 메뉴 태그(`POOL`): `v` 비건, `lc` 단백·지방 중심, `al` 알레르기(d 유제품·e 달걀·n 견과·s 갑각류·w 밀). 필터는 `okM`.
 - 장 민감(`SV.gut`→`lowfm`)·알레르기(`SV.avoid`)는 민감정보 목록·삭제 대상. 임신·섭식장애·질환 문항(`care`)은 저장하지 않고 결과 화면 안내만.
+
+## 추구미 테마 (설문과 분리)
+- 4개: 클린 미니멀(`minimal`) / Y2K(`y2k`) / 내추럴 로맨틱(`romantic`) / 빈티지(`vintage`). 이름·해시태그는 app.js `THEMES`에서만 관리(한 줄 무드 설명 없음).
+- `<html data-theme>`로 테마, `<html data-mode="light|dark">`로 화면 모드(예전 data-theme 라이트/다크는 data-mode로 옮김). `<head>` 인라인 스크립트가 저장값(`thm`, `scm`)을 그리기 전에 적용.
+- 토큰은 style.css 상단 `[data-theme="…"]` 블록: 색 `--bg --surface --text --text-sub --accent --accent-2 --accent-soft --line`(+`--on-accent --accent-ink --c-*`), 모양 `--radius --shadow --border`(+`--btn-*`). 예전 이름(`--card --ink --leaf`…)은 이 토큰을 가리킴. 폰트는 공통.
+- **명암비 4.5:1 이상 필수**. 지정값 중 `--text-sub`(4개 테마 모두)와 Y2K 버튼 글자색·강조 글자색(`--accent-ink`)은 기준을 못 넘어서 조정함. 색을 바꾸면 다시 계산할 것.
+- 장식은 정적(CSS 그라데이션·SVG), **애니메이션·전환 효과 없음**. 테마 배경은 홈 탭(`body[data-tab="0"]`)·결과 카드(`.deco`, `#tycard`, `.svres`)·배경화면에만. 기록 입력 화면은 단색.
+- 배경화면(`wpDraw`)은 `thVars()`로 테마 토큰을 읽어 같은 색·배경·장식을 그리고, "🦉 부엉이형 × 빈티지"(`combo()`)를 표시.
+- 흐름: 설문 → 기본 정보 → 처음 한 번 테마 고르기(`#thp`). 설정 탭 "추구미 테마"에서 언제든 변경. 빈티지 폴라로이드 프레임은 `.ph`(눈바디 사진 기능이 생기면 적용).
 
 ## 나중에 (사용자 요청)
 - 네이티브 앱을 만들 때: **건강앱 연동(걸음·수면·생리 정보)과 아이폰 잠금화면 위젯**을 다시 꺼내기(iOS WidgetKit + HealthKit). 웹앱에서는 불가능해서 걸음수는 직접 입력.

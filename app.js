@@ -1,10 +1,23 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),1800)}
-$('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;$$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));$$('.view').forEach((v,i)=>v.classList.toggle('on',i==b.dataset.v));scrollTo(0,0)};
+$('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;document.body.dataset.tab=b.dataset.v;$$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));$$('.view').forEach((v,i)=>v.classList.toggle('on',i==b.dataset.v));scrollTo(0,0)};
 const DW=['월','화','수','목','금','토','일'],DN=DW.slice(0,5);
 let lowfm=false,phase=null,consent=false,water=0,steps=0,synced=false,exDone=false,claimed=false,badged=false;
 let G={kg:5,weeks:8,water:2000,steps:5000,meals:3};
 let SV={done:false,skip:false,diet:'mix',sched:'day',meals:3,stage:'new',cook:'cook',hard:'none',gut:false,avoid:[]};
+/* 추구미 테마 (설문과 분리) — 이름·해시태그는 여기서만 관리하고, 색·모양은 style.css의 [data-theme] 토큰 */
+const THEMES={minimal:{n:'클린 미니멀',tags:['#클린걸','#꾸안꾸']},y2k:{n:'Y2K',tags:['#하이틴','#키치']},romantic:{n:'내추럴 로맨틱',tags:['#어른여자','#한유주코어']},vintage:{n:'빈티지',tags:['#필름카메라','#레트로']}};
+let thm='minimal',thmSet=false,scm='';// scm: 화면 모드 ''(시스템)|'light'|'dark'
+const sysDark=matchMedia('(prefers-color-scheme: dark)');
+const curMode=()=>scm||(sysDark.matches?'dark':'light');
+const combo=()=>(SV.done?TY[typeOf()].e+' '+TY[typeOf()].n:'내 루틴')+' × '+THEMES[thm].n;
+function applyTheme(){const r=document.documentElement;if(!THEMES[thm])thm='minimal';r.setAttribute('data-theme',thm);r.setAttribute('data-mode',curMode());
+ const m=$('meta[name="theme-color"]');if(m)m.content=getComputedStyle(r).getPropertyValue('--bg').trim();
+ $$('[data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md===scm));thUI()}
+// 미리보기 카드는 각자 data-theme을 달아 그 테마 색으로 그려진다
+function thUI(){const md=curMode(),html=Object.entries(THEMES).map(([k,t])=>`<button class="thc ${k==thm?'on':''}" data-th="${k}" data-theme="${k}" data-mode="${md}"><span class="thsw"><i style="background:var(--bg)"></i><i style="background:var(--accent)"></i><i style="background:var(--accent-soft)"></i><i style="background:var(--c-sky)"></i></span><b>${k==thm?'✓ ':''}${t.n}</b><small>${t.tags.join(' ')}</small></button>`).join('');
+ ['#thlist','#thplist'].forEach(sel=>{const e=$(sel);if(!e)return;e.innerHTML=html;e.querySelectorAll('[data-th]').forEach(b=>b.onclick=()=>{thm=b.dataset.th;thmSet=true;applyTheme();if(typeof posterUI==='function')posterUI();saveState()})})}
+function thpOpen(){thUI();$('#thp').hidden=false;$('#thp').scrollTop=0}
 /* survey · 식단 타입 */
 // 식단 스타일(탄수 균형 vs 단백·지방 중심) × 생활 리듬(주간 고정 vs 유연) → 동물 4타입. 정체기·비건·끼니 수 등은 타입 위 보정값.
 const LC=()=>['lchf','keto','carn'].includes(SV.diet);
@@ -67,7 +80,7 @@ function svOpen(){svA=JSON.parse(JSON.stringify(SV));svA.care=[];svI=0;svDraw();
 function svClose(next){$('#sv').hidden=true;if(next||!profileDone)onbOpen(next)}
 function svDraw(){const box=$('#svin');
  if(svI>=SVQ.length){const ty=TY[typeOf(svA)];
-  box.innerHTML=`<div class="svres"><div class="sub">나의 식단 타입은</div><div class="svbig">${ty.e}</div><div class="svq" style="margin-top:4px">${ty.n} <span class="sub" style="font-size:16px">${ty.t}</span></div><div class="sub">${ty.d}</div><div class="svbadges">${svBadges(svA)}</div></div>
+  box.innerHTML=`<div class="svres deco"><div class="sub">나의 식단 타입은</div><div class="svbig">${ty.e}</div><div class="svq" style="margin-top:4px">${ty.n} <span class="sub" style="font-size:16px">${ty.t}</span></div><div class="sub">${ty.d}</div><div class="svcombo">${ty.e} ${ty.n} × ${THEMES[thm].n}</div><div class="svbadges">${svBadges(svA)}</div></div>
   <div class="svnote"><b>이렇게 먹어요</b><ul>${svTips(svA).map(t=>`<li>${t}</li>`).join('')}</ul></div>
   ${svNotes(svA).map(([c,t])=>`<div class="svnote ${c}">${t}</div>`).join('')}
   <button class="pri" id="svok" style="width:100%;margin-top:16px;padding:12px">${ty.e} ${ty.n}으로 시작하기</button>
@@ -95,7 +108,7 @@ function svApply(){const prev=SV.done?TY[typeOf()].n:null;const{care,...a}=svA;S
 function tyUI(){const e=$('#tycard');if(!e)return;
  if(!SV.done){e.innerHTML=`<summary><div><h2>내 식단 타입 찾기</h2><div class="sub">1분 설문으로 식단 구성을 나에게 맞춰요</div></div></summary><button class="pri" id="tygo" style="width:100%">설문 시작하기</button>`;$('#tygo').onclick=svOpen;return}
  const ty=TY[typeOf()];
- e.innerHTML=`<summary><div><h2>${ty.e} ${ty.n} · ${ty.t}</h2><div class="sub">${ty.d}</div></div></summary>
+ e.innerHTML=`<summary><div><h2>${ty.e} ${ty.n} · ${ty.t}</h2><div class="sub">${ty.d}</div><div class="svcombo">${combo()}</div></div></summary>
   <div class="svbadges" style="justify-content:flex-start">${svBadges(SV)}</div>
   <ul class="tytips">${svTips(SV).map(t=>`<li>${t}</li>`).join('')}</ul>
   ${svNotes(SV).map(([c,t])=>`<div class="svnote ${c}">${t}</div>`).join('')}
@@ -287,9 +300,9 @@ function quickUI(){
  btn.disabled=!y.length;btn.textContent=(key(rd)==key(sim)?'어제':'전날')+'와 같음'+(y.length?` (${y.length}개)`:' (기록 없음)');
  btn.onclick=()=>{y.forEach(l=>logs.push({...l,n:nm(l)}));tot();toast('전날 기록을 가져왔어요')}}
 const SK='dietproto_v1';
-function saveState(){if(wiped)return;try{stash();localStorage.setItem(SK,JSON.stringify({SV,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,age:$('#age').value,pa:$('#pa').value,ht:$('#ht').value,wt:$('#wt').value}))}catch(e){}}
+function saveState(){if(wiped)return;try{stash();localStorage.setItem(SK,JSON.stringify({SV,thm,thmSet,scm,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,age:$('#age').value,pa:$('#pa').value,ht:$('#ht').value,wt:$('#wt').value}))}catch(e){}}
 function loadState(){try{const t=localStorage.getItem(SK);if(!t)return;const o=JSON.parse(t);
- ({SV,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart}=Object.assign({SV,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart},o));
+ ({SV,thm,thmSet,scm,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart}=Object.assign({SV,thm,thmSet,scm,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart},o));
  sim=new Date();sim.setDate(sim.getDate()+simOff);todayIdx=(sim.getDay()+6)%7;rd=new Date(sim.getFullYear(),sim.getMonth(),sim.getDate());
  const d0=days[key(rd)];if(d0){logs=d0.logs||[];water=d0.water||0;steps=d0.steps||0;exDone=!!d0.exDone}
  ['age','pa','ht','wt'].forEach(i=>{if(o[i]!=null)$('#'+i).value=o[i]});if(wlog.length)$('#wt').value=wlog[wlog.length-1].v;
@@ -436,7 +449,9 @@ function sens(){const L=[];if(Object.keys(cyc).length)L.push('생리주기 기�
 $('#del1').onclick=()=>{$('#del2').hidden=false;$('#del1').hidden=true};
 $('#delno').onclick=()=>{$('#del2').hidden=true;$('#del1').hidden=false};
 $('#delok').onclick=()=>{phase=null;cyc={};lowfm=false;SV.gut=false;SV.avoid=[];wlog=[];cond={};$$('.lowfm').forEach(x=>x.checked=false);['c1','c1x','c2'].forEach(i=>$('#'+i).checked=false);consent=false;phasesUI();pmsBn();wmenu();tot();sens();upd();condUI();$('#del2').hidden=true;$('#del1').hidden=false;toast('민감정보를 삭제했어요')};
-$$('[data-t]').forEach(b=>{if(b.closest('#shoptabs'))return;b.onclick=()=>{const t=b.dataset.t;t?document.documentElement.setAttribute('data-theme',t):document.documentElement.removeAttribute('data-theme')}});
+$$('[data-md]').forEach(b=>b.onclick=()=>{scm=b.dataset.md;applyTheme();saveState()});
+sysDark.addEventListener&&sysDark.addEventListener('change',()=>{if(!scm)applyTheme()});
+$('#thpok').onclick=()=>{thmSet=true;$('#thp').hidden=true;applyTheme();posterUI();saveState();scrollTo(0,0);toast(combo()+' 루틴이에요')};
 
 function deficitOf(){return Math.min(500,Math.round(G.kg*7700/(G.weeks*7)))}
 function goalMsg(){$('#gsum').textContent=`${G.kg}kg · ${G.weeks}주 · 필수 행동 ${G.meals}끼/${(G.water/1000).toFixed(1)}L`;$('#gwv').textContent=(G.water/1000).toFixed(1)+'L';const r=G.kg/G.weeks,wt=+$('#wt').value||0,pc=wt?r/wt*100:0;
@@ -457,7 +472,7 @@ $('#wipe').onclick=()=>{wiped=true;try{localStorage.removeItem(SK)}catch(e){}toa
 function posterUI(){
  const pg=window.PROT||0,cg=window.CARBMIN||130,ok=pg>0;
  $('#pmsm').textContent=LC()?'탄수 1은 끼니마다 꼭 · 종류는 매일 바꿔도 OK':'단백질은 끼니마다 나눠서';
- $('.pright').textContent=SV.done?TY[typeOf()].e+' '+TY[typeOf()].n+' 루틴':'직장인 현실 루틴';tyUI();
+ $('.pright').textContent=combo();tyUI();
  $('#pt1').textContent=G.weeks%4==0?(G.weeks/4)+'달':G.weeks+'주';$('#pt2').textContent='−'+G.kg+'kg';
  $('#pstats').innerHTML=[[ok?cg+'g↑':'-','탄수'],[ok?pg+'g':'-','단백질'],[(G.water/1000).toFixed(1)+'L','물'],[G.steps.toLocaleString(),'걸음']].map(([a,b])=>`<div class="pst"><b>${a}</b><span>${b}</span></div>`).join('');
  $('#pweek').innerHTML=DW.map((d,i)=>{let t='걷기',c='';if(PL.s.includes(i)){t='근력';c='p'}else if(PL.c.includes(i)){t='유산소';c='w'}return `<div class="${c} ${i==todayIdx?'t':''}"><b>${d}</b>${t}</div>`}).join('');
@@ -473,45 +488,63 @@ function lockUI(){if(!$('#wbn'))return;const t=todayData(),gc=Math.max(1,Math.ce
  $('#wbar2').style.width=Math.min(100,t.water/G.water*100)+'%'}
 function todayRec(){return key(rd)==key(sim)?null:(days[key(sim)]||(days[key(sim)]={logs:[],water:0,steps:0,exDone:false}))}
 function addWaterToday(ml){const o=todayRec();if(!o){water=Math.max(0,water+ml);waterUI();renderReq()}else{o.water=Math.max(0,o.water+ml);lockUI()}}
-$('#wplus').onclick=()=>{const b=$('#wplus');b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');addWaterToday(200);toast('💧 물 1잔 기록! ('+Math.floor(todayData().water/200)+'잔)')};
+$('#wplus').onclick=()=>{addWaterToday(200);toast('💧 물 1잔 기록! ('+Math.floor(todayData().water/200)+'잔)')};
 $('#wminus').onclick=()=>{addWaterToday(-200)};
 function checkHash(){if(location.hash!=='#water')return;try{const t=Date.now(),l=+sessionStorage.getItem('wlast')||0;if(t-l<4000)return;sessionStorage.setItem('wlast',t)}catch(e){}addWaterToday(200);toast('💧 물 1잔 기록!');try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
 addEventListener('hashchange',checkHash);
 /* wallpaper */
-let wpTheme='light';
-function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),D=theme=='dark';
- const C=D?{bg:'#1E2430',ink:'#F3F1E8',card:'#2A3242',yel:'#E8C94F',yt:'#1F2B3A',sky:'#2B4560',leaf:'#2D4A3A',blush:'#5A3A3E',lilac:'#463E63',sub:'#B9C0CC'}:{bg:'#F4F2E9',ink:'#1F2B3A',card:'#FFFFFF',yel:'#F6D860',yt:'#1F2B3A',sky:'#D9E8F5',leaf:'#DDEBDD',blush:'#F7D9D6',lilac:'#E3DCF3',sub:'#5B6573'};
- const F="'Noto Sans KR','Apple SD Gothic Neo',system-ui,sans-serif";
- const rr=(a,b,w,h,r,fill,stroke)=>{x.beginPath();x.roundRect(a,b,w,h,r);if(fill){x.fillStyle=fill;x.fill()}if(stroke){x.lineWidth=6;x.strokeStyle=stroke;x.stroke()}};
+let wpTheme=null;
+// 배경화면 색은 style.css 테마 토큰을 그대로 읽어 온다(밝게/어둡게는 data-mode로 고름)
+function thVars(mode){const d=document.createElement('div');d.setAttribute('data-theme',thm);d.setAttribute('data-mode',mode);d.style.display='none';document.body.appendChild(d);
+ const cs=getComputedStyle(d),o={};['bg','surface','text','text-sub','accent','accent-soft','line','c-sky','c-blush','c-lilac','c-lemon','pg1','pg2','pg3','drop','radius'].forEach(k=>o[k]=cs.getPropertyValue('--'+k).trim());d.remove();return o}
+const WPS={star:'M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.2l7.1-.6z',heart:'M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z',spark:'M12 1C13 8 16 11 23 12C16 13 13 16 12 23C11 16 8 13 1 12C8 11 11 8 12 1Z',flower:'M24 39C24 31 23 25 24 18M24 31c-5-2-9-1-12 2 4 2 8 1 12-2zM24 27c4-3 8-3 11-1-3 3-7 3-11 1zM24 18c-3-1-5-4-4-7 3 0 5 3 4 7zm0 0c1-3 4-5 7-4 0 3-3 5-7 4zm0 0c3 1 5 4 4 7-3 0-5-3-4-7zm0 0c-1 3-4 5-7 4 0-3 3-5 7-4z'};
+function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),D=theme=='dark',v=thVars(D?'dark':'light');
+ const C={bg:v.bg,ink:v.text,card:v.surface,yel:v['c-lemon'],yt:v.text,sky:v['c-sky'],leaf:v['accent-soft'],blush:v['c-blush'],lilac:v['c-lilac'],sub:v['text-sub'],line:v.line,accent:v.accent};
+ const F="'Noto Sans KR','Apple SD Gothic Neo',system-ui,sans-serif",R=Math.max(12,(parseFloat(v.radius)||8)*3);
+ // 테마별 카드 테두리: 미니멀 얇은 선 / Y2K 굵은 검정 / 로맨틱 테두리 없음 / 빈티지 이중 테두리
+ const FR={minimal:{w:3,c:C.line},y2k:{w:7,c:C.ink},romantic:{w:0},vintage:{w:3,c:C.line,inner:1}}[thm]||{w:3,c:C.line};
+ const rr=(a,b,w,h,r,fill,stroke)=>{x.beginPath();x.roundRect(a,b,w,h,r);if(fill){x.fillStyle=fill;x.fill()}if(stroke&&FR.w){x.lineWidth=FR.w;x.strokeStyle=FR.c;x.stroke();if(FR.inner){x.beginPath();x.roundRect(a+10,b+10,w-20,h-20,Math.max(0,r-6));x.lineWidth=2;x.stroke()}}};
  const tx=(t,a,b,sz,wt,col,al)=>{x.font=`${wt} ${sz}px ${F}`;x.fillStyle=col;x.textAlign=al||'left';x.textBaseline='alphabetic';x.fillText(t,a,b)};
- x.fillStyle=C.bg;x.fillRect(0,0,W,H);
+ const rgba=(h,a)=>{const n=parseInt(h.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`};
+ const icon=(d,px,py,size,fill,stroke,box)=>{x.save();x.translate(px,py);const k=size/(box||24);x.scale(k,k);const p=new Path2D(d);if(fill){x.fillStyle=fill;x.fill(p)}if(stroke){x.lineWidth=(fill?1.4:1)*(box?1:1);x.lineJoin='round';x.lineCap='round';x.strokeStyle=stroke;x.stroke(p)}x.restore()};
+ // 배경
+ if(thm=='y2k'){const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,v.pg1);g.addColorStop(.5,v.pg2);g.addColorStop(1,v.pg3);x.fillStyle=g}else x.fillStyle=C.bg;x.fillRect(0,0,W,H);
+ if(thm=='romantic'){[[170,420,760,v.pg2],[1040,1350,700,v.pg3],[230,2150,620,v.pg2]].forEach(([a,b,r,col])=>{const g=x.createRadialGradient(a,b,0,a,b,r);g.addColorStop(0,rgba(col,.95));g.addColorStop(1,rgba(col,0));x.fillStyle=g;x.fillRect(0,0,W,H)});
+  x.fillStyle=D?'rgba(255,255,255,.025)':'rgba(59,47,47,.03)';for(let i=0;i<H;i+=12)x.fillRect(0,i,W,3);for(let i=0;i<W;i+=12)x.fillRect(i,0,3,H)}
+ if(thm=='vintage'){let sd=7;const rnd=()=>(sd=sd*16807%2147483647)/2147483647;x.fillStyle=D?'#FFFFFF':'#3A2E22';for(let i=0;i<90000;i++){x.globalAlpha=(D?.02:.03)+rnd()*.04;x.fillRect(rnd()*W,rnd()*H,3,3)}x.globalAlpha=1}
  const L=70,CW=W-2*L;
  // 잠금화면 위젯 줄(시계 바로 아래 가운데)에 물 1잔 단축어 위젯이 놓이도록 물방울 버튼 자리를 맞춘다(앱 첫 화면 #wbn과 같은 배치)
  const wy=640,wh=200,cx=W/2,cy=wy+wh/2,cr=96;
- rr(L,wy,CW,wh,56,C.sky);
+ rr(L,wy,CW,wh,Math.min(R*1.4,90),C.sky,thm=='y2k'||thm=='vintage');
  x.beginPath();x.arc(cx,cy,cr,0,Math.PI*2);x.fillStyle=C.card;x.fill();x.lineWidth=7;x.strokeStyle=C.ink;x.stroke();
- x.save();x.translate(cx-12*5.2,cy-12*5.2-6);x.scale(5.2,5.2);x.fillStyle=D?'#6FB6EE':'#3B8ED0';x.fill(new Path2D('M12 2.5C12 2.5 5 10.3 5 15a7 7 0 0 0 14 0c0-4.7-7-12.5-7-12.5z'));x.strokeStyle='rgba(255,255,255,.8)';x.lineWidth=1.6;x.lineCap='round';x.stroke(new Path2D('M9 15.5a3 3 0 0 0 3 3'));x.restore();
+ x.save();x.translate(cx-12*5.2,cy-12*5.2-6);x.scale(5.2,5.2);x.fillStyle=v.drop;x.fill(new Path2D('M12 2.5C12 2.5 5 10.3 5 15a7 7 0 0 0 14 0c0-4.7-7-12.5-7-12.5z'));x.strokeStyle='rgba(255,255,255,.8)';x.lineWidth=1.6;x.lineCap='round';x.stroke(new Path2D('M9 15.5a3 3 0 0 0 3 3'));x.restore();
  tx('💧 물 마시기',L+44,cy-8,46,900,C.ink);tx('하루 '+Math.round(G.water/200)+'잔',L+44,cy+52,34,500,C.sub);
  tx('누르면',W-L-44,cy-8,38,700,C.ink,'right');tx('+1잔',W-L-44,cy+52,38,700,C.ink,'right');
- let y=880;
+ tx($('.pright').textContent,L,904,36,700,C.sub);// 타입 × 테마
+ let y=920;
  tx($('#pt1').textContent,L,y+120,140,900,C.ink);
  x.font=`900 140px ${F}`;const w1=x.measureText($('#pt1').textContent).width;
  const t2=$('#pt2').textContent;x.font=`900 110px ${F}`;const w2=x.measureText(t2).width+70;
- rr(L+w1+30,y,w2,150,40,C.yel);tx(t2,L+w1+30+w2/2,y+112,110,900,C.yt,'center');
- tx($('.pright').textContent,W-L,y+112,40,500,C.sub,'right');
+ rr(L+w1+30,y,w2,150,Math.min(R,40),C.yel);tx(t2,L+w1+30+w2/2,y+112,110,900,C.yt,'center');
  y+=200;
  const st=[...document.querySelectorAll('#pstats .pst')].map(e=>[e.querySelector('b').textContent,e.querySelector('span').textContent]),g=24,bw=(CW-3*g)/4;
- st.forEach(([a,b],i)=>{const bx=L+i*(bw+g);rr(bx,y,bw,170,36,C.card,C.ink);tx(a,bx+bw/2,y+86,a.length>6?44:54,900,C.ink,'center');tx(b,bx+bw/2,y+138,32,500,C.sub,'center')});
+ st.forEach(([a,b],i)=>{const bx=L+i*(bw+g);rr(bx,y,bw,170,R,C.card,1);tx(a,bx+bw/2,y+86,a.length>6?44:54,900,C.ink,'center');tx(b,bx+bw/2,y+138,32,500,C.sub,'center')});
  y+=250;tx('주간 루틴',L,y,54,900,C.ink);y+=30;
  const wk=[...document.querySelectorAll('#pweek > div')],cg=14,cw=(CW-6*cg)/7;
- wk.forEach((e,i)=>{const bx=L+i*(cw+cg),k=e.className.includes('p')?C.blush:e.className.includes('w')?C.lilac:C.card;rr(bx,y,cw,160,34,k,C.ink);tx(e.querySelector('b').textContent,bx+cw/2,y+68,42,900,C.ink,'center');tx(e.lastChild.textContent,bx+cw/2,y+120,30,500,C.sub,'center')});
+ wk.forEach((e,i)=>{const bx=L+i*(cw+cg),k=e.className.includes('p')?C.blush:e.className.includes('w')?C.lilac:C.card;rr(bx,y,cw,160,Math.min(R,34),k,1);tx(e.querySelector('b').textContent,bx+cw/2,y+68,42,900,C.ink,'center');tx(e.lastChild.textContent,bx+cw/2,y+120,30,500,C.sub,'center')});
  y+=240;tx('하루 식단',L,y,54,900,C.ink);tx($('#pmsm').textContent,L+270,y,32,500,C.sub);y+=30;
  const pm=[...document.querySelectorAll('#pmeals .pm')],cols=[C.sky,C.leaf,C.blush,C.lilac],mg=24,mw=(CW-mg)/2;
- pm.forEach((e,i)=>{const bx=L+(i%2)*(mw+mg),by=y+Math.floor(i/2)*(230+mg);rr(bx,by,mw,230,36,cols[i]);
+ pm.forEach((e,i)=>{const bx=L+(i%2)*(mw+mg),by=y+Math.floor(i/2)*(230+mg);rr(bx,by,mw,230,R,cols[i],thm=='y2k'||thm=='vintage');
   tx(e.firstElementChild.firstChild.textContent,bx+34,by+66,46,900,C.ink);const sm=e.querySelector('small').textContent;tx(sm,bx+mw-34,by+68,30,500,C.sub,'right');
   e.innerHTML.replace(/^<div>.*?<\/div>/,'').split('<br>').forEach((ln,j)=>tx(ln.replace(/<[^>]+>/g,'').trim(),bx+34,by+120+j*44,34,500,C.ink))});
+ const end=y+2*230+mg;
+ // 장식(정적): 텍스트와 겹치지 않는 자리, 아래쪽 손전등·카메라 버튼 자리는 피함
+ const sk=D?'#F4F1FF':'#1A1A2E';
+ if(thm=='y2k'){icon(WPS.star,W-L-70,wy-58,96,'#FFE066',sk);icon(WPS.spark,W-L-120,wy-30,40,'#7AD7FF',sk);icon(WPS.heart,L-10,wy-52,84,'#FF8CC6',sk);icon(WPS.spark,L+80,wy-26,34,v.accent,sk);icon(WPS.heart,W/2-40,end+20,80,'#FF8CC6',sk);icon(WPS.star,W/2+50,end+34,56,'#FFE066',sk)}
+ if(thm=='romantic'){icon(WPS.flower,W/2-90,end+6,180,null,rgba(C.accent,.75),48);icon(WPS.flower,L-6,wy-112,100,null,rgba(C.accent,.6),48)}
+ if(thm=='vintage'){x.strokeStyle=C.line;x.lineWidth=3;x.strokeRect(36,wy-40,W-72,end-wy+70);x.lineWidth=2;x.strokeRect(50,wy-26,W-100,end-wy+42)}
  return c.toDataURL('image/png')}
-async function wpOpen(theme){wpTheme=theme||wpTheme;try{await document.fonts.load("900 40px 'Noto Sans KR'");await document.fonts.load("500 40px 'Noto Sans KR'")}catch(e){}
+async function wpOpen(theme){wpTheme=theme||wpTheme||curMode();try{await document.fonts.load("900 40px 'Noto Sans KR'");await document.fonts.load("500 40px 'Noto Sans KR'")}catch(e){}
  $('#wpimg').src=wpDraw(wpTheme);$$('[data-wp]').forEach(b=>b.classList.toggle('on',b.dataset.wp==wpTheme));$('#wpov').hidden=false}
 $('#wpbtn').onclick=()=>wpOpen();
 $$('[data-wp]').forEach(b=>b.onclick=()=>wpOpen(b.dataset.wp));
@@ -520,13 +553,13 @@ $('#wpshare').onclick=async()=>{try{const r=await fetch($('#wpimg').src),bl=awai
 /* onboarding */
 function onbOpen(fromSv){const ty=SV.done?TY[typeOf()]:null;$('#onbstep').hidden=!fromSv;$('#onbt').textContent=ty?`${ty.e} ${ty.n} 루틴 만들기`:'시작해볼까요?';$('#onbs').textContent=ty?'나이·키·몸무게를 넣으면 내 타입에 맞춘 탄·단·지 기준과 하루 식단이 첫 화면에 만들어져요. 나중에 언제든 바꿀 수 있어요.':'기본 정보를 넣으면 나에게 맞는 루틴이 첫 화면에 만들어져요. 나중에 언제든 바꿀 수 있어요.';$('#onbskip').hidden=!profileDone;$('#oage').value=$('#age').value;$('#oht').value=$('#ht').value;$('#owt').value=$('#wt').value;$('#opa').value=$('#pa').value;$('#okg').value=G.kg;$('#owk').value=G.weeks;plBoxes();$('#onbmsg').textContent='';$('#onb').hidden=false}
 $('#onbre').onclick=()=>onbOpen();
-$('#onbskip').onclick=()=>{$('#onb').hidden=true;scrollTo(0,0);if(SV.done)toast(`${TY[typeOf()].e} ${TY[typeOf()].n} 루틴으로 맞췄어요`)};
+$('#onbskip').onclick=()=>{$('#onb').hidden=true;scrollTo(0,0);if(!thmSet)return thpOpen();if(SV.done)toast(`${TY[typeOf()].e} ${TY[typeOf()].n} 루틴으로 맞췄어요`)};
 $('#onbgo').onclick=()=>{const age=+$('#oage').value,ht=+$('#oht').value,wt=+$('#owt').value,m=$('#onbmsg');
  if(!(age>=19&&age<=80))return m.textContent='이 앱은 19~80세 성인 기준으로 만들어졌어요.';
  if(!(ht>=120&&ht<=220&&wt>=30&&wt<=250))return m.textContent='키와 몸무게를 확인해 주세요.';
  $('#age').value=age;$('#ht').value=ht;$('#wt').value=wt;$('#pa').value=$('#opa').value;
  G.kg=Math.min(20,Math.max(1,+$('#okg').value||5));G.weeks=Math.min(52,Math.max(2,Math.round(+$('#owk').value)||8));$('#gkg').value=G.kg;$('#gwk').value=G.weeks;
 
- if(!profileDone)wlog=[];logWeight(wt);logChg(profileDone?'기본정보 다시 입력':'기본정보 입력');G0={...G};profileDone=true;$('#onb').hidden=true;goalMsg();calc();refresh();scrollTo(0,0);toast(SV.done?`${TY[typeOf()].e} ${TY[typeOf()].n} 루틴을 만들었어요`:'내 루틴을 만들었어요')};
-if(!SV.done&&!SV.skip)svOpen();else if(!profileDone)onbOpen();checkHash();chgUI();posterUI();lockUI();
+ if(!profileDone)wlog=[];logWeight(wt);logChg(profileDone?'기본정보 다시 입력':'기본정보 입력');G0={...G};profileDone=true;$('#onb').hidden=true;goalMsg();calc();refresh();scrollTo(0,0);if(!thmSet)thpOpen();else toast(SV.done?`${TY[typeOf()].e} ${TY[typeOf()].n} 루틴을 만들었어요`:'내 루틴을 만들었어요')};
+applyTheme();if(!SV.done&&!SV.skip)svOpen();else if(!profileDone)onbOpen();else if(!thmSet)thpOpen();checkHash();chgUI();posterUI();lockUI();
 setInterval(saveState,1500);addEventListener('pagehide',saveState);document.addEventListener('visibilitychange',saveState);
