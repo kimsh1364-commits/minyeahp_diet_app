@@ -37,11 +37,16 @@ Claude Code로 이어서 개발하기 위한 메모예요. 정적 웹앱(빌드 
 - 메뉴 태그(`POOL`): `v` 비건, `lc` 단백·지방 중심(+`c` 탄수 g), `al` 알레르기(d 유제품·e 달걀·n 견과·s 갑각류·w 밀). 필터는 `okM`.
 
 ## 내 앱 꾸미기 (추구미 테마, 설문과 분리)
-- 6개: 클린 미니멀(`minimal`) / 발레코어(`ballet`) / 올드머니(`oldmoney`) / 고프코어(`gorp`) / Y2K(`y2k`) / 내추럴(`natural`). 이름·해시태그는 app.js `THEMES`에서만 관리. 예전 `romantic`→`natural`, `vintage`→`oldmoney` 자동 변환(`THMIG`, head 스크립트도 동일).
-- 적용 범위: 색 토큰, **폰트**(`--font-body`/`--font-display`/`--fw-display`, Google Fonts: Noto Sans KR·Gowun Batang·Noto Serif KR·IBM Plex Sans KR·Jua·Gowun Dodum), 배경화면, 결과 카드("🦉 부엉이형 × 발레코어", `combo()`), 눈바디 무드보드 틀(`.mbf`).
-- `<html data-theme>` 테마 + `<html data-mode="light|dark">` 화면 모드. 토큰은 style.css 상단 `[data-theme="…"]` 블록(예전 이름 `--card --ink --leaf`…은 이 토큰을 가리킴).
-- **명암비 4.5:1 이상 필수**(라이트·다크 모두). 지정값 중 `--text-sub`와 Y2K 버튼·강조 글자색(`--accent-ink`)은 기준에 맞춰 조정함. 색을 바꾸면 다시 계산할 것.
-- 장식은 정적(CSS 그라데이션·SVG), **애니메이션·전환 효과 없음**. 테마 배경은 홈 탭·결과 카드·배경화면에만. 기록 입력 화면은 단색. **체형 관련 문항·입력은 넣지 않는다.**
+- 4개: 클린 미니멀(`minimal`) / Y2K(`y2k`) / 내추럴 로맨틱(`romantic`) / 빈티지(`vintage`). 이름·해시태그는 app.js `THEMES`에서만 관리(한 줄 무드 설명 없음). 예전 `natural`·`ballet`→`romantic`, `oldmoney`→`vintage`, `gorp`→`minimal` 자동 변환(`THMIG`, head 스크립트도 동일).
+- `<html data-theme>` 테마 + `<html data-mode="light|dark">` 화면 모드. 토큰은 style.css 상단 `[data-theme="…"]` 블록: 색 `--bg --surface --text --text-sub --accent --accent-2 --accent-soft --line`, 모양 `--radius --shadow --border`(+`--btn-* --pri-* --label-bg --page-bg --deco-art`). 예전 이름(`--card --ink --leaf`…)은 이 토큰을 가리킴. **폰트는 전 테마 공통(Noto Sans KR)**.
+- **금지**: 애니메이션·전환 효과, `backdrop-filter`, `filter: blur`, `mix-blend-mode`, `background-attachment: fixed`. 홈 배경은 `body[data-tab="0"]::before`(position:fixed 레이어, cover)로 깐다.
+- **명암비 4.5:1 이상**(라이트·다크): 반투명 면은 배경 이미지의 가장 어두운 픽셀 위에 합성해서 계산. 배경 이미지·무늬 위에 바로 놓이는 글자(제목 줄·섹션 제목·결과 카드)는 면 색 라벨/시트(`--label-bg`, `.svsheet`) 위에. 지정값 중 text-sub(미니멀 #8C8C8C→#626262, 로맨틱 #7E655B→#6F5B51, 빈티지 #76665A→#736358)와 강조색을 글자로 쓸 때(`--accent-ink`)만 조정, 버튼 색은 지정값 그대로.
+- 장식은 홈·결과 카드·배경화면에만, 기록 입력 화면은 단색. 결과 카드·배경화면에 "🦉 부엉이형 × 빈티지"(`combo()`).
+- 클린 미니멀: 단색, 장식 없음, radius 8px, 그림자 없음.
+- Y2K: 배경 `assets/themes/y2k/bg-mint-grid.webp` 한 장(cover, 고르기·그레인 없음). 크롬 그라데이션(`--chrome`)을 주요 버튼·별·링에. 카드 흰색 86% + 1.5px #24232B 테두리, radius 16px. 큰 제목만 민트·핑크 text-shadow 정적 글리치. 끼니 라벨 영문 고정폭 보조 표기(`SCH[].en`, `.en`). 눈바디는 크롬 테두리 LCD 프레임(어두운 화면·스캔라인) + 주황 'YY MM DD 스탬프.
+- 내추럴 로맨틱: 배경 `assets/themes/romantic/rose-bloom.webp`(cover, 이미지만). 카드 rgba(255,248,244,.9) + 0 6px 20px rgba(90,62,54,.10), radius 16px. 복숭아색 꽃잎 SVG.
+- 빈티지: 배경은 크림 골지 니트 SVG 타일(84px, data URI: 세로 골지·코랄 꽃·세이지 잎·포인텔 구멍). 카드 radius 6px, 0 2px 0 그림자. 일부 카드에 마스킹테이프(`.tape`, `.tape.sky`). 눈바디는 "눈바디 스크랩"(빨강·파랑·핑크 3px 테두리, -4°~3° 기울임, 빈칸 깅엄). 생리주기 카드 상단 빨간 깅엄 띠 + 세이지 점선. 핑크·하늘 별, 세이지 클로버, "· + ·".
+- 체형 관련 문항·입력은 넣지 않는다.
 
 ## 눈바디 (홈 `#nbcard`)
 - 촬영 가이드(`#cam`): 카메라 화면에 실루엣·머리 끝/발끝 선, 지난 사진 겹쳐 보기, 3초 타이머. 카메라를 못 쓰면 "사진 고르기".
