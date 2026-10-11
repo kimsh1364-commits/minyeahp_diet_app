@@ -604,7 +604,7 @@ function slotUI(){const e=$('#slotrow');if(!e)return;if(curSlot==null)curSlot=au
  e.innerHTML=`<div class="slh"><b>오늘 끼니</b><span class="sub">${S.length}칸 중 ${n}칸 기록</span></div><div class="sls">`+S.map(s=>`<button class="slot ${curSlot==s.i?'on':''} ${s.done?'done':'empty'}" data-cs="${s.i}" aria-pressed="${curSlot==s.i}"><span class="slcb">${s.done?ico('check'):''}</span><span class="sln"><small class="en">${s.en}</small><b>${s.name}</b></span><span class="sli">${s.done?s.items.join(', '):'+ 기록'}</span></button>`).join('')+'</div>';
  e.querySelectorAll('[data-cs]').forEach(b=>b.onclick=()=>{curSlot=+b.dataset.cs;slotUI()})}
 /* 오늘루틴 체크리스트(모든 테마 공통, 예전 '하루 식단' 자리). 날짜별 rt[날짜].ck에 완료한 번호 저장 */
-const CKL=['식사할 때 첫 세 입은 단백질부터 먹기','끼니 간격은 3~5시간, 정해진 시간에 먹기','고칼로리·가공식품은 반만 먹고, 나머지는 자연식품으로 채우기','잠들기 3시간 전부터는 공복 유지하기','한 끼는 30분 이상, 천천히 오래 씹어 먹기'];
+const CKL=['식사할 때 첫 세 입은 단백질부터 먹기','끼니 간격은 3~5시간, 정해진 시간에 먹기','고칼로리·가공식품은 반만 먹고, 나머지는 자연식품으로 채우기','잠들기 3시간 전부터는 공복 유지하기','한 끼는 30분 이상, 천천히 오래 씹어 먹기','7시간 이상 충분히 자기'];
 const ckDone=()=>((rt[key(sim)]||{}).ck||[]);
 function ckUI(){const e=$('#ckl');if(!e)return;const d=ckDone();$('#ckn').textContent=`${d.length}/${CKL.length} 완료`;
  e.innerHTML=CKL.map((t,i)=>{const on=d.includes(i);return `<button class="ck ${on?'on':''}" data-ck="${i}" aria-pressed="${on}"><span class="ckb" aria-hidden="true">${on?'✓':''}</span><span class="ckt">${t}</span></button>`}).join('');
@@ -685,6 +685,7 @@ function wpWin(x,W,H,D,mag){const F="'Noto Sans KR','Apple SD Gothic Neo',system
  const box=(a,b,w,h,fill,st,lw,r)=>{r=r==null?rad:r;x.beginPath();x.roundRect(a,b,w,h,r);if(fill){x.fillStyle=fill;x.fill()}if(st){x.lineWidth=lw||3;x.strokeStyle=st;x.beginPath();x.roundRect(a+x.lineWidth/2,b+x.lineWidth/2,w-x.lineWidth,h-x.lineWidth,Math.max(0,r-x.lineWidth/2));x.stroke()}};
  const img=(n,a,b,s,al)=>{const im=WPI['stk#'+n];if(!im)return;x.save();x.globalAlpha=al==null?1:al;x.drawImage(im,a,b,s,s);x.restore()};
  x.fillStyle=K.bg;x.fillRect(0,0,W,H);
+ if(mag){const src=wpSrc('light'),im=src.length&&WPI[src[0]+'#img'];if(im){const k=Math.max(W/im.width,H/im.height),iw=im.width*k,ih=im.height*k;x.drawImage(im,(W-iw)/2,(H-ih)/2,iw,ih)}}
  const L=70,CW=W-2*L,top=560,P=44,iL=L+P,iW=CW-2*P,bot=mag?2290:2250;let y;
  if(mag){const g=x.createLinearGradient(L,0,L+CW,0);g.addColorStop(0,'#FFFFFF');g.addColorStop(1,'#F8F7FA');x.fillStyle=g;x.beginPath();x.roundRect(L,top,CW,bot-top,[18,42,42,18]);x.fill();
   const sh=x.createLinearGradient(L,0,L+40,0);sh.addColorStop(0,'rgba(30,27,34,.18)');sh.addColorStop(1,'rgba(30,27,34,0)');x.fillStyle=sh;x.fillRect(L,top+10,40,bot-top-20);
@@ -713,8 +714,8 @@ function wpWin(x,W,H,D,mag){const F="'Noto Sans KR','Apple SD Gothic Neo',system
  const wk=[...document.querySelectorAll('#pweek > div')],cg=12,cw=(iW-6*cg)/7;
  wk.forEach((e,i)=>{const bx=iL+i*(cw+cg),hl=e.className.includes('p')||e.className.includes('w'),td=e.className.includes('t');box(bx,y,cw,130,hl?K.soft:K.sf,td?K.hi:K.line,td?6:3,mag?24:0);tx(e.querySelector('b').textContent,bx+cw/2,y+56,38,900,K.ink,'center');tx(e.lastChild.textContent,bx+cw/2,y+102,26,500,K.sub,'center')});y+=130;
  sec('오늘루틴',ckDone().length+'/'+CKL.length+' 완료');
- const dn=ckDone(),rh=mag?66:76,rg=10;CKL.forEach((t,n)=>{const by=y+n*(rh+rg),on=dn.includes(n);box(iL,by,iW,rh,K.sf,K.line,3,mag?30:0);
-  x.beginPath();x.roundRect(iL+24,by+rh/2-18,36,36,mag?18:0);if(on){x.fillStyle=K.hi;x.fill()}x.lineWidth=4;x.strokeStyle=on?K.hi:K.ink;x.stroke();if(on)tx('✓',iL+42,by+rh/2+11,28,900,K.sf,'center');
+ const dn=ckDone(),rh=mag?58:66,rg=8;CKL.forEach((t,n)=>{const by=y+n*(rh+rg),on=dn.includes(n);box(iL,by,iW,rh,K.sf,K.line,3,mag?30:0);
+  x.beginPath();x.roundRect(iL+24,by+rh/2-17,34,34,mag?18:0);if(on){x.fillStyle=K.hi;x.fill()}x.lineWidth=4;x.strokeStyle=on?K.hi:K.ink;x.stroke();if(on)tx('✓',iL+42,by+rh/2+11,28,900,K.sf,'center');
   let sz=32;while(sz>22&&tw(t,sz,500)>iW-110)sz-=2;tx(t,iL+80,by+rh/2+11,sz,500,K.ink)});
  if(mag){tx('DIET ARCHIVE, '+ENM[sim.getMonth()]+' '+sim.getFullYear(),iL,bot-32,26,700,K.sub);tx(String(sim.getDate()),iL+iW,bot-28,64,'italic 400',K.ink,'right',SER)}
  else{tx(THEMES[thm].tags.join(' '),iL+iW,bot-30,28,500,K.sub,'right');tx(`${sim.getMonth()+1}월 ${sim.getDate()}일`,iL,bot-30,28,500,K.sub)}}
@@ -759,10 +760,10 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  const wk=[...document.querySelectorAll('#pweek > div')],cg=14,cw=(CW-6*cg)/7;
  wk.forEach((e,i)=>{const bx=L+i*(cw+cg),k=e.className.includes('p')?C.blush:e.className.includes('w')?C.lilac:C.card;rr(bx,y,cw,160,Math.min(R,34),k,1);tx(e.querySelector('b').textContent,bx+cw/2,y+68,42,900,C.ink,'center');tx(e.lastChild.textContent,bx+cw/2,y+120,30,500,C.sub,'center')});
  y+=240;const ckn=ckDone().length+'/'+CKL.length+' 완료',w3=tw('오늘루틴',54,900);lbl(L,y,w3+30+tw(ckn,32,500),54);tx('오늘루틴',L,y,54,900,C.ink);tx(ckn,L+w3+30,y,32,500,C.sub);y+=30;
- const dn=ckDone(),rh=84,rg=14;CKL.forEach((t,n)=>{const by=y+n*(rh+rg),on=dn.includes(n);rr(L,by,CW,rh,Math.min(R,34),C.card,1);
-  x.beginPath();x.roundRect(L+28,by+rh/2-20,40,40,T=='minimal'?6:20);if(on){x.fillStyle=C.accent;x.fill()}x.lineWidth=4;x.strokeStyle=on?C.accent:C.ink;x.stroke();if(on)tx('✓',L+48,by+rh/2+12,30,900,D?C.bg:'#FFFFFF','center');
+ const dn=ckDone(),rh=72,rg=10;CKL.forEach((t,n)=>{const by=y+n*(rh+rg),on=dn.includes(n);rr(L,by,CW,rh,Math.min(R,34),C.card,1);
+  x.beginPath();x.roundRect(L+28,by+rh/2-18,36,36,T=='minimal'?6:20);if(on){x.fillStyle=C.accent;x.fill()}x.lineWidth=4;x.strokeStyle=on?C.accent:C.ink;x.stroke();if(on)tx('✓',L+48,by+rh/2+12,30,900,D?C.bg:'#FFFFFF','center');
   let sz=34;while(sz>24&&tw(t,sz,500)>CW-130)sz-=2;tx(t,L+92,by+rh/2+12,sz,500,C.ink)});
- const end=y+5*(rh+rg);
+ const end=y+CKL.length*(rh+rg);
  // 장식(정적): 글자와 겹치지 않는 자리, 아래쪽 손전등·카메라 버튼 자리는 피함
  if(T=='y2k'){const sk=D?'#EEF2F3':'#24232B';icon(WPS.spark,W-L-90,wy-70,110,chrome(W-L-90,wy-70,110),sk,0,.8);icon(WPS.spark,W/2-36,end+30,72,chrome(W/2-36,end+30,72),sk,0,.9);
   x.save();x.lineWidth=16;x.strokeStyle=chrome(L-10,wy-80,100);x.beginPath();x.arc(L+40,wy-30,38,0,Math.PI*2);x.stroke();x.lineWidth=2.5;x.strokeStyle=sk;x.beginPath();x.arc(L+40,wy-30,47,0,Math.PI*2);x.stroke();x.beginPath();x.arc(L+40,wy-30,29,0,Math.PI*2);x.stroke();x.restore()}
