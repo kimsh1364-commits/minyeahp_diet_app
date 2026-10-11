@@ -662,7 +662,7 @@ const WPS={star:'M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.2l7
 // 배경 이미지·무늬는 미리 불러 둔다(배경화면을 그릴 때 바로 쓰게)
 const WPI={};
 function wpSrc(mode){return [...(thVars(mode)['page-bg']||'').matchAll(/url\((?:"([^"]+)"|([^)"]+))\)/g)].map(m=>m[1]||m[2])}
-function wpPrep(mode){return Promise.all(wpSrc(mode).map(s=>WPI[s]?WPI[s]:(WPI[s]=new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>ok(null);im.src=s}))))}
+function wpPrep(mode){return Promise.all(wpSrc(mode).map(s=>WPI[s]?WPI[s]:(WPI[s]=new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>{delete WPI[s];ok(null)};setTimeout(()=>ok(null),4000);im.src=s}))))}
 async function wpLoad(mode){const ims=await wpPrep(mode);wpSrc(mode).forEach((s,i)=>WPI[s+'#img']=ims[i])}
 function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),D=theme=='dark',v=thVars(D?'dark':'light'),T=effTh(D?'dark':'light');
  const C={bg:v.bg,ink:v.text,card:v.surface,yel:v['c-lemon'],yt:v.text,sky:v['c-sky'],leaf:v['accent-soft'],blush:v['c-blush'],lilac:v['c-lilac'],sub:v['text-sub'],line:v.line,accent:v.accent};
@@ -683,7 +683,7 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  x.fillStyle=C.bg;x.fillRect(0,0,W,H);
  const src=wpSrc(D?'dark':'light'),im=src.length&&WPI[src[0]+'#img'];
  if(im&&T!='vintage'&&T!='kitsch'){const k=Math.max(W/im.width,H/im.height),iw=im.width*k,ih=im.height*k;x.drawImage(im,(W-iw)/2,(H-ih)/2,iw,ih);if(D){x.fillStyle=T=='y2k'?'rgba(16,20,22,.86)':'rgba(28,20,18,.84)';x.fillRect(0,0,W,H)}}
- if(im&&(T=='vintage'||T=='kitsch')){const p=x.createPattern(im,'repeat');p.setTransform(new DOMMatrix().scale(3));x.fillStyle=p;x.fillRect(0,0,W,H)}
+ if(im&&(T=='vintage'||T=='kitsch')){const tw=(im.naturalWidth||im.width||120)*3,th=(im.naturalHeight||im.height||120)*3,tc=document.createElement('canvas');tc.width=tw;tc.height=th;tc.getContext('2d').drawImage(im,0,0,tw,th);x.fillStyle=x.createPattern(tc,'repeat');x.fillRect(0,0,W,H);tc.width=tc.height=0}
  const L=70,CW=W-2*L;
  // 잠금화면 위젯 줄(시계 바로 아래 가운데)에 물 1잔 단축어 위젯이 놓이도록 물방울 버튼 자리를 맞춘다(앱 첫 화면 #wbn과 같은 배치)
  const wy=640,wh=200,cx=W/2,cy=wy+wh/2,cr=96;
@@ -719,9 +719,16 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  if(T=='kitsch'){// 쿼티 키보드 장식(결과 카드·배경화면만) + 핑크 별·하트·흰 반짝이
   const kx=W/2-250,ky=end+26,R3=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];R3.forEach((row,r)=>[...row].forEach((ch,i)=>{const bx=kx+r*18+i*48,by=ky+r*52;rr(bx,by,42,44,10,'#FFD6E8');x.lineWidth=2.5;x.strokeStyle='#DE2373';x.beginPath();x.roundRect(bx,by,42,44,10);x.stroke();if(r==0){x.fillStyle='#B9A2E6';x.fillRect(bx+4,by+3,34,9)}tx(ch,bx+21,by+36,22,700,'#3A1F22','center')}));
   icon(WPS.star,W-L-80,wy-90,70,'#FF9CC8','#DE2373',0,1);icon(WPS.spark,L+10,wy-70,50,'#FFFFFF','#DE2373',0,1);icon('M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z',W/2-30,wy-80,60,'#FF9CC8','#DE2373',0,1)}
- return c.toDataURL('image/png')}
-async function wpOpen(theme){wpTheme=theme||wpTheme||curMode();try{await document.fonts.load("900 40px 'Noto Sans KR'");await document.fonts.load("500 40px 'Noto Sans KR'")}catch(e){}await wpLoad(wpTheme);
- $('#wpimg').src=wpDraw(wpTheme);$$('[data-wp]').forEach(b=>b.classList.toggle('on',b.dataset.wp==wpTheme));$('#wpov').hidden=false}
+ const u=c.toDataURL('image/png');c.width=c.height=0;return u}
+// 사파리(아이폰)에서도 멈추지 않게: 창을 먼저 열고, 글꼴·이미지는 시간 제한, 실패하면 무늬 없이 다시 그린다
+const wait=(p,ms)=>Promise.race([p,new Promise(ok=>setTimeout(ok,ms))]);
+if(typeof CanvasRenderingContext2D!='undefined'&&!CanvasRenderingContext2D.prototype.roundRect)CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){r=Math.max(0,Math.min(+(Array.isArray(r)?r[0]:r)||0,w/2,h/2));this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath()};
+async function wpOpen(theme){wpTheme=theme||wpTheme||curMode();$$('[data-wp]').forEach(b=>b.classList.toggle('on',b.dataset.wp==wpTheme));
+ const img=$('#wpimg');img.removeAttribute('src');img.alt='배경화면을 만드는 중이에요…';$('#wpov').hidden=false;
+ try{await wait(Promise.all([document.fonts.load("900 40px 'Noto Sans KR'"),document.fonts.load("500 40px 'Noto Sans KR'")]),1500)}catch(e){}
+ try{await wait(wpLoad(wpTheme),4500)}catch(e){}
+ let url='';try{url=wpDraw(wpTheme)}catch(e){try{Object.keys(WPI).filter(k=>k.endsWith('#img')).forEach(k=>WPI[k]=null);url=wpDraw(wpTheme)}catch(e2){}}
+ if(url){img.src=url;img.alt='루틴 배경화면 미리보기'}else{img.alt='';$('#wpov').hidden=true;toast('배경화면을 만들지 못했어요. 앱을 닫았다 다시 열고 한 번 더 눌러 주세요')}}
 $('#wpbtn').onclick=()=>wpOpen();
 $$('[data-wp]').forEach(b=>b.onclick=()=>wpOpen(b.dataset.wp));
 $('#wpclose').onclick=()=>{$('#wpov').hidden=true};
