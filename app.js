@@ -628,19 +628,16 @@ const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 function phTxt(){const m=(cyc[key(sim)]||{}).p;if(m)return m;const q=consent&&CY&&cyPhase(sim.getTime());return q&&q.p!='예정일 지남'?q.p+' D'+(q.i+1)+' · 예상':null}
 const ENM=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
 function hwUI(){const box=$('#hw');if(!box)return;const T=effTh();document.body.classList.toggle('has-hw',T=='minimal'||T=='y2k');
- if(T!='minimal'&&T!='y2k'){box.innerHTML='';return}
+ if(T!='minimal'&&T!='y2k'){box.innerHTML='';document.body.classList.remove('pwin');const pr=$('#prt');if(pr)pr.innerHTML='';return}
  const S=slotData(),n=S.filter(s=>s.done).length,ty=SV.done?TY[typeOf()].e+' '+TY[typeOf()].n:'내 루틴',dt=`${sim.getMonth()+1}월 ${sim.getDate()}일 (${DW[todayIdx]})`,ph=phTxt(),np=nb.photos.length;
  const cell=(k,sz,img)=>{const st=rtState(k);return `<button class="rtc ${st.done?'done':''}" data-rt="${k}" aria-pressed="${st.done}" aria-label="${RTI[k]} ${st.done?'완료':'아직 안 함'}">${img?hstk(img,sz,1):''}<span class="rtn">${RTI[k]}</span><span class="rtv">${esc(st.v)}</span>${st.done?'<i class="rtck" aria-hidden="true">✓</i>':''}</button>`};
  let h='';
- if(T=='minimal'){
-  h=`<div class="hw hw-min"><div class="hwt"><i class="hwx" aria-hidden="true"></i><b>오늘의 식단</b></div>
-  <nav class="hwm" aria-label="바로가기"><button class="on" aria-current="page" data-go="meals">식단</button><button data-go="1">기록</button><button data-go="2">눈바디</button><button data-go="cy">주기</button><button data-go="5">설정</button></nav>
-  <div class="hwd"><span>${dt}</span><span>${ty}</span></div>
-  <ul class="hwl">${S.map(s=>`<li class="hwr ${s.done?'done':''}"><small>${s.name}</small>${s.done?`<span class="hwmenu">${esc(s.items.join(', '))}</span><span class="hwcb on" role="img" aria-label="기록함">✓</span>`:`<span class="hwmenu empty">아직 기록 전</span><button class="hwadd" data-slot="${s.i}">+ 기록</button>`}</li>`).join('')}</ul>
-  <div class="hwsec">오늘의 루틴</div><div class="hwsh">${['water','walk','care','praise'].map(k=>cell(k,52,HSTK.clean[k])).join('')}</div>
-  <button class="hwrow" data-go="cy"><span>생리주기</span><span>${ph||'기록 전'}</span></button><button class="hwrow" data-go="2"><span>눈바디</span><span>${np}장</span></button>
-  <div class="hws"><span>${S.length}칸 중 ${n}칸 기록</span><span>${THEMES[thm].tags.join(' ')}</span></div></div>`}
- else{const yr=String(sim.getFullYear()).split('').join(' ');
+ const pr=$('#prt');document.body.classList.toggle('pwin',T=='minimal');
+ if(T=='minimal'){// 홈 '나의 루틴' 창(목표·주간 루틴·오늘의 루틴) — 배경화면도 이 창 모양으로 저장
+  if(pr){pr.innerHTML=`<div class="psec">오늘의 루틴 <small>누르면 체크</small></div><div class="hwsh">${['water','walk','care','praise'].map(k=>cell(k,52,HSTK.clean[k])).join('')}</div>`;pr.querySelectorAll('[data-rt]').forEach(b=>b.onclick=()=>rtTap(b.dataset.rt))}
+  box.innerHTML='';return}
+ if(pr)pr.innerHTML='';
+ {const yr=String(sim.getFullYear()).split('').join(' ');
   h=`<div class="hw hw-y2k"><div class="yh"><div><div class="yyr" lang="en">${yr}</div><div class="ytt" lang="en">Daily Essential</div></div>${hstk('y2k-star',48)}<svg class="yheart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-8.8C1.6 8 3.6 4.6 6.9 4.6c2 0 3.4 1.1 5.1 3 1.7-1.9 3.1-3 5.1-3 3.3 0 5.3 3.4 3.9 6.6C19 15.6 12 20 12 20z"/><g><circle cx="7" cy="9" r=".9"/><circle cx="12" cy="10.6" r=".9"/><circle cx="17" cy="9" r=".9"/><circle cx="12" cy="15.4" r=".9"/></g></svg></div>
   <div class="yrt" lang="en">TODAY'S MEAL</div><hr class="ytilt">
   <div class="hwd"><span>${dt}</span><span>${ty}</span></div>
@@ -720,20 +717,42 @@ function weekStats(){const end=new Date(sim.getFullYear(),sim.getMonth(),sim.get
  for(let d=new Date(st);d<=end;d.setDate(d.getDate()+1)){const k=key(d),o=k==key(rd)?{logs,water}:(days[k]||{logs:[],water:0});if((o.logs||[]).length)rec++;cups+=Math.floor((o.water||0)/200);(o.logs||[]).forEach(l=>{const n=nm(l);cnt[n]=(cnt[n]||0)+1})}
  const t0=st.getTime(),t1=end.getTime(),ph=nb.photos.filter(k=>{const t=tk(k);return t>=t0&&t<=t1}).length,top=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];
  return{rec,cups,ph,top:top?top[0]:'아직 없어요',per:`${st.getMonth()+1}.${st.getDate()} – ${end.getMonth()+1}.${end.getDate()}`}}
-const WSTK={minimal:['clean-bag','clean-polish','clean-water'],y2k:['y2k-phone','y2k-star']};
-function wpStk(){const L=WSTK[thm]||[];return Promise.all(L.map(n=>WPI['stk:'+n]||(WPI['stk:'+n]=new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>{delete WPI['stk:'+n];ok(null)};setTimeout(()=>ok(null),4000);im.src=`assets/themes/${n.split('-')[0]}/${n}.webp`})))).then(a=>{L.forEach((n,i)=>WPI['stk#'+n]=a[i])})}
+const WSTK={minimal:['clean-water','clean-headphones','clean-skincare','clean-nails'],y2k:['y2k-phone','y2k-star']};
+function wpStk(mode){const L=WSTK[effTh(mode)=='minimal'?'minimal':thm]||[];return Promise.all(L.map(n=>WPI['stk:'+n]||(WPI['stk:'+n]=new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>{delete WPI['stk:'+n];ok(null)};setTimeout(()=>ok(null),4000);im.src=`assets/themes/${n.split('-')[0]}/${n}.webp`})))).then(a=>{L.forEach((n,i)=>WPI['stk#'+n]=a[i])})}
+// 클린 미니멀(그리고 어둡게): 홈 '나의 루틴' 창 그대로 — 목표·주간 루틴·오늘의 루틴
+function wpWin(x,W,H,D){const F="'Noto Sans KR','Apple SD Gothic Neo',system-ui,sans-serif",bg=D?'#121212':'#F7F7F7',sf=D?'#1C1C1C':'#FFFFFF',ink=D?'#F2F2F2':'#1A1A1A',sub=D?'#9B9B9B':'#636363',soft=D?'#2A2A2A':'#EDEDED',line=D?'#333333':'#E3E3E3';
+ const tx=(t,a,b,sz,wt,col,al)=>{x.font=`${wt} ${sz}px ${F}`;x.textAlign=al||'left';x.textBaseline='alphabetic';x.fillStyle=col;x.fillText(t,a,b)};
+ const tw=(t,sz,wt)=>{x.font=`${wt} ${sz}px ${F}`;return x.measureText(t).width};
+ const box=(a,b,w,h,fill,st,lw)=>{if(fill){x.fillStyle=fill;x.fillRect(a,b,w,h)}if(st){x.lineWidth=lw||3;x.strokeStyle=st;x.strokeRect(a+x.lineWidth/2,b+x.lineWidth/2,w-x.lineWidth,h-x.lineWidth)}};
+ x.fillStyle=bg;x.fillRect(0,0,W,H);
+ const L=70,CW=W-2*L,top=600,P=44,iL=L+P,iW=CW-2*P,bot=1990;
+ box(L+9,top+9,CW,bot-top,ink);box(L,top,CW,bot-top,sf,ink,4.5);
+ // 줄무늬 제목줄 + 네모 닫기 칸
+ for(let yy=top+4.5;yy<top+78;yy+=9){x.fillStyle=ink;x.fillRect(L,yy,CW,3)}
+ const tt='나의 루틴',ttw=tw(tt,36,900)+60;box(W/2-ttw/2,top+12,ttw,54,sf);tx(tt,W/2,top+54,36,900,ink,'center');
+ box(L+24,top+20,38,38,sf,ink,4.5);x.fillStyle=ink;x.fillRect(L,top+76,CW,4.5);
+ let y=top+80+150;
+ const t1=$('#pt1').textContent,w1=tw(t1,130,900);tx(t1,iL,y,130,900,ink);
+ const t2=$('#pt2').textContent,w2=tw(t2,104,900)+64;x.fillStyle=soft;x.beginPath();x.roundRect(iL+w1+36,y-122,w2,150,40);x.fill();tx(t2,iL+w1+36+w2/2,y-8,104,900,ink,'center');
+ y+=70;tx($('.pright').textContent,iL+iW,y,36,700,sub,'right');
+ const sec=(t,s)=>{y+=100;tx(t,iL,y,50,900,ink);tx(s,iL+tw(t,50,900)+24,y,32,500,sub);y+=34};
+ sec('오늘의 목표','탄·단·지를 고루');
+ const st=[...document.querySelectorAll('#pstats .pst')].map(e=>[e.querySelector('b').textContent,e.querySelector('span').textContent]),g=22,bw=(iW-3*g)/4;
+ st.forEach(([a,b],i)=>{const bx=iL+i*(bw+g);box(bx,y,bw,160,sf,line,3);tx(a,bx+bw/2,y+78,a.length>6?42:50,900,ink,'center');tx(b,bx+bw/2,y+128,30,500,sub,'center')});y+=160;
+ sec('주간 루틴','근력·유산소 요일');
+ const wk=[...document.querySelectorAll('#pweek > div')],cg=12,cw=(iW-6*cg)/7;
+ wk.forEach((e,i)=>{const bx=iL+i*(cw+cg),hl=e.className.includes('p')||e.className.includes('w');box(bx,y,cw,140,hl?soft:sf,e.className.includes('t')?ink:line,e.className.includes('t')?6:3);tx(e.querySelector('b').textContent,bx+cw/2,y+60,40,900,ink,'center');tx(e.lastChild.textContent,bx+cw/2,y+110,28,500,sub,'center')});y+=140;
+ sec('오늘의 루틴','물·산책·셀프케어·칭찬');
+ const R=['water','walk','care','praise'],rw=iW/4;box(iL,y,iW,280,sf,ink,4.5);
+ R.forEach((k,i)=>{const bx=iL+i*rw,s2=rtState(k),im=WPI['stk#'+HSTK.clean[k]];if(i){x.fillStyle=ink;x.fillRect(bx-2,y,4.5,280)}
+  if(im){x.save();x.globalAlpha=s2.done?1:.38;x.drawImage(im,bx+rw/2-70,y+18,140,140);x.restore()}
+  tx(RTI[k],bx+rw/2,y+196,32,900,ink,'center');let v=s2.v;while(v.length>1&&tw(v,28,500)>rw-24)v=v.slice(0,-2)+'…';tx(v,bx+rw/2,y+244,28,500,sub,'center');if(s2.done)tx('✓',bx+rw-26,y+48,36,900,ink,'right')});
+ y+=280;tx(THEMES[thm].tags.join(' '),iL+iW,bot-30,28,500,sub,'right');tx(`${sim.getMonth()+1}월 ${sim.getDate()}일`,iL,bot-30,28,500,sub)}
 function wpWeekly(x,W,H,D){const S=weekStats(),SER='Didot,"Times New Roman",Georgia,serif',F="'Noto Sans KR','Apple SD Gothic Neo',system-ui,sans-serif",cb=combo();
  const tx=(t,a,b,sz,wt,col,al,fam,ls)=>{x.font=`${wt} ${sz}px ${fam||F}`;x.textAlign=al||'left';x.textBaseline='alphabetic';x.fillStyle=col;if(ls&&'letterSpacing' in x)x.letterSpacing=ls+'px';x.fillText(t,a,b);if('letterSpacing' in x)x.letterSpacing='0px'};
  const fit=(t,sz,max,wt)=>{x.font=`${wt} ${sz}px ${F}`;while(sz>24&&x.measureText(t).width>max){sz-=2;x.font=`${wt} ${sz}px ${F}`}return sz};
  const img=(n,a,b,s,rot)=>{const im=WPI['stk#'+n];if(!im)return;x.save();x.translate(a+s/2,b+s/2);if(rot)x.rotate(rot*Math.PI/180);x.drawImage(im,-s/2,-s/2,s,s);x.restore()};
  const L=90;
- if(thm=='minimal'||D){// 흰 바탕 정물: 그림자 없이 가는 바닥선 하나
-  const bg=D?'#121212':'#FFFFFF',ink=D?'#F2F2F2':'#1A1A1A',sub=D?'#9B9B9B':'#636363';x.fillStyle=bg;x.fillRect(0,0,W,H);
-  tx('WEEKLY NOTE',L,690,30,700,sub,'left',F,8);tx('이번 주의 나',L,800,96,900,ink);tx(S.per,L,862,36,500,sub);
-  if(!D||thm=='minimal'){const base=1470;img('clean-bag',L+10,base-420,420);img('clean-polish',L+430,base-250,250);img('clean-water',W-L-330,base-380,380)}
-  x.fillStyle=ink;x.fillRect(L,1470,W-2*L,2);
-  x.fillRect(L,1640,W-2*L,8);const cw=(W-2*L)/3;[[S.rec+'일','기록한 날'],[S.ph+'장','눈바디'],[S.cups+'잔','마신 물']].forEach(([a,b],i)=>{const cx=L+cw*i+cw/2;tx(a,cx,1820,120,900,ink,'center');tx(b,cx,1890,36,500,sub,'center')});
-  tx(cb,W/2,2100,40,700,ink,'center');return}
  // Y2K: 라벤더 파우치
  x.fillStyle='#F8F7FA';x.fillRect(0,0,W,H);const px=L,py=560,pw=W-2*L,ph=1700,r=78;
  x.save();x.beginPath();x.roundRect(px,py,pw,ph,r);x.clip();x.fillStyle='#B6A5EC';x.fillRect(px,py,pw,ph);
@@ -751,7 +770,7 @@ function wpWeekly(x,W,H,D){const S=weekStats(),SER='Didot,"Times New Roman",Geor
  const rows=[['기록한 날',S.rec+'일'],['눈바디',S.ph+'장'],['가장 많이 먹은 메뉴',S.top]];rows.forEach(([a,b],i)=>{const yy=cy+110+i*120;tx(a,px+110,yy,38,500,'#5E5868');const sz=fit(b,48,cw2-460,900);tx(b,px+60+cw2-50,yy,sz,900,'#1E1B22','right');x.fillStyle='#DCD3F5';x.fillRect(px+110,yy+36,cw2-100,2)});
  tx(cb,px+60+cw2/2,cy+500,40,700,'#1E1B22','center')}
 function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),D=theme=='dark',v=thVars(D?'dark':'light'),T=effTh(D?'dark':'light');
- if(thm=='minimal'||thm=='y2k'){wpWeekly(x,W,H,D);const u=c.toDataURL('image/png');c.width=c.height=0;return u}
+ if(T=='minimal'||thm=='y2k'){if(T=='minimal')wpWin(x,W,H,D);else wpWeekly(x,W,H,D);const u=c.toDataURL('image/png');c.width=c.height=0;return u}
  const C={bg:v.bg,ink:v.text,card:v.surface,yel:v['c-lemon'],yt:v.text,sky:v['c-sky'],leaf:v['accent-soft'],blush:v['c-blush'],lilac:v['c-lilac'],sub:v['text-sub'],line:v.line,accent:v.accent};
  const F="'Noto Sans KR','Apple SD Gothic Neo',system-ui,sans-serif",MONO="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace",R=Math.max(12,(parseFloat(v.radius)||8)*3),IMGT=T=='y2k'||T=='romantic'||T=='vintage'||T=='kitsch';
  // 테마별 카드: 미니멀 얇은 선 / Y2K 1.5px 진한 테두리 / 로맨틱 테두리 없이 옅은 그림자 / 빈티지 얇은 선 + 아래 그림자
@@ -814,7 +833,7 @@ async function wpOpen(theme){wpTheme=theme||wpTheme||curMode();$$('[data-wp]').f
  const img=$('#wpimg');img.removeAttribute('src');img.alt='배경화면을 만드는 중이에요…';$('#wpov').hidden=false;
  try{await wait(Promise.all([document.fonts.load("900 40px 'Noto Sans KR'"),document.fonts.load("500 40px 'Noto Sans KR'")]),1500)}catch(e){}
  try{await wait(wpLoad(wpTheme),4500)}catch(e){}
- try{await wait(wpStk(),4500)}catch(e){}
+ try{await wait(wpStk(wpTheme),4500)}catch(e){}
  let url='';try{url=wpDraw(wpTheme)}catch(e){try{Object.keys(WPI).filter(k=>k.endsWith('#img')).forEach(k=>WPI[k]=null);url=wpDraw(wpTheme)}catch(e2){}}
  if(url){img.src=url;img.alt='루틴 배경화면 미리보기'}else{img.alt='';$('#wpov').hidden=true;toast('배경화면을 만들지 못했어요. 앱을 닫았다 다시 열고 한 번 더 눌러 주세요')}}
 $('#wpbtn').onclick=()=>wpOpen();

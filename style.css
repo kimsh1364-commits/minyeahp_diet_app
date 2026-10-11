@@ -346,3 +346,12 @@ body.has-hw #wbn{display:none}
 [data-theme="y2k"] .svres{position:relative;padding:18px;border:2.5px solid #14121A;border-radius:26px;outline:1.5px dashed #14121A;outline-offset:-10px;background:linear-gradient(135deg,rgba(255,255,255,.55),rgba(255,255,255,0) 32%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300' preserveAspectRatio='xMidYMax slice'%3E%3Crect width='300' height='300' fill='%23B6A5EC'/%3E%3Ccircle cx='228' cy='70' r='42' fill='%23ECE6FB'/%3E%3Cpath d='M0 300V236h18v-22h14v30h12v-44h20v38h10v-18h16v34h14v-50h22v42h12v-26h18v32h14v-40h18v28h12v-20h16v36h14v-30h20v64z' fill='%23CBBEF2'/%3E%3Cpath d='M-10 150C60 110 120 190 310 120M-10 178C80 140 150 214 310 150' fill='none' stroke='%23fff' stroke-width='2' opacity='.8'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.4'%3E%3Ccircle cx='40' cy='60' r='6'/%3E%3Cpath d='M40 54c6 2 7 9 1 11-6 1-8-6-3-8M40 66v16m0-6c-6-4-10-2-12 2'/%3E%3C/g%3E%3Cg fill='%23fff'%3E%3Cpath d='M150 30l2 6 6 2-6 2-2 6-2-6-6-2 6-2z'/%3E%3Cpath d='M270 150l1.5 4.5 4.5 1.5-4.5 1.5-1.5 4.5-1.5-4.5-4.5-1.5 4.5-1.5z'/%3E%3C/g%3E%3C/svg%3E") center bottom/cover no-repeat,#B6A5EC}
 [data-theme="y2k"] .svres .stl{display:block;height:64px;margin-bottom:8px;background:url(assets/themes/y2k/y2k-star.webp) left 6px center/52px 52px no-repeat,url(assets/themes/y2k/y2k-phone.webp) right 6px center/64px 64px no-repeat}
 body.has-hw #v0>.tbar{display:none}
+/* 클린 미니멀 홈: '나의 루틴' 창(목표·주간 루틴·오늘의 루틴). 하루 식단은 빼고, 배경화면도 이 창 모양 */
+.pwt{display:none}
+body.pwin .poster{background:var(--surface);border:1.5px solid var(--text);box-shadow:3px 3px 0 var(--text);padding:0 14px 14px}
+body.pwin .pwt{position:relative;display:flex;align-items:center;justify-content:center;height:28px;margin:0 -14px 14px;background:repeating-linear-gradient(0deg,var(--text) 0 1px,var(--surface) 1px 3px);border-bottom:1.5px solid var(--text)}
+body.pwin .pwt b{background:var(--surface);padding:0 10px;font-size:13px}
+body.pwin .pwt i{position:absolute;left:8px;width:13px;height:13px;border:1.5px solid var(--text);background:var(--surface)}
+body.pwin .pmsec,body.pwin #pmeals{display:none}
+body.pwin #prt .hwsh{margin:0}
+body.pwin .pst,body.pwin .pweek div{border-radius:0}
