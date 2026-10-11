@@ -15,9 +15,12 @@
 <script>/* 저장된 추구미 테마·화면 모드를 그리기 전에 적용(깜빡임 방지) */(function(){var r=document.documentElement,o={};try{o=JSON.parse(localStorage.getItem('dietproto_v1'))||{}}catch(e){}var m={natural:'romantic',ballet:'romantic',oldmoney:'vintage',gorp:'minimal'};var md=o.scm||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');r.setAttribute('data-theme',md=='dark'?'minimal':(m[o.thm]||o.thm||'minimal'));r.setAttribute('data-mode',md)})()</script>
 </head>
 <body data-tab="0">
+<!-- 아이콘: SVG symbol 한 번 정의 → <use>로 재사용 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20l1-4.5L15.5 5l3.5 3.5L8.5 19z"/><path d="M13.5 7l3.5 3.5"/></symbol><symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3.5C12 3.5 6 10.5 6 14.5a6 6 0 0 0 12 0c0-4-6-11-6-11z"/></symbol><symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M3 10v4M6.5 7.5v9M17.5 7.5v9M21 10v4M6.5 12h11"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 1 1 9.5 4.5a6.5 6.5 0 0 0 10 10z"/></symbol><symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3.5l2-2.5h5l2 2.5H20v11H4z"/><circle cx="12" cy="13" r="3.4"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol><symbol id="i-flower" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.4"/><path d="M12 4.5a3 3 0 0 1 0 5M12 14.5a3 3 0 0 1 0 5M4.5 12a3 3 0 0 1 5 0M14.5 12a3 3 0 0 1 5 0"/></symbol><symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6M3 20h18"/></symbol><symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14.5c1 1.2 2.1 1.8 3.5 1.8s2.5-.6 3.5-1.8M9.2 9.8h.01M14.8 9.8h.01"/></symbol><symbol id="i-bowl" viewBox="0 0 24 24"><path d="M3.5 11h17a8.5 8.5 0 0 1-17 0z"/><path d="M9 8c0-1.5 1.4-1.8 1.4-3.5M13.5 8c0-1.5 1.4-1.8 1.4-3.5"/></symbol><symbol id="i-glass" viewBox="0 0 24 24"><path d="M6.5 3.5h11l-1.8 17H8.3z"/><path d="M7.2 9.5h9.6"/></symbol><symbol id="i-shoe" viewBox="0 0 24 24"><path d="M3 16.5l1.8-8 4 1 1 3 6 2c2 .6 5 1.4 5 3V19H3z"/></symbol><symbol id="i-phone" viewBox="0 0 24 24"><path d="M6 4h3.5l1.8 4.5-2.3 1.4a11 11 0 0 0 5.1 5.1l1.4-2.3L20 14.5V18a2 2 0 0 1-2 2A15 15 0 0 1 4 6a2 2 0 0 1 2-2z"/></symbol><symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol><symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol><symbol id="i-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol><symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol><symbol id="i-back" viewBox="0 0 24 24"><path d="M9.5 6.5L4 12l5.5 5.5M4 12h12a4 4 0 0 1 0 8h-2"/></symbol></defs></svg>
 <div class="app">
 <!-- 기준 -->
 <section class="view on" id="v0">
+ <div id="rw" class="rw"></div>
  <div class="poster deco">
   <div class="wbn" id="wbn"><div class="wbn-t"><div><b>💧 물 마시기</b><div class="sub" id="wbs"></div></div><button class="wdrop" id="wplus" aria-label="물 1잔 기록"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C12 2.5 5 10.3 5 15a7 7 0 0 0 14 0c0-4.7-7-12.5-7-12.5z"/><path class="hl" d="M9 15.5a3 3 0 0 0 3 3"/></svg></button><div class="wbn-r"><b>누르면 +1잔</b><small class="sub">1잔 200ml</small><button id="wminus" aria-label="한 잔 취소">−1잔</button></div></div><div id="wdrops" class="wdrops"></div><div class="bar"><i id="wbar2" style="width:0"></i></div></div>
   <div class="ptitle"><span id="pt1">2달</span><span class="pill" id="pt2">−5kg</span><span class="pright">직장인 현실 루틴</span></div>
@@ -71,6 +74,7 @@
  </div>
  <div class="card">
   <h2>식단 기록 <span class="tag">3탭</span></h2>
+  <div class="row" id="slotrow" style="margin-bottom:8px"></div>
   <label>⚡ 빠른 기록 <span class="sub">(★ 즐겨찾기 · 최근 먹은 것)</span></label>
   <div class="row" id="qrow" style="margin-bottom:6px"></div>
   <button id="sameyd" style="margin-bottom:6px">어제와 같음</button>
