@@ -1,6 +1,6 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),1800)}
-$('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;document.body.dataset.tab=b.dataset.v;$$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));$$('.view').forEach((v,i)=>v.classList.toggle('on',i==b.dataset.v));scrollTo(0,0)};
+$('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;document.body.dataset.tab=b.dataset.v;tbarUI();$$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));$$('.view').forEach((v,i)=>v.classList.toggle('on',i==b.dataset.v));scrollTo(0,0)};
 const DW=['월','화','수','목','금','토','일'],DN=DW.slice(0,5);
 let lowfm=false,phase=null,consent=false,water=0,steps=0,synced=false,exDone=false,claimed=false,badged=false;
 let G={kg:5,weeks:8,water:2000,steps:5000,meals:3};
@@ -18,7 +18,7 @@ const effTh=(mode)=>(mode||curMode())=='dark'?'minimal':thm;
 const combo=()=>(SV.done?TY[typeOf()].e+' '+TY[typeOf()].n:'내 루틴')+' × '+THEMES[thm].n;
 function applyTheme(){const r=document.documentElement;if(!THEMES[thm])thm='minimal';r.setAttribute('data-theme',effTh());r.setAttribute('data-mode',curMode());
  const m=$('meta[name="theme-color"]');if(m)m.content=getComputedStyle(r).getPropertyValue('--bg').trim();
- $$('[data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md===scm));thUI()}
+ $$('[data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md===scm));thUI();if(typeof tbarUI==='function'){tbarUI();nbUI()}}
 // 미리보기 카드는 각자 data-theme을 달아 그 테마 색으로 그려진다
 function thUI(){const md='light',html=Object.entries(THEMES).map(([k,t])=>`<button class="thc ${k==thm?'on':''}" data-th="${k}" data-theme="${k}" data-mode="${md}"><span class="thsw"><i style="background:var(--bg)"></i><i style="background:var(--accent)"></i><i style="background:var(--accent-soft)"></i><i style="background:var(--c-sky)"></i></span><b>${k==thm?'✓ ':''}${t.n}</b><small>${t.tags.join(' ')}</small></button>`).join('');
  ['#thlist','#thplist'].forEach(sel=>{const e=$(sel);if(!e)return;e.innerHTML=html;e.querySelectorAll('[data-th]').forEach(b=>b.onclick=()=>{thm=b.dataset.th;thmSet=true;applyTheme();if(typeof posterUI==='function')posterUI();saveState()})})}
@@ -207,7 +207,7 @@ $('#c2').onchange=e=>{if(!e.target.checked&&lowfm){lowfm=false;SV.gut=false;$$('
 function planned(){const wd=(rd.getDay()+6)%7;return PL.s.includes(wd)?'근력':PL.c.includes(wd)?'유산소':null}
 function reqs(){const pl=planned();const r=[{n:'식단 기록 '+G.meals+'번',d:logs.length>=G.meals,s:logs.length+'/'+G.meals},{n:'물 '+(G.water/1000)+'L',d:water>=G.water,s:(water/1000).toFixed(1)+'L'}];
  r.push(pl?{n:pl+' 운동',d:exDone,s:exDone?'완료':'미완료'}:{n:'걸음 '+G.steps.toLocaleString()+'보 (운동 없는 날)',d:steps>=G.steps,s:steps.toLocaleString()+'보'});return r}
-function renderReq(){hist[key(rd)]=snap();if(typeof homeUI==='function')homeUI();if(typeof reportUI==='function')reportUI();
+function renderReq(){hist[key(rd)]=snap();if(typeof slotUI==='function')slotUI();if(typeof reportUI==='function')reportUI();
  const r=reqs(),h=r.map(x=>`<div class="meal" style="align-items:center"><span>${x.d?'✅':'⬜'} ${x.n}</span><span class="${x.d?'ok':'sub'}">${x.s}</span></div>`).join('');
  $('#req').innerHTML=h;$('#reqt').textContent=dl();
  if(r.every(x=>x.d)){const k=key(rd),had=doneDates[k],nw=stk(k);doneDates[k]=nw;if(!had){markWeek();toast('✅ '+dl()+' 필수 행동 완료! '+nw+' 스티커가 붙었어요')}if(had!=nw)upd()}
@@ -580,97 +580,28 @@ $('#nbshot').onclick=camOpen;$('#camx').onclick=camClose;
 $('#camflip').onclick=()=>{camFace=camFace=='user'?'environment':'user';camStart()};
 $('#camtimer').onclick=()=>{camTimer=!camTimer;camGhUI()};$('#camghostb').onclick=()=>{camGh=!camGh;camGhUI()};
 $('#camgo').onclick=()=>{if(!camTimer)return camShoot();let n=3;const c=$('#camcnt'),tick=()=>{if(n==0){c.textContent='';return camShoot()}c.textContent=n;n--;setTimeout(tick,1000)};tick()};
-/* 홈 레트로 창(테마별 창·기기 모양) — 각 부분은 실제 기능과 연결. 프레임은 홈 화면에만 */
+/* 탭별 테마 창 — 각 탭 맨 위에 테마 컨셉의 제목줄(창·기기 모양), 기록 탭에 '오늘 끼니' 칸 */
 const SLOTO=[0,1,3,2];// 화면 순서: 아침·점심·간식·저녁(SCH 순서는 아침·점심·저녁·간식)
-const MOOD=[[5,'아주 좋음'],[4,'좋음'],[3,'보통'],[2,'피곤'],[1,'지침']];
-let curSlot=null,rwTool='',rwMoodOpen=false,kSel=0,kMode='list',kMenuSel=0;
+let curSlot=null;
 const ico=(id,c)=>`<svg class="ic ${c||''}" aria-hidden="true"><use href="#i-${id}"/></svg>`;
-function todayLogs(){return key(rd)==key(sim)?logs:((days[key(sim)]||{}).logs||[])}
-// 오늘 끼니 칸: 끼니를 고른 기록은 그 칸에, 예전처럼 끼니 정보가 없는 기록은 빈 칸에 차례로
+function todayLogs(){return logs}
+// 끼니 칸: 끼니를 고른 기록은 그 칸에, 예전처럼 끼니 정보가 없는 기록은 빈 칸에 차례로
 function slotData(){const sc=SCH[SV.sched]||SCH.day,L=todayLogs(),S=SLOTO.map(i=>({i,name:sc.m[i],en:sc.en[i],items:[]}));
  L.forEach(l=>{if(l.slot!=null){const s=S.find(x=>x.i==l.slot);if(s)s.items.push(nm(l))}});
  L.forEach(l=>{if(l.slot==null){const s=S.find(x=>!x.items.length)||S[S.length-1];s.items.push(nm(l))}});
  S.forEach(s=>s.done=s.items.length>0);return S}
-function autoSlot(){const S=slotData();if(SV.sched=='day'){const h=new Date().getHours()+new Date().getMinutes()/60;return h<10.5?0:h<15?1:h<17.5?3:2}const e=S.find(s=>!s.done);return e?e.i:2}
-const moodToday=()=>(cond[key(sim)]||{}).m||0;
-function setMood(v){const k=key(sim);cond[k]=cond[k]||{};if(cond[k].m==v)delete cond[k].m;else cond[k].m=v;const l=(MOOD.find(x=>x[0]==v)||[])[1];toast(cond[k].m?'오늘 컨디션: '+l:'컨디션 선택을 지웠어요');rwMoodOpen=false;homeUI();condUI();sens();saveState()}
-function goTab(v,sel){const b=$(`#tabs [data-v="${v}"]`);if(b)b.click();if(sel){const e=$(sel);if(e){if(e.tagName=='DETAILS')e.open=true;e.scrollIntoView({block:'start'})}}}
-function recSlot(i){if(key(rd)!=key(sim))setRec(sim);curSlot=i;slotUI();goTab(1,'#fq');setTimeout(()=>{const q=$('#fq');if(q)q.focus()},0)}
-const TOOLS={meal:['pencil','끼니 기록',()=>recSlot(autoSlot())],water:['drop','물 한 잔',()=>{addWaterToday(200);toast('💧 물 1잔 기록! ('+Math.floor(todayData().water/200)+'잔)')}],ex:['dumbbell','운동',()=>goTab(1,'#exinfo')],sleep:['moon','수면',()=>goTab(1,'#cond')],
- photo:['camera','눈바디',()=>{goTab(2);camOpen()}],check:['check','오늘 체크',()=>goTab(1,'#req')],cycle:['flower','생리주기',()=>goTab(0,'#cycard')],report:['chart','리포트',()=>goTab(4)],mood:['smile','오늘 컨디션',()=>{rwMoodOpen=!rwMoodOpen;homeUI()}]};
-const MENU=[['식단','식단',()=>goTab(0,'.poster .pmeals')],['기록','기록',()=>goTab(1)],['눈바디','눈바디',()=>goTab(2)],['주기','주기',()=>goTab(0,'#cycard')],['설정','설정',()=>goTab(5)],['도움말','도움말',()=>toast('칸을 누르면 그 끼니를 바로 기록해요. 물·운동·수면도 도구 칸에서 한 번에 가요.')]];
-function rwMenu(help,ul){return `<nav class="rwm" aria-label="메뉴">${MENU.filter(m=>help||m[0]!='도움말').map(([k,t],i)=>`<button data-rwm="${i}">${ul?`<u>${t[0]}</u>${t.slice(1)}`:t}</button>`).join('')}</nav>`}
-function rwTools(list){return list.map(k=>`<button class="rwtool ${rwTool==k||(k=='mood'&&rwMoodOpen)?'on':''}" data-tool="${k}" aria-label="${TOOLS[k][1]}" title="${TOOLS[k][1]}">${ico(TOOLS[k][0])}</button>`).join('')}
-function moodPick(){return `<div class="rwmood" role="group" aria-label="오늘 컨디션">${MOOD.map(([v,l])=>`<button class="chip ${moodToday()==v?'on':''}" data-mood="${v}">${l}</button>`).join('')}</div>`}
-function typeTxt(){return SV.done?TY[typeOf()].e+' '+TY[typeOf()].n:'내 루틴'}
-function nextTip(S){const e=S.find(s=>!s.done);return e?`도움말: ${e.name}을(를) 기록하면 ${S.filter(s=>!s.done).length==1?'오늘 식단이 완성돼요.':'칸이 하나 더 채워져요.'}`:'도움말: 오늘 식단이 모두 채워졌어요. 물 한 잔도 잊지 마세요.'}
-function phaseTip(){const q=consent&&typeof cyPhase=='function'&&cyPhase(sim.getTime());return q?`${q.p}(예상) · ${(CYT[q.p]||[''])[0]}`:''}
-function homeUI(){const box=$('#rw');if(!box)return;const T=effTh(),S=slotData(),n=S.filter(s=>s.done).length,md=moodToday(),ml=(MOOD.find(x=>x[0]==md)||[])[1];let h='';
- const prog=`${S.length}칸 중 ${n}칸 기록`;
- if(T=='minimal'){
-  h=`<div class="rwt"><span class="rwx" aria-hidden="true"></span><b>untitled - 오늘의 식단</b></div>${rwMenu(1)}
-  <div class="rwtools">${rwTools(['meal','water','ex','sleep','photo','check','mood'])}</div>${rwMoodOpen?moodPick():''}
-  <div class="rwtbl">${S.map(s=>`<button class="rwrow" data-slot="${s.i}"><span class="rwn">${s.name}</span><span class="rwi">${s.done?s.items.join(', '):'+ 기록'}</span><span class="rwcb ${s.done?'on':''}" aria-label="${s.done?'기록함':'아직'}">${s.done?ico('check'):''}</span></button>`).join('')}</div>
-  <div class="rws">${prog} · ${typeTxt()}${ml?' · 컨디션 '+ml:''}</div>`}
- else if(T=='y2k'){
-  const last=nb.photos[nb.photos.length-1],d=last?new Date(tk(last)):null,p2=x=>String(x).padStart(2,'0');
-  h=`<div class="rwt"><b>untitled - 오늘의 식단</b><span class="rwb" aria-hidden="true"><i></i><i></i><i class="x"></i></span></div>${rwMenu(1)}
-  <div class="rwbody"><div class="rwtools">${rwTools(['meal','water','ex','sleep','photo','check','cycle','report'])}</div>
-  <div class="rwslots">${S.map(s=>`<button class="rwslot ${s.done?'done':''}" data-slot="${s.i}"><small>${s.en}</small><b>${s.name}</b><span>${s.done?s.items.join(', '):'+ 기록'}</span></button>`).join('')}</div>
-  <button class="rwcam" data-tool="photo" aria-label="눈바디 찍기"><span class="scr">${last?`<img data-src="${last}" alt="최근 눈바디"><span class="stamp">'${p2(d.getFullYear()%100)} ${p2(d.getMonth()+1)} ${p2(d.getDate())}</span>`:'<em>NO PHOTO<br>눈바디 찍기</em>'}</span></button></div>
-  <div class="rwpal" role="group" aria-label="오늘 컨디션">${MOOD.map(([v,l],i)=>`<button class="sw s${i} ${md==v?'on':''}" data-mood="${v}" aria-label="${l}"></button>`).join('')}<span class="rwml">${ml?'오늘 컨디션: <b>'+ml+'</b>':'오늘 컨디션을 골라요'}</span></div>
-  <div class="rws">${nextTip(S)}</div>`}
- else if(T=='romantic'){
-  const now=new Date(sim),q=consent&&cyPhase(sim.getTime()),ph=nb.photos.slice(-4);
-  h=`<div class="rwt"><span class="rwdots" aria-hidden="true"><i></i><i></i><i></i></span><b>dear me.txt</b></div>${rwMenu(0)}
-  <div class="rwletter"><p>To. ${now.getMonth()+1}월 ${now.getDate()}일의 나</p>
-  ${S.map(s=>s.done?`<p><button class="rwline" data-slot="${s.i}">${s.name} ··· ${s.items.join(', ')}</button></p>`:`<p><button class="rwline empty" data-slot="${s.i}">오늘 ${s.name}도 적어 줘</button></p>`).join('')}
-  ${ph.length?`<p class="rwthumbs">${ph.map(k=>`<img data-src="${k}" alt="눈바디 ${md2(tk(k))}">`).join('')}</p>`:''}
-  <p class="rwfrom">from. ${q?q.p+' '+(q.i+1)+'일차의 나':'오늘의 나'}</p></div>
-  <div class="rws">${phaseTip()||prog} · ${typeTxt()}</div>`}
- else if(T=='vintage'){
-  const tw=todayData(),cups=Math.floor(tw.water/200),PAL=['#F2A7C3','#F7C6D8','#FBE3EC','#F6E7A1','#F2D6C4','#FBF1C9','#9DB69A','#C8D9C6','#E1ECDF','#A9CBEB','#CFE2F5','#E4EEF7','#C7B3E6','#E2D6F3','#8B6B55','#C8AE97'],LV=[5,5,5,4,4,4,3,3,3,2,2,2,1,1,1,1],cur=md?PAL[LV.indexOf(md)]:'#FFFCF6';
-  const card=(s)=>s.done?`<button class="rwst" data-slot="${s.i}">${ico('bowl')}<b>${s.name}</b><span>${s.items.join(', ')}</span></button>`:`<button class="rwst empty" data-slot="${s.i}">${ico('bowl')}<b>${s.name}</b><span>+ 붙이기</span></button>`;
-  h=`<div class="rwt"><b>untitled - 오늘의 식단</b></div>${rwMenu(1,1)}
-  <div class="rwbody"><div class="rwleft"><div class="rwtools">${rwTools(['meal','water','ex','sleep','photo','check','cycle','report'])}</div><div class="rwcur" aria-label="현재 색"><i style="background:${cur}"></i><i></i></div></div>
-  <div class="rwcanvas"><div class="rwcards">${S.map(card).join('')}<button class="rwst" data-tool="water">${ico('glass')}<b>물</b><span>${cups}잔</span></button><button class="rwst" data-tool="ex">${ico('shoe')}<b>걸음</b><span>${(tw.steps||0).toLocaleString()}보</span></button></div><div class="rwscroll" aria-hidden="true"><i></i></div></div></div>
-  <div class="rwpal" role="group" aria-label="오늘 컨디션"><span class="rwfb" aria-hidden="true"><i style="background:${cur}"></i><i></i></span><span class="rwgrid">${PAL.map((c,i)=>`<button class="sw ${md==LV[i]&&PAL[LV.indexOf(md)]==c?'on':''}" style="background:${c}" data-mood="${LV[i]}" aria-label="${MOOD.find(x=>x[0]==LV[i])[1]}"></button>`).join('')}</span></div>
-  <div class="rws">${ml?'오늘 컨디션: '+ml+' · ':''}${prog} · ${typeTxt()}</div>`}
- else if(T=='kitsch'){
-  const t=new Date(),hm=String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');
-  const KM=[['식단',()=>goTab(0,'.poster .pmeals')],['기록',()=>goTab(1)],['눈바디',()=>goTab(2)],['주기',()=>goTab(0,'#cycard')],['설정',()=>goTab(5)],['오늘 컨디션',()=>{kMode='mood';kMenuSel=0;homeUI()}]];
-  window._KM=KM;
-  let list='';
-  if(kMode=='list')list=S.map((s,i)=>`<button class="kr ${kSel==i?'on':''}" data-k="${i}"><b>${s.name}</b><span>${s.done?s.items.join(', '):'+ 기록'}</span></button>`).join('');
-  else if(kMode=='menu')list=KM.map((m,i)=>`<button class="kr ${kMenuSel==i?'on':''}" data-km="${i}"><b>${i+1}. ${m[0]}</b></button>`).join('');
-  else list=MOOD.map(([v,l],i)=>`<button class="kr ${kMenuSel==i?'on':''}" data-kmood="${v}"><b>${l}</b><span>${md==v?'✓ 선택됨':''}</span></button>`).join('');
-  h=`<div class="kp"><span class="kspk" aria-hidden="true"></span><div class="kscr">
-   <div class="ksb"><span class="ksig" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>${hm}</b></div>
-   <div class="khd"><span class="kpill">${kMode=='list'?'오늘의 식단':kMode=='menu'?'메뉴':'오늘 컨디션'}</span><span class="kbadge">${typeTxt()}</span></div>
-   <div class="kls">${list}</div>
-   <div class="ksk"><button data-sk="menu">메뉴</button><button data-sk="ok">확인</button><button data-sk="back">뒤로</button></div></div>
-   <div class="kkeys"><button class="kcall" data-kk="call" aria-label="물 한 잔">${ico('phone')}<small>물</small></button><button data-kk="rec" aria-label="기록 탭">${ico('pencil')}<small>기록</small></button>
-   <span class="kpad"><button data-kk="up" aria-label="위">${ico('up')}</button><button data-kk="left" aria-label="뒤로">${ico('left')}</button><button class="kok" data-kk="ok" aria-label="확인">OK</button><button data-kk="right" aria-label="확인">${ico('right')}</button><button data-kk="down" aria-label="아래">${ico('down')}</button></span>
-   <button data-kk="back" aria-label="뒤로">${ico('back')}<small>뒤로</small></button><button class="kend" data-kk="end" aria-label="처음으로">${ico('phone')}<small>처음</small></button></div></div>`}
- box.className='rw rw-'+T;box.innerHTML=h;
- box.querySelectorAll('img[data-src]').forEach(im=>idbGet(im.dataset.src).then(u=>{if(u)im.src=u}).catch(()=>{}));
- box.querySelectorAll('[data-rwm]').forEach(b=>b.onclick=()=>MENU.filter(m=>T!='romantic'||m[0]!='도움말')[+b.dataset.rwm][2]());
- box.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{const k=b.dataset.tool;if(k!='mood')rwTool=k;TOOLS[k][2]();if(k!='mood')homeUI()});
- box.querySelectorAll('[data-slot]').forEach(b=>b.onclick=()=>recSlot(+b.dataset.slot));
- box.querySelectorAll('[data-mood]').forEach(b=>b.onclick=()=>setMood(+b.dataset.mood));
- // 키치 폰: 방향키 위아래로 끼니 이동, 가운데(확인) 누르면 그 끼니 기록
- const kLen=()=>kMode=='list'?S.length:kMode=='menu'?window._KM.length:MOOD.length;
- const kOk=()=>{if(kMode=='list')return recSlot(S[kSel].i);if(kMode=='menu')return window._KM[kMenuSel][1]();setMood(MOOD[kMenuSel][0]);kMode='list';homeUI()};
- const kBack=()=>{kMode=kMode=='mood'?'menu':'list';kMenuSel=0;homeUI()};
- const kMove=d=>{if(kMode=='list')kSel=(kSel+d+S.length)%S.length;else kMenuSel=(kMenuSel+d+kLen())%kLen();homeUI()};
- box.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{kSel=+b.dataset.k;kOk()});
- box.querySelectorAll('[data-km]').forEach(b=>b.onclick=()=>{kMenuSel=+b.dataset.km;kOk()});
- box.querySelectorAll('[data-kmood]').forEach(b=>b.onclick=()=>{kMenuSel=MOOD.findIndex(x=>x[0]==+b.dataset.kmood);kOk()});
- box.querySelectorAll('[data-sk]').forEach(b=>b.onclick=()=>({menu:()=>{kMode='menu';kMenuSel=0;homeUI()},ok:kOk,back:kBack})[b.dataset.sk]());
- box.querySelectorAll('[data-kk]').forEach(b=>b.onclick=()=>({call:TOOLS.water[2],rec:()=>goTab(1),up:()=>kMove(-1),down:()=>kMove(1),ok:kOk,right:kOk,left:kBack,back:kBack,end:()=>{kMode='list';kSel=0;homeUI()}})[b.dataset.kk]())}
-// 기록 탭: 어느 끼니인지 고르는 칩(홈의 칸을 누르면 그 끼니로 맞춰짐)
-function slotUI(){const e=$('#slotrow');if(!e)return;if(curSlot==null)curSlot=autoSlot();const sc=SCH[SV.sched]||SCH.day;
- e.innerHTML='<span class="sub">어느 끼니?</span>'+SLOTO.map(i=>`<button class="chip ${curSlot==i?'on':''}" data-cs="${i}">${sc.m[i]}</button>`).join('');
+function autoSlot(){const S=slotData();if(SV.sched=='day'&&key(rd)==key(sim)){const h=new Date().getHours()+new Date().getMinutes()/60;return h<10.5?0:h<15?1:h<17.5?3:2}const e=S.find(s=>!s.done);return e?e.i:2}
+const TABN=['기준','기록','눈바디','주간','리포트','설정'];
+function tbarUI(){const T=effTh(),now=new Date(),hm=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+ $$('.view').forEach((v,i)=>{let b=v.querySelector(':scope>.tbar');if(!b){b=document.createElement('div');b.className='tbar';b.setAttribute('aria-hidden','true');v.prepend(b)}const n=TABN[i];
+  b.innerHTML=T=='y2k'?`<b>${n}.bmp</b><span class="tbb"><i></i><i></i><i class="x"></i></span>`
+  :T=='romantic'?`<span class="tbd"><i></i><i></i><i></i></span><b>${n}.txt</b>`
+  :T=='vintage'?`<b>untitled - ${n}</b><span class="tbb"><i>_</i><i>□</i><i>×</i></span>`
+  :T=='kitsch'?`<span class="tsig"><i></i><i></i><i></i><i></i></span><b>${n}</b><span>${hm}</span>`
+  :`<i class="tbx"></i><b>untitled - ${n}</b>`})}
+// 기록 탭: 오늘 끼니 칸(누르면 그 끼니로 기록). 모양은 테마 컨셉대로
+function slotUI(){const e=$('#slotrow');if(!e)return;if(curSlot==null)curSlot=autoSlot();const S=slotData(),n=S.filter(s=>s.done).length;
+ e.innerHTML=`<div class="slh"><b>오늘 끼니</b><span class="sub">${S.length}칸 중 ${n}칸 기록</span></div><div class="sls">`+S.map(s=>`<button class="slot ${curSlot==s.i?'on':''} ${s.done?'done':'empty'}" data-cs="${s.i}" aria-pressed="${curSlot==s.i}"><span class="slcb">${s.done?ico('check'):''}</span><span class="sln"><small class="en">${s.en}</small><b>${s.name}</b></span><span class="sli">${s.done?s.items.join(', '):'+ 기록'}</span></button>`).join('')+'</div>';
  e.querySelectorAll('[data-cs]').forEach(b=>b.onclick=()=>{curSlot=+b.dataset.cs;slotUI()})}
 /* sensitive */
 function sens(){const L=[];if(CY&&CY.starts.length)L.push('생리주기 정보: 시작일 '+CY.starts.length+'회 · 평균 주기 '+cyAvg()+'일 · 생리 '+CY.len+'일');if(Object.keys(cyc).length)L.push('생리주기 직접 고른 날 '+Object.keys(cyc).length+'일');if((SV.past||[]).length)L.push('다이어트로 힘들었던 경험: '+SV.past.map(k=>(SVQ.find(q=>q.k=='past').o.find(o=>o[0]==k)||[,,k])[2]).join('·'));if(nb.photos.length)L.push('눈바디 사진 '+nb.photos.length+'장');if(nb.cloth||Object.keys(nb.fit).length)L.push('기준 옷 핏 기록 '+Object.keys(nb.fit).length+'회'+(nb.cloth?' ('+nb.cloth+')':''));if(lowfm)L.push('장 민감: 예민한 편으로 저장됨');if(SV.avoid.length)L.push('피해야 할 음식(알레르기): '+SV.avoid.map(k=>AVN[k]).join('·'));if(wlog.length)L.push('몸무게 기록 '+wlog.length+'건');if(Object.keys(cond).length)L.push('컨디션 기록 '+Object.keys(cond).length+'일');
@@ -702,7 +633,7 @@ $('#wipe').onclick=()=>{wiped=true;try{localStorage.removeItem(SK)}catch(e){}toa
 function posterUI(){
  const pg=window.PROT||0,cg=window.CARBMIN||130,ok=pg>0;
  $('#pmsm').textContent=LC()?'탄수 1은 끼니마다 꼭 · 종류는 매일 바꿔도 OK':'단백질은 끼니마다 나눠서';
- $('.pright').textContent=combo();tyUI();if(typeof homeUI==='function')homeUI();
+ $('.pright').textContent=combo();tyUI();
  $('#pt1').textContent=G.weeks%4==0?(G.weeks/4)+'달':G.weeks+'주';$('#pt2').textContent=SV.view=='hide'?'🌿 내 페이스':'−'+G.kg+'kg';
  $('#pstats').innerHTML=[[ok?cg+'g↑':'-','탄수'],[ok?pg+'g':'-','단백질'],[(G.water/1000).toFixed(1)+'L','물'],[G.steps.toLocaleString(),'걸음']].map(([a,b])=>`<div class="pst"><b>${a}</b><span>${b}</span></div>`).join('');
  $('#pweek').innerHTML=DW.map((d,i)=>{let t='걷기',c='';if(PL.s.includes(i)){t='근력';c='p'}else if(PL.c.includes(i)){t='유산소';c='w'}return `<div class="${c} ${i==todayIdx?'t':''}"><b>${d}</b>${t}</div>`}).join('');
