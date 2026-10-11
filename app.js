@@ -603,12 +603,9 @@ function tbarUI(){const T=effTh(),now=new Date(),hm=now.getHours()+':'+String(no
 function slotUI(){const e=$('#slotrow');if(!e)return;if(curSlot==null)curSlot=autoSlot();const S=slotData(),n=S.filter(s=>s.done).length;
  e.innerHTML=`<div class="slh"><b>오늘 끼니</b><span class="sub">${S.length}칸 중 ${n}칸 기록</span></div><div class="sls">`+S.map(s=>`<button class="slot ${curSlot==s.i?'on':''} ${s.done?'done':'empty'}" data-cs="${s.i}" aria-pressed="${curSlot==s.i}"><span class="slcb">${s.done?ico('check'):''}</span><span class="sln"><small class="en">${s.en}</small><b>${s.name}</b></span><span class="sli">${s.done?s.items.join(', '):'+ 기록'}</span></button>`).join('')+'</div>';
  e.querySelectorAll('[data-cs]').forEach(b=>b.onclick=()=>{curSlot=+b.dataset.cs;slotUI()})}
-/* 오늘루틴 체크리스트(모든 테마 공통, 예전 '하루 식단' 자리). 날짜별 rt[날짜].ck에 완료한 번호 저장 */
+/* 오늘루틴(모든 테마 공통, 예전 '하루 식단' 자리) — 체크 없이 목록으로만 보여준다 */
 const CKL=['식사할 때 첫 세 입은 단백질부터 먹기','끼니 간격은 3~5시간, 정해진 시간에 먹기','고칼로리·가공식품은 반만 먹고, 나머지는 자연식품으로 채우기','잠들기 3시간 전부터는 공복 유지하기','한 끼는 30분 이상, 천천히 오래 씹어 먹기','7시간 이상 충분히 자기'];
-const ckDone=()=>((rt[key(sim)]||{}).ck||[]);
-function ckUI(){const e=$('#ckl');if(!e)return;const d=ckDone();$('#ckn').textContent=`${d.length}/${CKL.length} 완료`;
- e.innerHTML=CKL.map((t,i)=>{const on=d.includes(i);return `<button class="ck ${on?'on':''}" data-ck="${i}" aria-pressed="${on}"><span class="ckb" aria-hidden="true">${on?'✓':''}</span><span class="ckt">${t}</span></button>`}).join('');
- e.querySelectorAll('[data-ck]').forEach(b=>b.onclick=()=>{const k=key(sim),r=rt[k]||(rt[k]={}),i=+b.dataset.ck,c=r.ck||[];r.ck=c.includes(i)?c.filter(x=>x!=i):[...c,i].sort();ckUI();saveState()})}
+function ckUI(){const e=$('#ckl');if(!e||e.children.length)return;e.innerHTML=CKL.map((t,i)=>`<li class="ck"><span class="ckb" aria-hidden="true">${i+1}</span><span class="ckt">${t}</span></li>`).join('')}
 const hstk=(n,sz,lazy)=>`<img src="assets/themes/${n.split('-')[0]}/${n}.webp" width="${sz}" height="${sz}" alt=""${lazy?' loading="lazy"':''}>`;
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const ENM=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
@@ -713,9 +710,9 @@ function wpWin(x,W,H,D,mag){const F="'Noto Sans KR','Apple SD Gothic Neo',system
  sec('주간 루틴','근력·유산소 요일');
  const wk=[...document.querySelectorAll('#pweek > div')],cg=12,cw=(iW-6*cg)/7;
  wk.forEach((e,i)=>{const bx=iL+i*(cw+cg),hl=e.className.includes('p')||e.className.includes('w'),td=e.className.includes('t');box(bx,y,cw,130,hl?K.soft:K.sf,td?K.hi:K.line,td?6:3,mag?24:0);tx(e.querySelector('b').textContent,bx+cw/2,y+56,38,900,K.ink,'center');tx(e.lastChild.textContent,bx+cw/2,y+102,26,500,K.sub,'center')});y+=130;
- sec('오늘루틴',ckDone().length+'/'+CKL.length+' 완료');
- const dn=ckDone(),rh=mag?58:66,rg=8;CKL.forEach((t,n)=>{const by=y+n*(rh+rg),on=dn.includes(n);box(iL,by,iW,rh,K.sf,K.line,3,mag?30:0);
-  x.beginPath();x.roundRect(iL+24,by+rh/2-17,34,34,mag?18:0);if(on){x.fillStyle=K.hi;x.fill()}x.lineWidth=4;x.strokeStyle=on?K.hi:K.ink;x.stroke();if(on)tx('✓',iL+42,by+rh/2+11,28,900,K.sf,'center');
+ sec('오늘루틴','매일 챙기는 6가지');
+ const rh=mag?58:66,rg=8;CKL.forEach((t,n)=>{const by=y+n*(rh+rg);box(iL,by,iW,rh,K.sf,K.line,3,mag?30:0);
+  x.beginPath();x.roundRect(iL+24,by+rh/2-17,34,34,mag?18:0);x.fillStyle=K.soft;x.fill();tx(String(n+1),iL+41,by+rh/2+10,24,900,K.ink,'center');
   let sz=32;while(sz>22&&tw(t,sz,500)>iW-110)sz-=2;tx(t,iL+80,by+rh/2+11,sz,500,K.ink)});
  if(mag){tx('DIET ARCHIVE, '+ENM[sim.getMonth()]+' '+sim.getFullYear(),iL,bot-32,26,700,K.sub);tx(String(sim.getDate()),iL+iW,bot-28,64,'italic 400',K.ink,'right',SER)}
  else{tx(THEMES[thm].tags.join(' '),iL+iW,bot-30,28,500,K.sub,'right');tx(`${sim.getMonth()+1}월 ${sim.getDate()}일`,iL,bot-30,28,500,K.sub)}}
@@ -759,9 +756,9 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  y+=250;lbl(L,y,tw('주간 루틴',54,900),54);tx('주간 루틴',L,y,54,900,C.ink);y+=30;
  const wk=[...document.querySelectorAll('#pweek > div')],cg=14,cw=(CW-6*cg)/7;
  wk.forEach((e,i)=>{const bx=L+i*(cw+cg),k=e.className.includes('p')?C.blush:e.className.includes('w')?C.lilac:C.card;rr(bx,y,cw,160,Math.min(R,34),k,1);tx(e.querySelector('b').textContent,bx+cw/2,y+68,42,900,C.ink,'center');tx(e.lastChild.textContent,bx+cw/2,y+120,30,500,C.sub,'center')});
- y+=240;const ckn=ckDone().length+'/'+CKL.length+' 완료',w3=tw('오늘루틴',54,900);lbl(L,y,w3+30+tw(ckn,32,500),54);tx('오늘루틴',L,y,54,900,C.ink);tx(ckn,L+w3+30,y,32,500,C.sub);y+=30;
- const dn=ckDone(),rh=72,rg=10;CKL.forEach((t,n)=>{const by=y+n*(rh+rg),on=dn.includes(n);rr(L,by,CW,rh,Math.min(R,34),C.card,1);
-  x.beginPath();x.roundRect(L+28,by+rh/2-18,36,36,T=='minimal'?6:20);if(on){x.fillStyle=C.accent;x.fill()}x.lineWidth=4;x.strokeStyle=on?C.accent:C.ink;x.stroke();if(on)tx('✓',L+48,by+rh/2+12,30,900,D?C.bg:'#FFFFFF','center');
+ y+=240;const ckn='매일 챙기는 6가지',w3=tw('오늘루틴',54,900);lbl(L,y,w3+30+tw(ckn,32,500),54);tx('오늘루틴',L,y,54,900,C.ink);tx(ckn,L+w3+30,y,32,500,C.sub);y+=30;
+ const rh=72,rg=10;CKL.forEach((t,n)=>{const by=y+n*(rh+rg);rr(L,by,CW,rh,Math.min(R,34),C.card,1);
+  x.beginPath();x.roundRect(L+28,by+rh/2-18,36,36,T=='minimal'?6:20);x.fillStyle=C.leaf;x.fill();tx(String(n+1),L+46,by+rh/2+10,26,900,C.ink,'center');
   let sz=34;while(sz>24&&tw(t,sz,500)>CW-130)sz-=2;tx(t,L+92,by+rh/2+12,sz,500,C.ink)});
  const end=y+CKL.length*(rh+rg);
  // 장식(정적): 글자와 겹치지 않는 자리, 아래쪽 손전등·카메라 버튼 자리는 피함

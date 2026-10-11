@@ -317,12 +317,9 @@ body.pwin .pst,body.pwin .pweek div{border-radius:0}
 body.pmag .poster{padding:16px 16px 12px;border-radius:6px 14px 14px 6px;background:linear-gradient(90deg,#FFFFFF,#F8F7FA);box-shadow:inset 10px 0 12px -10px rgba(30,27,34,.28);border:1px solid #DCD3F5}
 body.pmag #pmh{margin-bottom:12px}
 
-/* 오늘루틴 체크리스트(모든 테마, 예전 하루 식단 자리) — 누르면 체크, 날짜별 저장 */
-.ckl{display:flex;flex-direction:column;gap:6px}
-.ck{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;background:var(--surface);border:var(--border);border-radius:var(--radius);color:var(--text);font:inherit;font-size:14px;line-height:1.4}
-.ckb{flex:none;width:22px;height:22px;display:grid;place-items:center;border:2px solid var(--text);border-radius:6px;font-size:13px;font-weight:900}
-.ck.on .ckb{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
-body.pwin .ck{border-radius:0}body.pwin .ckb{border-radius:0}
-[data-theme="y2k"] .ckb{border-color:#6F5BB8;border-radius:50%}[data-theme="y2k"] .ck.on .ckb{background:#6F5BB8;border-color:#6F5BB8;color:#fff}
-[data-theme="romantic"] .ckb{border-radius:50%}
-[data-theme="kitsch"] .ckb{border-radius:50%;border-color:#DE2373}
+/* 오늘루틴 목록(모든 테마, 예전 하루 식단 자리) — 체크 없이 번호 목록 */
+.ckl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.ck{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border:var(--border);border-radius:var(--radius);color:var(--text);font-size:14px;line-height:1.4}
+.ckb{flex:none;width:24px;height:24px;display:grid;place-items:center;border-radius:6px;background:var(--accent-soft);color:var(--text);font-size:13px;font-weight:900}
+body.pwin .ck,body.pwin .ckb{border-radius:0}
+[data-theme="y2k"] .ckb,[data-theme="romantic"] .ckb,[data-theme="kitsch"] .ckb{border-radius:50%}
