@@ -601,7 +601,7 @@ function tbarUI(){const T=effTh(),now=new Date(),hm=now.getHours()+':'+String(no
   :`<i class="tbx"></i><b>untitled - ${n}</b>`})}
 // 기록 탭: 오늘 끼니 칸(누르면 그 끼니로 기록). 모양은 테마 컨셉대로
 function slotUI(){const e=$('#slotrow');if(!e)return;if(curSlot==null)curSlot=autoSlot();const S=slotData(),n=S.filter(s=>s.done).length;
- e.innerHTML=`<div class="slh"><b>오늘 끼니</b><span class="sub">${S.length}칸 중 ${n}칸 기록</span></div><div class="sls">`+S.map(s=>`<button class="slot ${curSlot==s.i?'on':''} ${s.done?'done':'empty'}" data-cs="${s.i}" aria-pressed="${curSlot==s.i}"><span class="slcb">${s.done?ico('check'):''}</span><span class="sln"><small class="en">${s.en}</small><b>${s.name}</b></span><span class="sli">${s.done?s.items.join(', '):effTh()=='kitsch'?'기록하기':'+ 기록'}</span></button>`).join('')+'</div>';
+ e.innerHTML=`<div class="slh"><b>오늘 끼니</b><span class="sub">${S.length}칸 중 ${n}칸 기록</span></div><div class="sls">`+S.map(s=>`<button class="slot ${curSlot==s.i?'on':''} ${s.done?'done':'empty'}" data-cs="${s.i}" aria-pressed="${curSlot==s.i}"><span class="slcb">${s.done?ico('check'):''}</span><span class="sln"><small class="en">${s.en}</small><b>${s.name}</b></span><span class="sli">${s.done?s.items.join(', '):'+ 기록'}</span></button>`).join('')+'</div>';
  e.querySelectorAll('[data-cs]').forEach(b=>b.onclick=()=>{curSlot=+b.dataset.cs;slotUI()})}
 /* sensitive */
 function sens(){const L=[];if(CY&&CY.starts.length)L.push('생리주기 정보: 시작일 '+CY.starts.length+'회 · 평균 주기 '+cyAvg()+'일 · 생리 '+CY.len+'일');if(Object.keys(cyc).length)L.push('생리주기 직접 고른 날 '+Object.keys(cyc).length+'일');if((SV.past||[]).length)L.push('다이어트로 힘들었던 경험: '+SV.past.map(k=>(SVQ.find(q=>q.k=='past').o.find(o=>o[0]==k)||[,,k])[2]).join('·'));if(nb.photos.length)L.push('눈바디 사진 '+nb.photos.length+'장');if(nb.cloth||Object.keys(nb.fit).length)L.push('기준 옷 핏 기록 '+Object.keys(nb.fit).length+'회'+(nb.cloth?' ('+nb.cloth+')':''));if(lowfm)L.push('장 민감: 예민한 편으로 저장됨');if(SV.avoid.length)L.push('피해야 할 음식(알레르기): '+SV.avoid.map(k=>AVN[k]).join('·'));if(wlog.length)L.push('몸무게 기록 '+wlog.length+'건');if(Object.keys(cond).length)L.push('컨디션 기록 '+Object.keys(cond).length+'일');
@@ -668,7 +668,7 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  const C={bg:v.bg,ink:v.text,card:v.surface,yel:v['c-lemon'],yt:v.text,sky:v['c-sky'],leaf:v['accent-soft'],blush:v['c-blush'],lilac:v['c-lilac'],sub:v['text-sub'],line:v.line,accent:v.accent};
  const F="'Noto Sans KR','Apple SD Gothic Neo',system-ui,sans-serif",MONO="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace",R=Math.max(12,(parseFloat(v.radius)||8)*3),IMGT=T=='y2k'||T=='romantic'||T=='vintage'||T=='kitsch';
  // 테마별 카드: 미니멀 얇은 선 / Y2K 1.5px 진한 테두리 / 로맨틱 테두리 없이 옅은 그림자 / 빈티지 얇은 선 + 아래 그림자
- const FR={minimal:{w:3,c:C.line},y2k:{w:4.5,c:C.ink},romantic:{w:0,sh:['rgba(90,62,54,.10)',60,18]},vintage:{w:3,c:C.line},kitsch:{w:4.5,c:'#EFE3E6'}}[T]||{w:3,c:C.line};
+ const FR={minimal:{w:3,c:C.line},y2k:{w:4.5,c:C.ink},romantic:{w:0,sh:['rgba(90,62,54,.10)',60,18]},vintage:{w:3,c:C.line},kitsch:{w:7.5,c:'#FF9CC8',dot:1}}[T]||{w:3,c:C.line};
  const rr=(a,b,w,h,r,fill,stroke)=>{x.save();if(stroke&&FR.sh&&fill){x.shadowColor=FR.sh[0];x.shadowBlur=FR.sh[1];x.shadowOffsetY=FR.sh[2]}x.beginPath();x.roundRect(a,b,w,h,r);if(fill){x.fillStyle=fill;x.fill()}x.restore();if(stroke&&FR.w){x.beginPath();x.roundRect(a,b,w,h,r);x.lineWidth=FR.w;x.strokeStyle=FR.c;x.stroke();if(FR.dot){x.save();x.setLineDash([2,10]);x.lineCap='round';x.lineWidth=6;x.strokeStyle='#FFFFFF';x.beginPath();x.roundRect(a+18,b+18,w-36,h-36,Math.max(0,r-14));x.stroke();x.restore()}}};
  const isY=T=='y2k';
  const tx=(t,a,b,sz,wt,col,al,fam)=>{x.font=`${wt} ${sz}px ${fam||F}`;x.textAlign=al||'left';x.textBaseline='alphabetic';x.fillStyle=col;x.fillText(t,a,b)};
@@ -716,10 +716,9 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  if(T=='romantic'){const pc=D?['#C98F7E','#B98273','#D49C8A']:['#F6C9B8','#F8D5C6','#F3BFAC'];icon(WPS.petal,L-20,wy-110,110,pc[0],null,-30);icon(WPS.petal,W-L-110,wy-100,96,pc[2],null,60);icon(WPS.petal,W/2-45,end+24,90,pc[1],null,20)}
  if(T=='vintage'){const sk=D?'#F3E9DC':'#4A3B33';tape(L+30,wy-26,150,-6,'#F2A7C3','#FBE3EC');tape(W-L-200,y-22,150,5,'#A9CBEB','#E4EEF7');
   icon(WPS.star,W-L-80,wy-90,70,'#F2A7C3',sk,0,1);icon(WPS.star,W/2+60,end+34,56,'#A9CBEB',sk,0,1);icon(WPS.clover,W/2-120,end+30,60,'#9DB69A',null);tx('· + ·',W/2-10,end+76,40,700,D?'#E08A64':'#C2483D','center')}
- if(T=='kitsch'){// 쿼티 키보드 장식(결과 카드·배경화면만) + 바느질 핑크 펠트 별(가장자리)
-  const kx=W/2-250,ky=end+26,R3=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];R3.forEach((row,r)=>[...row].forEach((ch,i)=>{const bx=kx+r*18+i*48,by=ky+r*52;rr(bx,by,42,44,10,'#FFFFFF');x.lineWidth=2.5;x.strokeStyle='#D98AA8';x.beginPath();x.roundRect(bx,by,42,44,10);x.stroke();if(r==0){x.fillStyle='#FBE7EF';x.fillRect(bx+4,by+3,34,9)}tx(ch,bx+21,by+36,22,700,'#3A2A2E','center')}));
-  const felt=(px,py,sz)=>{icon(WPS.star,px,py,sz,'#E9A9C0','#D98AA8',0,1);x.save();x.setLineDash([1.2,1.2]);icon(WPS.star,px+sz*.14,py+sz*.14,sz*.72,null,'#F7D3E0',0,1);x.restore()};
-  felt(W-L-80,wy-90,70);felt(L-10,wy-70,56);felt(W-L-40,end+40,44)}
+ if(T=='kitsch'){// 쿼티 키보드 장식(결과 카드·배경화면만) + 핑크 별·하트·흰 반짝이
+  const kx=W/2-250,ky=end+26,R3=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];R3.forEach((row,r)=>[...row].forEach((ch,i)=>{const bx=kx+r*18+i*48,by=ky+r*52;rr(bx,by,42,44,10,'#FFD6E8');x.lineWidth=2.5;x.strokeStyle='#DE2373';x.beginPath();x.roundRect(bx,by,42,44,10);x.stroke();if(r==0){x.fillStyle='#B9A2E6';x.fillRect(bx+4,by+3,34,9)}tx(ch,bx+21,by+36,22,700,'#3A1F22','center')}));
+  icon(WPS.star,W-L-80,wy-90,70,'#FF9CC8','#DE2373',0,1);icon(WPS.spark,L+10,wy-70,50,'#FFFFFF','#DE2373',0,1);icon('M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z',W/2-30,wy-80,60,'#FF9CC8','#DE2373',0,1)}
  return c.toDataURL('image/png')}
 async function wpOpen(theme){wpTheme=theme||wpTheme||curMode();try{await document.fonts.load("900 40px 'Noto Sans KR'");await document.fonts.load("500 40px 'Noto Sans KR'")}catch(e){}await wpLoad(wpTheme);
  $('#wpimg').src=wpDraw(wpTheme);$$('[data-wp]').forEach(b=>b.classList.toggle('on',b.dataset.wp==wpTheme));$('#wpov').hidden=false}
