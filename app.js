@@ -576,7 +576,7 @@ function camGhUI(){const g=$('#camghost'),last=nb.photos[nb.photos.length-1];$('
 // 촬영 저장: 가이드 점선 틀(가로선 범위) 크기로 잘라 저장하고, 사람 실루엣 점선에서 30px 바깥부터 자연스럽게 흐리게.
 // 사진 픽셀 처리라 화면 효과 금지(filter: blur)와는 별개. 사파리용으로 축소→확대 방식 흐림
 const GPATH='M50 14a9 10 0 1 0 0.01 0zM50 34c-6 0-10 1-15 3-4 2-6 6-7 11l-4 34c0 3 3 4 5 1l5-28 1 30-3 46-2 40h9l4-38 6-38 6 38 4 38h9l-2-40-3-46 1-30 5 28c2 3 5 2 5-1l-4-34c-1-5-3-9-7-11-5-2-9-3-15-3z';
-const GCROP={x0:10,y0:4,x1:90,y1:197},GPAD=10;// 저장 범위(가이드 SVG viewBox 100×200 기준) · 실루엣 둘레 선명 범위(화면 px)
+const GCROP={x0:10,y0:4,x1:90,y1:197},GPAD=20;// 저장 범위(가이드 SVG viewBox 100×200 기준) · 실루엣 둘레 선명 범위(화면 px)
 function softBlur(src,w,h,f){const a=document.createElement('canvas');a.width=Math.max(1,Math.round(w/f));a.height=Math.max(1,Math.round(h/f));const ax=a.getContext('2d');ax.imageSmoothingQuality='high';ax.drawImage(src,0,0,a.width,a.height);
  const b=document.createElement('canvas');b.width=Math.max(1,Math.round(a.width/2));b.height=Math.max(1,Math.round(a.height/2));b.getContext('2d').drawImage(a,0,0,b.width,b.height);
  const c=document.createElement('canvas');c.width=w;c.height=h;const cx=c.getContext('2d');cx.imageSmoothingQuality='high';cx.drawImage(b,0,0,w,h);a.width=a.height=b.width=b.height=0;return c}
