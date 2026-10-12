@@ -128,18 +128,12 @@
 
 <!-- 주간 -->
 <section class="view" id="v3">
+ <div hidden id="legacy" aria-hidden="true">
  <div class="card">
   <h2>주간 루틴</h2>
   <div class="week" id="week"></div>
   <div class="sub" style="margin-top:8px" id="todaylbl"></div>
    </div>
- <div class="card">
-  <h2>이번 주 달성</h2>
-  <div class="row" style="justify-content:space-between"><span class="sub">필수 행동을 모두 채운 날</span><b id="wkn">0/5</b></div>
-  <div class="bar"><i id="wkbar" style="width:0"></i></div>
-  <div class="row" id="wkd" style="margin-top:8px;gap:4px"></div>
-  <div class="sub" style="margin-top:6px">주 5일을 채우면 🏅 뱃지. 연속 달성이 아니라 주 단위라서 하루 빠져도 괜찮아요.</div>
- </div>
  <div class="card">
   <div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0" id="calt">도장판</h2><b id="calc2"></b></div>
   <div class="cal" id="calh"></div><div class="cal" id="cal" style="margin-top:4px"></div>
@@ -164,10 +158,7 @@
   <div class="dexgrid" id="sumg" style="grid-template-columns:repeat(2,1fr)"></div>
   <div class="sub" style="margin-top:8px">8주가 끝나면 이 카드를 이미지로 저장·공유할 수 있게 만들 예정이에요.</div>
  </div>
-</section>
 
-<!-- 리포트 -->
-<section class="view" id="v4">
  <div class="card">
   <div class="row" style="justify-content:space-between"><h2 style="margin:0">주간 리포트</h2><span class="tag" id="rrange"></span></div>
   <div class="sub" style="margin-top:4px">기록한 내용으로 만들어요. 최근 7일(오늘 포함) 기준이고, 영양은 식단을 다 기록한 날만 평가해요.</div>
@@ -175,12 +166,34 @@
  </div>
  <div class="card" id="rhero"></div>
  <div class="card"><h2>이번 주 달성도</h2><div id="rgood"></div></div>
+</div>
+</section>
+
+<!-- 리포트 -->
+<section class="view" id="v4">
+ <div class="card">
+  <h2>이번 주 달성</h2>
+  <div class="row" style="justify-content:space-between"><span class="sub">필수 행동을 모두 채운 날</span><b id="wkn">0/5</b></div>
+  <div class="bar"><i id="wkbar" style="width:0"></i></div>
+  <div class="row" id="wkd" style="margin-top:8px;gap:4px"></div>
+  <div class="sub" style="margin-top:6px">주 5일을 채우면 🏅 뱃지. 연속 달성이 아니라 주 단위라서 하루 빠져도 괜찮아요.</div>
+ </div>
+ <div class="card">
+  <div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0" id="calt">월별 도장판</h2><b id="calc2"></b></div>
+  <div class="cal" id="calh"></div><div class="cal" id="cal" style="margin-top:4px"></div>
+  <div class="sub" style="margin-top:6px">필수 행동을 채운 날 스티커가 붙어요. 🥗 균형 식사(탄수 하한·단백질·지방 적정 범위) · 💪 운동 완료 · 👟 걸음 목표 · 🌙 숙면(수면 "좋음") · ⭐ 기본. 2개 이상 받은 날은 🌟로 표시돼요. 체중 달성은 기준이 아니에요. 빈 날이 있어도 괜찮아요.</div>
+ </div>
  <div class="card"><h2>하루별 한눈에</h2><div class="hm" id="rhm"></div><div class="sub" style="margin-top:6px">초록=달성 · 노랑=보통 · 분홍=아쉬움 · 회색=기록 없음</div></div>
  <div class="card"><h2>컨디션 · 몸무게</h2><div id="rcond"></div></div>
  <div class="card"><h2>보완할 점과 조언</h2><div id="radv"></div>
   <details style="margin-top:10px"><summary class="sub">근거와 한계 보기</summary>
    <div class="sub" style="margin-top:6px">· 수면 부족과 식욕 호르몬(렙틴↓·그렐린↑)·허기 증가: Spiegel et al., Ann Intern Med 2004<br>· 식사량을 줄이는 중 수면 시간이 짧으면 지방 감소가 줄고 제지방 감소가 늘어난 연구: Nedeltcheva et al., Ann Intern Med 2010<br>· 하룻밤 수면 제한 후 인슐린 민감성 저하: Donga et al., J Clin Endocrinol Metab 2010<br>· 수분 2,100mL·식이섬유 20g·단백질 50–55g: 한국인 영양소 섭취기준(성인 여성)<br><b>한계</b>: 위 수면 연구는 해외 소규모 연구예요. 한국 여성 대상 근거는 아직 확인하지 못했고, 문구는 출시 전 전문가 검토가 필요해요. 경향일 뿐 개인차가 크고 의료 조언이 아니에요.</div>
   </details>
+ </div>
+ <div class="card">
+  <h2>완성 카드 미리보기</h2>
+  <div class="dexgrid" id="sumg" style="grid-template-columns:repeat(2,1fr)"></div>
+  <div class="sub" style="margin-top:8px">8주가 끝나면 이 카드를 이미지로 저장·공유할 수 있게 만들 예정이에요.</div>
  </div>
 </section>
 
@@ -297,7 +310,6 @@
  <button data-v="1"><span>🍽️</span>식단</button>
  <button data-v="6"><span>🏃‍♀️</span>운동</button>
  <button data-v="2"><span>📸</span>눈바디</button>
- <button data-v="3"><span>📅</span>주간</button>
  <button data-v="4"><span>📊</span>리포트</button>
  <button data-v="5"><span>🔒</span>설정</button>
 </nav>
