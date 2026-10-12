@@ -413,9 +413,11 @@ function reportUI(){
  $('#rgood').innerHTML=(have.length?have.slice().sort((a,b)=>b.ratio-a.ratio).map(r=>`<div class="sbar"><span>${ADV[r.k].n}</span><span class="bar"><i style="width:${Math.max(4,r.ratio*100)}%;background:${col(r.ratio)}"></i></span><span>${r.t}</span></div>`).join(''):'<div class="sub">아직 기록이 없어요. 데모 버튼으로 예시 한 주를 채워보세요.</div>')+(good.length?`<div style="margin-top:8px;font-size:14px">👏 <b>${good.slice(0,3).map(r=>ADV[r.k].n).join(' · ')}</b>을(를) 잘 지켰어요.</div>`:'');
  // heatmap
  const rows=[['meal','식단'],['water','물'],['move','움직임'],['carb','탄수'],['prot','단백질'],['fat','지방']];
- let hm='<div></div>'+days.map(d=>`<div class="sub" style="text-align:center">${DW[(d.getDay()+6)%7]}</div>`).join('');
- rows.forEach(([k,n])=>{hm+=`<div>${n}</div>`+st.map(x=>`<div class="hc ${x[k]===undefined?'':x[k]?'ok':'bad'}"></div>`).join('')});
- hm+='<div>수면</div>'+st.map(x=>`<div class="hc ${x.sleep==3?'ok':x.sleep==2?'mid':x.sleep==1?'bad':''}"></div>`).join('');
+ // 하루별 한눈에는 이번 주 월~일 고정(사용자 결정), 아직 안 온 날은 회색
+ const wd0=new Date(sim.getFullYear(),sim.getMonth(),sim.getDate()-(sim.getDay()+6)%7),wdays=DW.map((_,i)=>new Date(wd0.getFullYear(),wd0.getMonth(),wd0.getDate()+i)),wst=wdays.map(d=>d>sim?{}:dayStat(d));
+ let hm='<div></div>'+DW.map(w=>`<div class="sub" style="text-align:center">${w}</div>`).join('');
+ rows.forEach(([k,n])=>{hm+=`<div>${n}</div>`+wst.map(x=>`<div class="hc ${x[k]===undefined?'':x[k]?'ok':'bad'}"></div>`).join('')});
+ hm+='<div>수면</div>'+wst.map(x=>`<div class="hc ${x.sleep==3?'ok':x.sleep==2?'mid':x.sleep==1?'bad':''}"></div>`).join('');
  $('#rhm').innerHTML=hm;
  // cond + weight
  const avg=k=>{const v=st.map(x=>x[k]).filter(Boolean);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
