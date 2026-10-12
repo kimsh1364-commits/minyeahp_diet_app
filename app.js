@@ -286,7 +286,7 @@ function tot(){
  $$('#log [data-f]').forEach(b=>b.onclick=()=>{const l=logs[+b.dataset.f],i=favs.findIndex(f=>f.n==nm(l));if(i>=0)favs.splice(i,1);else favs.push({...l,n:nm(l)});tot()});
  const c=logs.reduce((a,l)=>a+l.c,0),p=logs.reduce((a,l)=>a+l.p,0),f=logs.reduce((a,l)=>a+fatOf(l.k,l.c,l.p),0),v=logs.reduce((a,l)=>a+(l.v||0),0),cg=window.CARBMIN||130,pg=window.PROT||60;
  const br=(n,a,b,u,lab)=>`<div class="sbar"><span>${n}</span><span class="bar"><i style="width:${Math.min(100,b?a/b*100:0)}%"></i></span><span>${Math.round(a*10)/10}/${lab||b}${u}</span></div>`;
- $('#tot').innerHTML=br('탄수',c,cg,'g')+br('단백질',p,pg,'g')+br('지방',f,window.FATLO||30,'g',(window.FATLO||30)+'–'+(window.FATHI||60))+`<div class="sub" style="margin-top:4px">지방은 범위 안이면 충분해요 · 견과·생선·올리브유 같은 좋은 지방 위주로</div>`+(logs.length>=G.meals&&c<cg?`<div class="sub" style="margin-top:6px">탄수 ${Math.round(c)}g — 하한 ${cg}g 이상을 목표로 해요 (줄이는 게 목표가 아니에요).</div>`:'');
+ $('#tot').innerHTML=br('탄수',c,cg,'g')+br('단백질',p,pg,'g')+br('지방',f,window.FATLO||30,'g',(window.FATLO||30)+'–'+(window.FATHI||60))+(logs.length>=G.meals&&c<cg?`<div class="sub" style="margin-top:6px">탄수 ${Math.round(c)}g — 하한 ${cg}g 이상을 목표로 해요 (줄이는 게 목표가 아니에요).</div>`:'');
  quickUI();plateUI();renderReq();
 }
 
