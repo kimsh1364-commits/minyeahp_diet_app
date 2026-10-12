@@ -653,14 +653,14 @@ const OWF={story:{r:9/16,W:1080,H:1920,n:'스토리'},feed:{r:4/5,W:1080,H:1350,
 const OWEN=['SUN','MON','TUE','WED','THU','FRI','SAT'],OWKO=['일','월','화','수','목','금','토'];
 let OW=null,owS=null,owFace='environment',owSel=-1;
 function owStampText(s){const d=sim,Y=d.getFullYear(),M=d.getMonth()+1,D=d.getDate(),p=n=>String(n).padStart(2,'0');
- return [`${Y}.${p(M)}.${p(D)}`,`${p(M)}.${p(D)} ${OWEN[d.getDay()]}`,`'${String(Y).slice(2)} ${p(M)} ${p(D)}`,`${M}월 ${D}일 오운완`][s%4]}
+ return [`${Y}.${p(M)}.${p(D)}`,`${p(M)}.${p(D)} ${OWEN[d.getDay()]}`,`'${String(Y).slice(2)} ${p(M)} ${p(D)}`,`${M}월 ${D}일`][s%4]}
 const OWST=4;
 function owClean(){if(OW&&OW.d!==key(sim)){idbDel('ow:'+OW.d).catch(()=>{});OW=null;saveState()}}
 function owFit(){const w=$('#owwrap'),st=$('#owst');if(!w||$('#ow').hidden)return;const r=OWF[(OW&&OW.fmt)||owFmt].r,aw=w.clientWidth-16,ah=w.clientHeight-8;let sw=Math.min(aw,ah*r);st.style.width=sw+'px';st.style.height=sw/r+'px';owGuide();owDraw()}
 let owFmt='story';
 function owGuide(){const g=$('#owgd'),f=(OW&&OW.fmt)||owFmt;g.className='owgd '+f;g.innerHTML=f=='story'?'<i class="t"><span>프로필·닫기 버튼 자리</span></i><i class="b"><span>메시지 보내기 자리</span></i>':'<i class="c"><span>프로필 격자에 보이는 범위</span></i>';
  $$('[data-owf]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.owf==f)))}
-async function owOpen(){owClean();$('#ow').hidden=false;document.body.style.overflow='hidden';try{await document.fonts.load("800 40px OwStamp")}catch(e){}
+async function owOpen(){owClean();$('#ow').hidden=false;document.body.style.overflow='hidden';try{await Promise.all([document.fonts.load("800 40px OwStamp"),document.fonts.load("300 40px OwStamp")])}catch(e){}
  if(OW&&OW.has){const u=await idbGet('ow:'+OW.d).catch(()=>null);if(u){owEdit(u);return}}owShoot()}
 function owClose(){owStop();$('#ow').hidden=true;document.body.style.overflow='';owSel=-1}
 function owStop(){if(owS){owS.getTracks().forEach(t=>t.stop());owS=null}$('#owv').srcObject=null}
@@ -672,9 +672,9 @@ function owCapture(){const v=$('#owv');if(!v.videoWidth)return toast('카메라�
  if(owFace=='user'){x.translate(W,0);x.scale(-1,1)}x.drawImage(v,(W-dw)/2,(H-dh)/2,dw,dh);const u=c.toDataURL('image/jpeg',.88);c.width=c.height=0;owStop();owNew(u)}
 async function owNew(u){OW={d:key(sim),fmt:owFmt,px:50,py:50,items:[{t:'stamp',s:0,x:.5,y:owFmt=='story'?.2:.1,w:.075}],has:1};try{await idbPut('ow:'+OW.d,u)}catch(e){toast('사진을 저장하지 못했어요 (저장 공간을 확인해 주세요)')}sens();saveState();owEdit(u)}
 function owEdit(u){owFmt=OW.fmt;owStop();$('#owv').hidden=true;const im=$('#owimg');im.src=u;im.hidden=false;$('#owshot').hidden=true;$('#owed').hidden=false;owSel=-1;owFit();owTools()}
-function owTools(){const has=OW.items.some(i=>i.t=='stamp');$('#owstamp').setAttribute('aria-pressed',String(has));$('#owstyle').disabled=!has}
+function owTools(){const has=OW.items.some(i=>i.t=='stamp'),st=OW.items.find(i=>i.t=='stamp')||{};['owcol','owwt'].forEach(id=>$('#'+id).disabled=!has);$('#owcol').setAttribute('aria-pressed',String(!!st.k));$('#owwt').setAttribute('aria-pressed',String(!!st.l));$('#owstamp').setAttribute('aria-pressed',String(has));$('#owstyle').disabled=!has}
 function owDraw(){const ly=$('#owly');if(!OW||!OW.has||$('#owed').hidden){if(ly)ly.innerHTML='';return}const st=$('#owst'),W=st.clientWidth;$('#owimg').style.objectPosition=`${OW.px}% ${OW.py}%`;
- ly.innerHTML=OW.items.map((it,i)=>it.t=='stamp'?`<div class="owit owstamp s${it.s%OWST} ${i==owSel?'sel':''}" data-i="${i}" style="left:${it.x*100}%;top:${it.y*100}%;font-size:${it.w*W}px">${owStampText(it.s)}</div>`
+ ly.innerHTML=OW.items.map((it,i)=>it.t=='stamp'?`<div class="owit owstamp s${it.s%OWST} ${it.k?'k':''} ${it.l?'l':''} ${i==owSel?'sel':''}" data-i="${i}" style="left:${it.x*100}%;top:${it.y*100}%;font-size:${it.w*W}px">${owStampText(it.s)}</div>`
   :`<img class="owit ${i==owSel?'sel':''}" data-i="${i}" src="assets/ounwan/${it.id}.webp" alt="${OWS.find(s=>s[0]==it.id)?.[1]||''}" draggable="false" style="left:${it.x*100}%;top:${it.y*100}%;width:${it.w*W}px">`).join('');
  $('#owsel').hidden=owSel<0;if(owSel>=0)$('#owselt').textContent=OW.items[owSel].t=='stamp'?'날짜 스탬프':'스티커'}
 function owAddStk(id){OW.items.push({t:'stk',id,x:.5,y:.5,w:.42});owSel=OW.items.length-1;$('#owtray').hidden=true;$('#owstk').setAttribute('aria-expanded','false');owDraw();saveState()}
@@ -689,12 +689,12 @@ function owAddStk(id){OW.items.push({t:'stk',id,x:.5,y:.5,w:.42});owSel=OW.items
 async function owRender(){const f=OWF[OW.fmt],W=f.W,H=f.H,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),im=$('#owimg');
  x.fillStyle='#111';x.fillRect(0,0,W,H);const k=Math.max(W/im.naturalWidth,H/im.naturalHeight),dw=im.naturalWidth*k,dh=im.naturalHeight*k;x.drawImage(im,(W-dw)*OW.px/100,(H-dh)*OW.py/100,dw,dh);
  for(const it of OW.items){const cx=it.x*W,cy=it.y*H;
-  if(it.t=='stamp'){const s=it.s%OWST,fs=it.w*W,t=owStampText(it.s);x.font=`800 ${fs}px OwStamp, 'Noto Sans KR', sans-serif`;x.textAlign='center';x.textBaseline='middle';
-   if(s==1){const tw=x.measureText(t).width;x.fillStyle='#FFFFFF';x.beginPath();x.roundRect(cx-tw/2-fs*.6,cy-fs*.8,tw+fs*1.2,fs*1.6,fs*.8);x.fill();x.fillStyle='#111111';x.fillText(t,cx,cy+fs*.04)}
-   else{x.save();x.shadowColor=s==2?'rgba(120,40,0,.85)':'rgba(0,0,0,.45)';x.shadowBlur=fs*(s==2?.25:.3);x.shadowOffsetY=fs*.04;x.fillStyle=s==2?'#FF9A3C':'#FFFFFF';x.fillText(t,cx,cy);x.restore()}}
+  if(it.t=='stamp'){const s=it.s%OWST,fs=it.w*W,t=owStampText(it.s);x.font=`${it.l?300:800} ${fs}px OwStamp, 'Noto Sans KR', sans-serif`;x.textAlign='center';x.textBaseline='middle';
+   if(s==1){const tw=x.measureText(t).width;x.fillStyle=it.k?'#111111':'#FFFFFF';x.beginPath();x.roundRect(cx-tw/2-fs*.6,cy-fs*.8,tw+fs*1.2,fs*1.6,fs*.8);x.fill();x.fillStyle=it.k?'#FFFFFF':'#111111';x.fillText(t,cx,cy+fs*.04)}
+   else{x.save();x.shadowColor=it.k?'rgba(255,255,255,.4)':s==2?'rgba(120,40,0,.85)':'rgba(0,0,0,.45)';x.shadowBlur=fs*(s==2?.25:.3);x.shadowOffsetY=it.k?0:fs*.04;x.fillStyle=it.k?'#111111':s==2?'#FF9A3C':'#FFFFFF';x.fillText(t,cx,cy);x.restore()}}
   else{const si=await new Promise(ok=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>ok(null);i.src=`assets/ounwan/${it.id}.webp`});if(si){const w=it.w*W,h=w*si.naturalHeight/si.naturalWidth;x.drawImage(si,cx-w/2,cy-h/2,w,h)}}}
  const b=await new Promise(ok=>c.toBlob(ok,'image/jpeg',.92));c.width=c.height=0;return b}
-async function owSave(){if(!OW)return;const btn=$('#owsave');btn.disabled=true;btn.textContent='만드는 중…';try{try{await document.fonts.load("800 40px OwStamp")}catch(e){}
+async function owSave(){if(!OW)return;const btn=$('#owsave');btn.disabled=true;btn.textContent='만드는 중…';try{try{await Promise.all([document.fonts.load("800 40px OwStamp"),document.fonts.load("300 40px OwStamp")])}catch(e){}
   const b=await owRender(),name=`ounwan-${OW.d.replace(/-/g,'')}-${OW.fmt}.jpg`,file=new File([b],name,{type:'image/jpeg'});
   if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});return}catch(e){if(e&&e.name=='AbortError')return}}
   const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('사진을 저장했어요. 안 보이면 다운로드 폴더를 확인해 주세요')}
@@ -704,6 +704,8 @@ $('#owpick').onclick=()=>$('#owfile').click();
 $('#owfile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const k=Math.min(1,1920/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);const d=c.toDataURL('image/jpeg',.88);c.width=c.height=0;URL.revokeObjectURL(u);owStop();owNew(d)};im.onerror=()=>toast('사진을 열 수 없어요');im.src=u};
 $$('[data-owf]').forEach(b=>b.onclick=()=>{owFmt=b.dataset.owf;if(OW&&OW.has&&!$('#owed').hidden){OW.fmt=owFmt;saveState()}owFit()});
 $('#owstamp').onclick=()=>{const i=OW.items.findIndex(t=>t.t=='stamp');if(i>=0){OW.items.splice(i,1);owSel=-1}else{OW.items.push({t:'stamp',s:0,x:.5,y:OW.fmt=='story'?.2:.1,w:.075});owSel=OW.items.length-1}owTools();owDraw();saveState()};
+$('#owcol').onclick=()=>{const it=OW.items.find(t=>t.t=='stamp');if(it){it.k=!it.k;owTools();owDraw();saveState()}};
+$('#owwt').onclick=()=>{const it=OW.items.find(t=>t.t=='stamp');if(it){it.l=!it.l;owTools();owDraw();saveState()}};
 $('#owstyle').onclick=()=>{const it=OW.items.find(t=>t.t=='stamp');if(it){it.s=(it.s+1)%OWST;owDraw();saveState()}};
 $('#owstk').onclick=()=>{const t=$('#owtray'),open=t.hidden;t.hidden=!open;$('#owstk').setAttribute('aria-expanded',String(open));if(open&&!t.children.length){t.innerHTML=OWS.map(([id,tx])=>`<button data-stk="${id}" aria-label="${tx} 스티커 붙이기"><img src="assets/ounwan/${id}.webp" alt="" loading="lazy"></button>`).join('');t.querySelectorAll('[data-stk]').forEach(b=>b.onclick=()=>owAddStk(b.dataset.stk))}};
 $('#owsm').onclick=()=>{const it=OW.items[owSel];if(it){it.w=Math.max(it.t=='stamp'?.035:.15,it.w*.85);owDraw();saveState()}};
