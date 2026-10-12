@@ -671,8 +671,8 @@ const WPI={};
 function wpSrc(mode){return [...(thVars(mode)['page-bg']||'').matchAll(/url\((?:"([^"]+)"|([^)"]+))\)/g)].map(m=>m[1]||m[2])}
 function wpPrep(mode){return Promise.all(wpSrc(mode).map(s=>WPI[s]?WPI[s]:(WPI[s]=new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>{delete WPI[s];ok(null)};setTimeout(()=>ok(null),4000);im.src=s}))))}
 async function wpLoad(mode){const ims=await wpPrep(mode);wpSrc(mode).forEach((s,i)=>WPI[s+'#img']=ims[i])}
-const WSTK={y2k:['y2k-star']};
-function wpStk(mode){const L=WSTK[effTh(mode)=='minimal'?'minimal':thm]||[];return Promise.all(L.map(n=>WPI['stk:'+n]||(WPI['stk:'+n]=new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>{delete WPI['stk:'+n];ok(null)};setTimeout(()=>ok(null),4000);im.src=`assets/themes/${n.split('-')[0]}/${n}.webp`})))).then(a=>{L.forEach((n,i)=>WPI['stk#'+n]=a[i])})}
+const WSTK={y2k:['y2k-star','water-bottle'],minimal:['water-bottle'],all:['water-bottle']};
+function wpStk(mode){const L=WSTK[effTh(mode)=='minimal'?'minimal':thm]||WSTK.all;return Promise.all(L.map(n=>WPI['stk:'+n]||(WPI['stk:'+n]=new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>{delete WPI['stk:'+n];ok(null)};setTimeout(()=>ok(null),4000);im.src=`assets/themes/${n.split('-')[0]}/${n}.webp`})))).then(a=>{L.forEach((n,i)=>WPI['stk#'+n]=a[i])})}
 // 홈 포스터 그대로 배경화면으로: 클린 미니멀(어둡게 포함) "나의 루틴" 창 / Y2K 잡지 페이지. 물 마시기·목표·주간 루틴·오늘의 루틴
 function wpWin(x,W,H,D,mag){const F="'Noto Sans KR','Apple SD Gothic Neo',system-ui,sans-serif",SER='Didot,"Times New Roman",Georgia,serif';
  const K=mag?{bg:'#F8F7FA',sf:'#FFFFFF',ink:'#1E1B22',sub:'#5E5868',soft:'#ECE6FB',line:'#DCD3F5',hi:'#6F5BB8',drop:'#3B8ED0'}:D?{bg:'#121212',sf:'#1C1C1C',ink:'#F2F2F2',sub:'#9B9B9B',soft:'#2A2A2A',line:'#333333',hi:'#F2F2F2',drop:'#6FB6EE'}:{bg:'#F7F7F7',sf:'#FFFFFF',ink:'#1A1A1A',sub:'#636363',soft:'#EDEDED',line:'#E3E3E3',hi:'#1A1A1A',drop:'#3B8ED0'};
@@ -697,7 +697,7 @@ function wpWin(x,W,H,D,mag){const F="'Noto Sans KR','Apple SD Gothic Neo',system
  // 물 마시기
  const wh=190,cy=y+wh/2;box(iL,y,iW,wh,mag?K.sf:K.sf,mag?K.line:K.line,3,mag?60:0);
  x.beginPath();x.arc(W/2,cy,74,0,Math.PI*2);x.fillStyle=K.sf;x.fill();x.lineWidth=6;x.strokeStyle=K.ink;x.stroke();
- x.save();x.translate(W/2-12*4,cy-12*4-4);x.scale(4,4);x.fillStyle=K.drop;x.fill(new Path2D('M12 2.5C12 2.5 5 10.3 5 15a7 7 0 0 0 14 0c0-4.7-7-12.5-7-12.5z'));x.restore();
+ {const bi=WPI['stk#water-bottle'];if(bi)x.drawImage(bi,W/2-60,cy-60,120,120);else{x.save();x.translate(W/2-12*4,cy-12*4-4);x.scale(4,4);x.fillStyle=K.drop;x.fill(new Path2D('M12 2.5C12 2.5 5 10.3 5 15a7 7 0 0 0 14 0c0-4.7-7-12.5-7-12.5z'));x.restore()}}
  tx('💧 물 마시기',iL+34,cy-6,40,900,K.ink);tx('하루 '+Math.round(G.water/200)+'잔',iL+34,cy+46,30,500,K.sub);
  tx('누르면',iL+iW-34,cy-6,34,700,K.ink,'right');tx('+1잔',iL+iW-34,cy+46,34,700,K.ink,'right');y+=wh+120;
  const t1=$('#pt1').textContent,w1=tw(t1,120,900);tx(t1,iL,y,120,900,K.ink);
@@ -742,7 +742,7 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  const wy=640,wh=200,cx=W/2,cy=wy+wh/2,cr=96;
  rr(L,wy,CW,wh,Math.min(R*1.4,90),C.sky,1);
  x.beginPath();x.arc(cx,cy,cr,0,Math.PI*2);x.fillStyle=v['surface']&&IMGT?'#FFFFFF':C.card;if(D)x.fillStyle=C.bg;x.fill();x.lineWidth=7;x.strokeStyle=C.ink;x.stroke();
- x.save();x.translate(cx-12*5.2,cy-12*5.2-6);x.scale(5.2,5.2);x.fillStyle=v.drop;x.fill(new Path2D('M12 2.5C12 2.5 5 10.3 5 15a7 7 0 0 0 14 0c0-4.7-7-12.5-7-12.5z'));x.strokeStyle='rgba(255,255,255,.8)';x.lineWidth=1.6;x.lineCap='round';x.stroke(new Path2D('M9 15.5a3 3 0 0 0 3 3'));x.restore();
+ {const bi=WPI['stk#water-bottle'],bs=cr*1.62;if(bi)x.drawImage(bi,cx-bs/2,cy-bs/2,bs,bs);else{x.save();x.translate(cx-12*5.2,cy-12*5.2-6);x.scale(5.2,5.2);x.fillStyle=v.drop;x.fill(new Path2D('M12 2.5C12 2.5 5 10.3 5 15a7 7 0 0 0 14 0c0-4.7-7-12.5-7-12.5z'));x.restore()}}
  tx('💧 물 마시기',L+44,cy-8,46,900,C.ink);tx('하루 '+Math.round(G.water/200)+'잔',L+44,cy+52,34,500,C.sub);
  tx('누르면',W-L-44,cy-8,38,700,C.ink,'right');tx('+1잔',W-L-44,cy+52,38,700,C.ink,'right');
  const cb=$('.pright').textContent;lbl(L,904,tw(cb,36,700),36);tx(cb,L,904,36,700,C.sub);// 타입 × 테마
