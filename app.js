@@ -572,20 +572,29 @@ async function camStart(){camStop();try{camS=await navigator.mediaDevices.getUse
 async function camOpen(){if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){toast('이 브라우저에선 카메라를 열 수 없어요. “사진 고르기”를 써 주세요');return}
  $('#cam').hidden=false;$('#camcnt').textContent='';camGhUI();await camStart()}
 function camClose(){camStop();$('#cam').hidden=true}
-function camGhUI(){const g=$('#camghost'),last=nb.photos[nb.photos.length-1];$('#camghostb').disabled=!last;g.hidden=!(camGh&&last);if(camGh&&last)idbGet(last).then(u=>{if(u)g.src=u}).catch(()=>{});$('#camghostb').textContent=camGh?'지난 사진 끄기':'지난 사진';$('#camtimer').textContent=camTimer?'⏱ 3초 켬':'⏱ 3초'}
-// 촬영 가이드 실루엣 둘레 50px 밖은 흐리게(사진 처리만, 화면 효과 아님). 사파리용으로 축소→확대 방식 흐림
-const GUIDE={x0:24,y0:3,x1:76,y1:190};// 가이드 SVG(viewBox 100×200) 안 실루엣·머리/발끝 범위
+function camGhUI(){const g=$('#camghost'),last=nb.photos[nb.photos.length-1];$('#camghostb').disabled=!last;g.hidden=!(camGh&&last);if(camGh&&last)idbGet(last).then(u=>{if(u)g.src=u}).catch(()=>{});$('#camghostb').textContent=camGh?'지난 사진 끄기':'지난 사진';camGhostFit();$('#camtimer').textContent=camTimer?'⏱ 3초 켬':'⏱ 3초'}
+// 촬영 저장: 가이드 점선 틀(가로선 범위) 크기로 잘라 저장하고, 사람 실루엣 점선에서 30px 바깥부터 자연스럽게 흐리게.
+// 사진 픽셀 처리라 화면 효과 금지(filter: blur)와는 별개. 사파리용으로 축소→확대 방식 흐림
+const GPATH='M50 14a9 10 0 1 0 0.01 0zM50 34c-6 0-10 1-15 3-4 2-6 6-7 11l-4 34c0 3 3 4 5 1l5-28 1 30-3 46-2 40h9l4-38 6-38 6 38 4 38h9l-2-40-3-46 1-30 5 28c2 3 5 2 5-1l-4-34c-1-5-3-9-7-11-5-2-9-3-15-3z';
+const GCROP={x0:10,y0:4,x1:90,y1:197},GPAD=30;// 저장 범위(가이드 SVG viewBox 100×200 기준) · 실루엣 둘레 선명 범위(화면 px)
 function softBlur(src,w,h,f){const a=document.createElement('canvas');a.width=Math.max(1,Math.round(w/f));a.height=Math.max(1,Math.round(h/f));const ax=a.getContext('2d');ax.imageSmoothingQuality='high';ax.drawImage(src,0,0,a.width,a.height);
  const b=document.createElement('canvas');b.width=Math.max(1,Math.round(a.width/2));b.height=Math.max(1,Math.round(a.height/2));b.getContext('2d').drawImage(a,0,0,b.width,b.height);
  const c=document.createElement('canvas');c.width=w;c.height=h;const cx=c.getContext('2d');cx.imageSmoothingQuality='high';cx.drawImage(b,0,0,w,h);a.width=a.height=b.width=b.height=0;return c}
-function camFocus(v){const cv=$('#cam .cv'),cw=cv.clientWidth,ch=cv.clientHeight,vw=v.videoWidth,vh=v.videoHeight,k0=Math.min(1,900/Math.max(vw,vh)),W=Math.round(vw*k0),H=Math.round(vh*k0);
- const sharp=document.createElement('canvas');sharp.width=W;sharp.height=H;const sx=sharp.getContext('2d');if(camFace=='user'){sx.translate(W,0);sx.scale(-1,1)}sx.drawImage(v,0,0,W,H);
- // 화면 좌표의 가이드 범위(+50px, 경계를 부드럽게 흐리는 몫 16px 더) → 사진 좌표
- const s=Math.min(cw/100,ch/200),ox=(cw-100*s)/2,oy=(ch-200*s)/2,k=Math.max(cw/vw,ch/vh),dx=(cw-vw*k)/2,dy=(ch-vh*k)/2,P=50+16,toF=(px,d)=>(px-d)/k*k0;
- let x0=toF(ox+GUIDE.x0*s-P,dx),x1=toF(ox+GUIDE.x1*s+P,dx);const y0=toF(oy+GUIDE.y0*s-P,dy),y1=toF(oy+GUIDE.y1*s+P,dy);if(camFace=='user'){const t=W-x1;x1=W-x0;x0=t}
- const out=softBlur(sharp,W,H,14),ox2=out.getContext('2d'),mask=document.createElement('canvas');mask.width=W;mask.height=H;const mx=mask.getContext('2d');mx.fillStyle='#fff';mx.beginPath();mx.roundRect(x0,y0,x1-x0,y1-y0,Math.min(60,(x1-x0)/4));mx.fill();
- const fm=softBlur(mask,W,H,10),fx=sharp.getContext('2d');fx.setTransform(1,0,0,1,0,0);fx.globalCompositeOperation='destination-in';fx.drawImage(fm,0,0);ox2.drawImage(sharp,0,0);
- const u=out.toDataURL('image/jpeg',.78);[sharp,out,mask,fm].forEach(c=>{c.width=c.height=0});return u}
+// 화면의 가이드 SVG 좌표 → 영상(원본 px) 좌표 변환값
+function camMap(){const v=$('#camv'),cv=$('#cam .cv'),cw=cv.clientWidth,ch=cv.clientHeight,vw=v.videoWidth,vh=v.videoHeight,s=Math.min(cw/100,ch/200),k=Math.max(cw/vw,ch/vh);
+ return{cw,ch,vw,vh,s,k,ox:(cw-100*s)/2,oy:(ch-200*s)/2,dx:(cw-vw*k)/2,dy:(ch-vh*k)/2}}
+function camFocus(v){const m=camMap(),{vw,vh,s,k}=m,X=x=>(m.ox+x*s-m.dx)/k,Y=y=>(m.oy+y*s-m.dy)/k;
+ const cx0=Math.max(0,X(GCROP.x0)),cx1=Math.min(vw,X(GCROP.x1)),cy0=Math.max(0,Y(GCROP.y0)),cy1=Math.min(vh,Y(GCROP.y1)),cwv=cx1-cx0,chv=cy1-cy0,kk=Math.min(1,900/Math.max(cwv,chv)),W=Math.round(cwv*kk),H=Math.round(chv*kk);
+ const crop=document.createElement('canvas');crop.width=W;crop.height=H;crop.getContext('2d').drawImage(v,cx0,cy0,cwv,chv,0,0,W,H);
+ // 실루엣 모양 마스크: 점선 실루엣을 채우고 둘레 30px(+부드러운 경계 몫)만큼 두껍게
+ const a=s/k*kk,mask=document.createElement('canvas');mask.width=W;mask.height=H;const mx=mask.getContext('2d');
+ mx.setTransform(a,0,0,a,(X(0)-cx0)*kk,(Y(0)-cy0)*kk);const gp=new Path2D(GPATH);mx.fillStyle=mx.strokeStyle='#fff';mx.fill(gp);mx.lineJoin=mx.lineCap='round';mx.lineWidth=2*(GPAD+10)/s;mx.stroke(gp);
+ const fm=softBlur(mask,W,H,Math.max(4,W/40)),out=softBlur(crop,W,H,14),cx=crop.getContext('2d');cx.globalCompositeOperation='destination-in';cx.drawImage(fm,0,0);out.getContext('2d').drawImage(crop,0,0);
+ let fin=out;if(camFace=='user'){fin=document.createElement('canvas');fin.width=W;fin.height=H;const fx=fin.getContext('2d');fx.translate(W,0);fx.scale(-1,1);fx.drawImage(out,0,0)}
+ const u=fin.toDataURL('image/jpeg',.82);[crop,out,mask,fm,fin].forEach(c=>{c.width=c.height=0});return u}
+// 지난 사진 겹쳐 보기: 저장 범위(가이드 틀)에 맞춰 놓는다
+function camGhostFit(){const g=$('#camghost'),cv=$('#cam .cv');if(!g||!cv)return;const cw=cv.clientWidth,ch=cv.clientHeight,s=Math.min(cw/100,ch/200),ox=(cw-100*s)/2,oy=(ch-200*s)/2;
+ Object.assign(g.style,{left:ox+GCROP.x0*s+'px',top:oy+GCROP.y0*s+'px',width:(GCROP.x1-GCROP.x0)*s+'px',height:(GCROP.y1-GCROP.y0)*s+'px',right:'auto',bottom:'auto',objectFit:'fill'})}
 function camShoot(){const v=$('#camv');if(!v.videoWidth)return toast('카메라가 아직 준비 중이에요');let u;try{u=camFocus(v)}catch(e){u=shrink(v,v.videoWidth,v.videoHeight,camFace=='user')}nbSave(u);camClose()}
 /* 눈바디 크게 보기: 무드보드 사진을 누르면 화면 가득, 화살표·옆으로 밀기로 다른 날 사진 */
 let nbI=0;
