@@ -6,7 +6,7 @@ Claude Code로 이어서 개발하기 위한 메모예요. 정적 웹앱(빌드 
 - `index.html` 화면 마크업 (탭 7개: 기준 / 식단 / 운동 / 눈바디 / 주간 / 리포트 / 설정 — 사용자 결정으로 예전 "기록" 탭을 식단·운동으로 나눔. 운동 탭은 DOM 맨 뒤 `#v6`(`data-v="6"`)이라 탭 순서와 DOM 순서가 다름, `TABN` 인덱스도 같음). 예전 추천 탭(주간 메뉴 추천·PMS 간식)은 없앰(`wmenu`·`pmsBn`은 화면이 없으면 건너뜀)
 - `style.css` 스타일 (테마별 `[data-theme]` 토큰 + 화면 모드 `[data-mode]`, 아래 "내 앱 꾸미기" 참고)
 - `app.js` 전체 로직 (바닐라 JS, 전역 상태 + `localStorage`)
-- `sw.js` 서비스워커 (배포마다 `VERSION` 올리기), `manifest.webmanifest`, `icons/`
+- `sw.js` 서비스워커 (배포마다 `VERSION` 올리기. index.html이 새 서비스워커로 바뀌면 한 번 자동 새로고침하고, 앱을 다시 볼 때마다 업데이트 확인), `manifest.webmanifest`, `icons/`
 - 저장 키 `dietproto_v1`. 기록은 사용자 브라우저에만 저장되고 서버로 가지 않아요.
 - 로컬 실행: `python3 -m http.server 8000` → http://localhost:8000
 
