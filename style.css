@@ -323,3 +323,15 @@ body.pmag #pmh{margin-bottom:12px}
 .ckb{flex:none;width:24px;height:24px;display:grid;place-items:center;border-radius:6px;background:var(--accent-soft);color:var(--text);font-size:13px;font-weight:900}
 body.pwin .ck,body.pwin .ckb{border-radius:0}
 [data-theme="y2k"] .ckb,[data-theme="romantic"] .ckb,[data-theme="kitsch"] .ckb{border-radius:50%}
+/* 눈바디 크게 보기(무드보드 사진 누르면). 어두운 화면, 사진은 화면에 맞춰 전체 보기 */
+#nbv{position:fixed;inset:0;z-index:45;background:#111;color:#fff;display:flex;flex-direction:column;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+#nbv[hidden]{display:none}
+.nbvt{display:flex;align-items:center;gap:10px;padding:10px 16px}.nbvt b{flex:1;font-size:16px}.nbvt span{font-size:13px;color:#C8C8C8}
+#nbv button{background:#222;color:#fff;border:1px solid #555;border-radius:99px}
+.nbvc{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+#nbvi{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.nbva{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;padding:0;font-size:28px;line-height:1;display:grid;place-items:center}
+#nbvp{left:10px}#nbvn{right:10px}.nbva:disabled{opacity:.3}
+.nbvb{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 16px 14px}.nbvb .sub{color:#C8C8C8;font-size:12.5px}
+#nbv .danger{color:#FFB4A8;border-color:#FFB4A8}
+.mbf[data-nb]{cursor:pointer}

@@ -551,15 +551,13 @@ function nbFig(k,cls){const d=new Date(tk(k)),p2=x=>String(x).padStart(2,'0');re
 function nbUI(){const box=$('#nbmb');if(!box)return;const P=nb.photos,n=P.length;
  $('#nbsl').textContent=n?`사진 ${n}장 · 최근 ${md2(tk(P[n-1]))}`+(nb.cloth?' · 기준 옷: '+nb.cloth:''):'같은 자리·같은 거리에서 찍으면 변화가 잘 보여요';
  let h='';
- if(nbView){h+=`<div class="advc"><img data-src="${nbView}" alt="" style="width:100%;border-radius:8px"><div class="row" style="justify-content:space-between;margin-top:6px"><span class="sub">${md2(tk(nbView))} 눈바디</span><span><button id="nbvdel" class="danger">이 사진 삭제</button> <button id="nbvx">닫기</button></span></div></div>`}
  if(n>=2)h+=`<div class="sub" style="margin-top:10px">처음 vs 최근</div><div class="nbcmp">${nbFig(P[0])}${nbFig(P[n-1])}</div>`;
  if(n){const sh=P.slice().reverse().slice(0,12),em=Math.max(6,Math.ceil(sh.length/3)*3)-sh.length;h+=`<div class="sub" style="margin-top:10px">${effTh()=='vintage'?'눈바디 스크랩':effTh()=='kitsch'?'눈바디 프리쿠라':'무드보드'}</div><div class="mb">${sh.map(k=>nbFig(k)).join('')}${'<div class="mbempty" role="button" aria-label="눈바디 찍기">+ 찍기</div>'.repeat(em)}</div>`}
  else h+='<div class="sub" style="margin-top:10px">아직 사진이 없어요. 촬영 가이드의 실루엣에 맞춰 찍으면 다음에도 같은 구도로 비교할 수 있어요.</div>';
  box.innerHTML=h;
  box.querySelectorAll('img[data-src]').forEach(im=>idbGet(im.dataset.src).then(u=>{if(u)im.src=u}).catch(()=>{}));
- box.querySelectorAll('[data-nb]').forEach(f=>f.onclick=()=>{nbView=f.dataset.nb;nbUI()});
+ box.querySelectorAll('[data-nb]').forEach(f=>{f.setAttribute('role','button');f.tabIndex=0;f.setAttribute('aria-label',md2(tk(f.dataset.nb))+' 눈바디 크게 보기');f.onclick=()=>nbvOpen(f.dataset.nb)});
  box.querySelectorAll('.mbempty').forEach(f=>f.onclick=camOpen);
- if(nbView){$('#nbvx').onclick=()=>{nbView=null;nbUI()};$('#nbvdel').onclick=async()=>{const k=nbView;await idbDel(k).catch(()=>{});nb.photos=nb.photos.filter(x=>x!==k);nbView=null;nbUI();sens();saveState();toast('사진을 지웠어요')}}
  $('#nbcloth').value=nb.cloth||'';const today=nb.fit[key(sim)];
  $('#nbfit').innerHTML=FIT.map(([k,t])=>`<button class="chip ${today==k?'on':''}" data-fit="${k}">${t}</button>`).join('');
  $$('#nbfit [data-fit]').forEach(b=>b.onclick=()=>{const k=key(sim);if(nb.fit[k]==b.dataset.fit)delete nb.fit[k];else nb.fit[k]=b.dataset.fit;nbUI();sens();saveState()});
@@ -575,7 +573,32 @@ async function camOpen(){if(!(navigator.mediaDevices&&navigator.mediaDevices.get
  $('#cam').hidden=false;$('#camcnt').textContent='';camGhUI();await camStart()}
 function camClose(){camStop();$('#cam').hidden=true}
 function camGhUI(){const g=$('#camghost'),last=nb.photos[nb.photos.length-1];$('#camghostb').disabled=!last;g.hidden=!(camGh&&last);if(camGh&&last)idbGet(last).then(u=>{if(u)g.src=u}).catch(()=>{});$('#camghostb').textContent=camGh?'지난 사진 끄기':'지난 사진';$('#camtimer').textContent=camTimer?'⏱ 3초 켬':'⏱ 3초'}
-function camShoot(){const v=$('#camv');if(!v.videoWidth)return toast('카메라가 아직 준비 중이에요');nbSave(shrink(v,v.videoWidth,v.videoHeight,camFace=='user'));camClose()}
+// 촬영 가이드 실루엣 둘레 50px 밖은 흐리게(사진 처리만, 화면 효과 아님). 사파리용으로 축소→확대 방식 흐림
+const GUIDE={x0:24,y0:3,x1:76,y1:190};// 가이드 SVG(viewBox 100×200) 안 실루엣·머리/발끝 범위
+function softBlur(src,w,h,f){const a=document.createElement('canvas');a.width=Math.max(1,Math.round(w/f));a.height=Math.max(1,Math.round(h/f));const ax=a.getContext('2d');ax.imageSmoothingQuality='high';ax.drawImage(src,0,0,a.width,a.height);
+ const b=document.createElement('canvas');b.width=Math.max(1,Math.round(a.width/2));b.height=Math.max(1,Math.round(a.height/2));b.getContext('2d').drawImage(a,0,0,b.width,b.height);
+ const c=document.createElement('canvas');c.width=w;c.height=h;const cx=c.getContext('2d');cx.imageSmoothingQuality='high';cx.drawImage(b,0,0,w,h);a.width=a.height=b.width=b.height=0;return c}
+function camFocus(v){const cv=$('#cam .cv'),cw=cv.clientWidth,ch=cv.clientHeight,vw=v.videoWidth,vh=v.videoHeight,k0=Math.min(1,900/Math.max(vw,vh)),W=Math.round(vw*k0),H=Math.round(vh*k0);
+ const sharp=document.createElement('canvas');sharp.width=W;sharp.height=H;const sx=sharp.getContext('2d');if(camFace=='user'){sx.translate(W,0);sx.scale(-1,1)}sx.drawImage(v,0,0,W,H);
+ // 화면 좌표의 가이드 범위(+50px, 경계를 부드럽게 흐리는 몫 16px 더) → 사진 좌표
+ const s=Math.min(cw/100,ch/200),ox=(cw-100*s)/2,oy=(ch-200*s)/2,k=Math.max(cw/vw,ch/vh),dx=(cw-vw*k)/2,dy=(ch-vh*k)/2,P=50+16,toF=(px,d)=>(px-d)/k*k0;
+ let x0=toF(ox+GUIDE.x0*s-P,dx),x1=toF(ox+GUIDE.x1*s+P,dx);const y0=toF(oy+GUIDE.y0*s-P,dy),y1=toF(oy+GUIDE.y1*s+P,dy);if(camFace=='user'){const t=W-x1;x1=W-x0;x0=t}
+ const out=softBlur(sharp,W,H,14),ox2=out.getContext('2d'),mask=document.createElement('canvas');mask.width=W;mask.height=H;const mx=mask.getContext('2d');mx.fillStyle='#fff';mx.beginPath();mx.roundRect(x0,y0,x1-x0,y1-y0,Math.min(60,(x1-x0)/4));mx.fill();
+ const fm=softBlur(mask,W,H,10),fx=sharp.getContext('2d');fx.setTransform(1,0,0,1,0,0);fx.globalCompositeOperation='destination-in';fx.drawImage(fm,0,0);ox2.drawImage(sharp,0,0);
+ const u=out.toDataURL('image/jpeg',.78);[sharp,out,mask,fm].forEach(c=>{c.width=c.height=0});return u}
+function camShoot(){const v=$('#camv');if(!v.videoWidth)return toast('카메라가 아직 준비 중이에요');let u;try{u=camFocus(v)}catch(e){u=shrink(v,v.videoWidth,v.videoHeight,camFace=='user')}nbSave(u);camClose()}
+/* 눈바디 크게 보기: 무드보드 사진을 누르면 화면 가득, 화살표·옆으로 밀기로 다른 날 사진 */
+let nbI=0;
+function nbvOpen(k){nbI=nb.photos.indexOf(k);if(nbI<0)return;$('#nbv').hidden=false;nbvShow();$('#nbvx').focus()}
+function nbvClose(){$('#nbv').hidden=true;$('#nbvi').removeAttribute('src')}
+function nbvShow(){const P=nb.photos;if(!P.length)return nbvClose();nbI=Math.max(0,Math.min(nbI,P.length-1));const k=P[nbI],im=$('#nbvi');
+ $('#nbvd').textContent=md2(tk(k))+' 눈바디';$('#nbvc').textContent=`${nbI+1} / ${P.length}`;im.removeAttribute('src');im.alt=md2(tk(k))+' 눈바디 사진';
+ idbGet(k).then(u=>{if(u&&nb.photos[nbI]==k)im.src=u}).catch(()=>{});$('#nbvp').disabled=nbI==0;$('#nbvn').disabled=nbI==P.length-1}
+const nbvGo=d=>{if($('#nbv').hidden)return;nbI+=d;nbvShow()};
+$('#nbvp').onclick=()=>nbvGo(-1);$('#nbvn').onclick=()=>nbvGo(1);$('#nbvx').onclick=nbvClose;
+$('#nbvdel').onclick=async()=>{const k=nb.photos[nbI];if(!k||!confirm(md2(tk(k))+' 눈바디 사진을 지울까요?'))return;await idbDel(k).catch(()=>{});nb.photos=nb.photos.filter(x=>x!==k);nbUI();sens();saveState();toast('사진을 지웠어요');nbvShow()};
+addEventListener('keydown',e=>{if($('#nbv').hidden)return;if(e.key=='ArrowLeft')nbvGo(-1);else if(e.key=='ArrowRight')nbvGo(1);else if(e.key=='Escape')nbvClose()});
+{let sx0=null;const c=$('#nbv .nbvc');c.addEventListener('touchstart',e=>{sx0=e.touches[0].clientX},{passive:true});c.addEventListener('touchend',e=>{if(sx0==null)return;const d=e.changedTouches[0].clientX-sx0;sx0=null;if(Math.abs(d)>40)nbvGo(d<0?1:-1)})}
 $('#nbshot').onclick=camOpen;$('#camx').onclick=camClose;
 $('#camflip').onclick=()=>{camFace=camFace=='user'?'environment':'user';camStart()};
 $('#camtimer').onclick=()=>{camTimer=!camTimer;camGhUI()};$('#camghostb').onclick=()=>{camGh=!camGh;camGhUI()};
