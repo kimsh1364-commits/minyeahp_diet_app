@@ -1,7 +1,7 @@
 // 앱을 새로 배포할 때마다 VERSION 숫자를 올리면 이전 캐시가 정리돼요.
-const VERSION = 'v36';
+const VERSION = 'v37';
 const CACHE = 'diet-app-' + VERSION;
-const FILES = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'assets/themes/romantic/rose-bloom.webp', 'assets/themes/y2k/bg-pink-stars.webp', 'assets/themes/water/water-bottle.webp', 'assets/themes/kitsch/pricura-frame.webp', 'assets/themes/y2k/y2k-charm.webp', 'assets/themes/clean/clean-bag.webp', 'assets/themes/clean/clean-headphones.webp', 'assets/themes/clean/clean-nails.webp', 'assets/themes/clean/clean-polish.webp', 'assets/themes/clean/clean-skincare.webp', 'assets/themes/clean/clean-water.webp', 'assets/themes/y2k/y2k-cap.webp', 'assets/themes/y2k/y2k-earphones.webp', 'assets/themes/y2k/y2k-mirror.webp', 'assets/themes/y2k/y2k-mp3.webp', 'assets/themes/y2k/y2k-phone.webp', 'assets/themes/y2k/y2k-star.webp'];
+const FILES = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'assets/themes/romantic/rose-bloom.webp', 'assets/themes/y2k/bg-pink-stars.webp', 'assets/themes/water/water-bottle.webp', 'assets/themes/kitsch/pricura-frame.svg', 'assets/themes/y2k/y2k-charm.webp', 'assets/themes/clean/clean-bag.webp', 'assets/themes/clean/clean-headphones.webp', 'assets/themes/clean/clean-nails.webp', 'assets/themes/clean/clean-polish.webp', 'assets/themes/clean/clean-skincare.webp', 'assets/themes/clean/clean-water.webp', 'assets/themes/y2k/y2k-cap.webp', 'assets/themes/y2k/y2k-earphones.webp', 'assets/themes/y2k/y2k-mirror.webp', 'assets/themes/y2k/y2k-mp3.webp', 'assets/themes/y2k/y2k-phone.webp', 'assets/themes/y2k/y2k-star.webp'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

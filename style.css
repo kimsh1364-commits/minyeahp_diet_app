@@ -335,12 +335,12 @@ body.pwin .ck,body.pwin .ckb{border-radius:0}
 [data-theme="kitsch"] .poster .pill{padding:6px 18px;border-radius:22px}
 [data-theme="kitsch"] .poster .pright{display:inline-block;padding:4px 14px;border-radius:999px}
 [data-theme="kitsch"] .poster .psec{display:inline-block;padding:6px 16px;border-radius:999px}
-/* 키치 눈바디 프리쿠라: 핑크 호피 + 리본 하트 프레임(assets/themes/kitsch/pricura-frame.webp), 하트 안에 몸 전체가 보이게 */
+/* 키치 눈바디 프리쿠라: 직접 그린 핑크 호피 + 리본 + 레이스 하트 프레임(assets/themes/kitsch/pricura-frame.svg), 사진은 하트 창을 꽉 채우고 몸 전체가 보이게 */
 [data-theme="kitsch"] .mbf{padding:0;border:0;background:none;overflow:visible}
-[data-theme="kitsch"] .mbf .scr{position:relative;aspect-ratio:450/670;background:#fff;overflow:hidden}
-[data-theme="kitsch"] .mbf .scr img{position:absolute;left:50%;top:24%;height:69%;width:auto;max-width:none;aspect-ratio:auto;object-fit:contain;transform:translateX(-50%)}
-[data-theme="kitsch"] .mbf .scr::after,[data-theme="kitsch"] .mbempty::after{content:"";position:absolute;inset:0;background:url(assets/themes/kitsch/pricura-frame.webp) center/100% 100% no-repeat;pointer-events:none}
-[data-theme="kitsch"] .mbempty{position:relative;display:grid;place-items:center;padding-top:20%;aspect-ratio:450/670;background:#fff;color:var(--accent-ink);font-size:13px;font-weight:700;cursor:pointer}
+[data-theme="kitsch"] .mbf .scr{position:relative;aspect-ratio:100/220;background:#fff;overflow:hidden}
+[data-theme="kitsch"] .mbf .scr img{position:absolute;left:0;top:6.5%;width:100%;height:89%;aspect-ratio:auto;object-fit:contain;object-position:50% 0}
+[data-theme="kitsch"] .mbf .scr::after,[data-theme="kitsch"] .mbempty::after{content:"";position:absolute;inset:0;background:url(assets/themes/kitsch/pricura-frame.svg) center/100% 100% no-repeat;pointer-events:none}
+[data-theme="kitsch"] .mbempty{position:relative;display:grid;place-items:center;padding-top:0;aspect-ratio:100/220;background:#fff;color:var(--accent-ink);font-size:13px;font-weight:700;cursor:pointer}
 /* Y2K 눈바디: 핑크 폴더폰(테두리·카메라·화면) + y2k-phone 그림에서 따온 하트 참(assets/themes/y2k/y2k-charm.webp) */
 [data-theme="y2k"] .mb{gap:14px 12px}
 [data-theme="y2k"] .mbf{position:relative;overflow:visible;padding:16px 7px 8px;background:linear-gradient(160deg,#F77DBB,#E2408C 55%,#C92E78);border:1.5px solid #9E1F5C;border-radius:20px}
