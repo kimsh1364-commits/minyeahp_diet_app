@@ -716,6 +716,15 @@ $('#owsave').onclick=owSave;
 addEventListener('resize',()=>{if(!$('#ow').hidden)owFit()});
 if(window.ResizeObserver){let ow0='';new ResizeObserver(()=>{const w=$('#owwrap'),k=w.clientWidth+'x'+w.clientHeight;if(k!==ow0&&!$('#ow').hidden){ow0=k;owFit()}}).observe($('#owwrap'))}
 /* 기록 지키기(베타 배포): 저장공간 보존 요청 + IndexedDB에 상태 사본(브라우저가 localStorage를 비웠을 때 되살림) + 백업 파일 */
+// 베타 배포 전 데모 도구로 생긴 기록만 한 번 정리(직접 입력한 기록은 days[날짜]에 남아 있음)
+function demoClean(){try{if(localStorage.getItem(SK+'_dmc'))return;const isD=l=>l&&/^\(데모\)/.test(l.n||'');
+ Object.values(days).forEach(d=>{if(d&&Array.isArray(d.logs))d.logs=d.logs.filter(l=>!isD(l))});logs=logs.filter(l=>!isD(l));
+ const real=k=>{const d=days[k];return !!(d&&((d.logs&&d.logs.length)||d.water>0||d.steps>0||d.exDone))},fake=h=>h&&h.s!=null&&h.s%1!==0;
+ Object.keys(doneDates).forEach(k=>{const d=days[k];if(!(d&&d.logs&&d.logs.length)||fake(hist[k]))delete doneDates[k]});
+ Object.keys(hist).forEach(k=>{if(!real(k)||fake(hist[k]))delete hist[k]});
+ Object.keys(cond).forEach(k=>{if(!days[k])delete cond[k]});
+ const mon=new Date(sim.getFullYear(),sim.getMonth(),sim.getDate()-todayIdx);dayDone=dayDone.map((_,i)=>doneDates[key(new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i))]?1:0);
+ localStorage.setItem(SK+'_dmc','1');saveState()}catch(e){}}
 var bkT=null;function bkMirror(st){clearTimeout(bkT);bkT=setTimeout(()=>{idbPut('__state',st).catch(()=>{})},800)}
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist().catch(()=>{})}catch(e){}
 async function bkRestore(){try{if(localStorage.getItem(SK))return;const st=await idbGet('__state');if(st){localStorage.setItem(SK,st);location.reload()}}catch(e){}}
@@ -747,7 +756,7 @@ function logChg(t){chg.unshift({t:Date.now(),txt:t});if(chg.length>20)chg.length
 function chgUI(){const e=$('#chg');if(!e)return;e.innerHTML=chg.length?chg.slice(0,5).map(c=>{const d=new Date(c.t);return `<div>${d.getMonth()+1}/${d.getDate()} · ${c.txt}</div>`}).join(''):'아직 변경 이력이 없어요.'}
 ['gkg','gwk','gw','gs','gm'].forEach(i=>{$('#'+i).oninput=goalIn;$('#'+i).onchange=()=>{goalIn();goalLog()}});
 function refresh(){if(typeof slotUI==='function')slotUI();posterUI();lockUI();phase=(cyc[key(sim)]||{}).p||((typeof cyPhase=='function'&&cyPhase(sim.getTime()))||{}).p||null;cyUI();nbUI();vwUI();phasesUI();pmsBn();dateUI();quickUI();waterUI();stepsUI();exUI();weekRender();show();upd();condUI();tot();sens()}
-loadState();bkRestore();if(typeof owClean=='function')try{owClean()}catch(e){}if(!PL||!PL.s)PL={s:[...((PL&&PL.p)||[]),...((PL&&PL.w!=null)?[PL.w]:[])],c:[]};G.water=Math.min(2000,Math.max(500,G.water||2000));$('#gw').value=G.water;G.meals=Math.min(3,G.meals||3);$('#gm').value=G.meals;plBoxes();G0={...G};goalMsg();// 기본 정보 몸무게로 첫 기록을 한 번만 채움(민감정보 삭제 후 다시 생기지 않게)
+loadState();demoClean();bkRestore();if(typeof owClean=='function')try{owClean()}catch(e){}if(!PL||!PL.s)PL={s:[...((PL&&PL.p)||[]),...((PL&&PL.w!=null)?[PL.w]:[])],c:[]};G.water=Math.min(2000,Math.max(500,G.water||2000));$('#gw').value=G.water;G.meals=Math.min(3,G.meals||3);$('#gm').value=G.meals;plBoxes();G0={...G};goalMsg();// 기본 정보 몸무게로 첫 기록을 한 번만 채움(민감정보 삭제 후 다시 생기지 않게)
 if(!wlog.length&&profileDone&&!wsd)logWeight(+$('#wt').value);if(profileDone)wsd=true;calc();wmenu();phasesUI();pmsBn();refresh();
 $('#wipe').onclick=()=>{wiped=true;try{localStorage.removeItem(SK)}catch(e){}toast('삭제했어요. 다시 불러와요');idbClear().finally(()=>{try{location.reload()}catch(e){}})};
 
