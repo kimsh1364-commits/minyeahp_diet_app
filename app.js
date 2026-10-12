@@ -426,7 +426,7 @@ function reportUI(){
  // advice
  const weak=have.filter(r=>r.ratio<.6).sort((a,b)=>(a.k=='sleep'?-1:b.k=='sleep'?1:0)||a.ratio-b.ratio).slice(0,3);
  let adv='';
- weak.forEach(r=>{const a=r.k=='move'&&hasP(SV,'injury')?{...ADV.move,tips:['통증 없는 범위에서 걷기·스트레칭부터','점프·달리기·무거운 무게는 쉬어요','통증이 계속되면 운동보다 몸을 먼저 살펴 줘요']}:ADV[r.k];adv+=`<div class="advc"><b>${a.n} · ${r.t}${r.k=='sleep'?` (좋음 ${r.sl[0]} · 보통 ${r.sl[1]} · 별로 ${r.sl[2]})`:''}</b><div class="sub" style="margin-top:4px">${a.fx}</div><ul>${a.tips.map(t=>`<li>${t}</li>`).join('')}</ul></div>`});
+ weak.forEach(r=>{const a=r.k=='move'&&hasP(SV,'injury')?{...ADV.move,tips:['통증 없는 범위에서 걷기·스트레칭부터','점프·달리기·무거운 무게는 쉬어요','통증이 계속되면 운동보다 몸을 먼저 살펴 줘요']}:ADV[r.k];adv+=`<div class="advc"><b>${a.n}</b><div class="sub" style="margin-top:4px">${a.fx}</div><ul>${a.tips.map(t=>`<li>${t}</li>`).join('')}</ul></div>`});
  if(!sl.length)adv+='<div class="advc"><b>수면 기록이 없어요</b><div class="sub" style="margin-top:4px">기록 탭의 "오늘 컨디션"에서 수면을 체크하면, 수면이 식욕과 다이어트에 미치는 영향을 리포트에 반영해요.</div></div>';
  if(!weak.length&&sl.length)adv+='<div class="advc"><b>🎉 큰 보완점이 없어요</b><div class="sub" style="margin-top:4px">이번 주 패턴을 유지해 봐요. 컨디션이 떨어지는 날이 있으면 수면과 물부터 확인하세요.</div></div>';
  if(avg('en')&&avg('en')<2)adv+='<div class="advc"><b>에너지가 낮은 편이에요</b><div class="sub" style="margin-top:4px">수면·탄수·수분이 부족하면 피로가 커질 수 있어요. 위 항목부터 점검해 보세요. 피곤함이 오래가면 몸이 쉬어 가라는 신호일 수 있어요. 무리하지 말고 몸 상태를 한 번 살펴봐 주세요.</div></div>';
