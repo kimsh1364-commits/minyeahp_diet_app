@@ -321,7 +321,7 @@ function dateUI(){const md=d=>(d.getMonth()+1)+'/'+d.getDate()+'('+DW[(d.getDay(
 function quickUI(){
  const seen=new Set(favs.map(f=>f.n)),rec=[];const add=l=>{const n=nm(l);if(!seen.has(n)&&rec.length<6){seen.add(n);rec.push({...l,n})}};
  [...logs].reverse().forEach(add);Object.keys(days).filter(k=>k!=key(rd)).sort((a,b)=>tk(b)-tk(a)).forEach(k=>[...days[k].logs].reverse().forEach(add));
- const items=[...favs.map(f=>({f,fav:1})),...rec.map(f=>({f}))],sh=n=>n.length>14?n.slice(0,13)+'…':n;
+ const items=[...favs.map(f=>({f,fav:1})),...rec.map(f=>({f}))].slice(0,4),sh=n=>n.length>14?n.slice(0,13)+'…':n;
  $('#qrow').innerHTML=items.length?items.map((x,i)=>`<button class="chip" data-q="${i}">${x.fav?'★ ':''}${sh(x.f.n)}</button>`).join(''):'<span class="sub">기록이 쌓이면 자주 먹은 메뉴가 여기에 나와요.</span>';
  $$('#qrow [data-q]').forEach(b=>b.onclick=()=>{logs.push({...items[+b.dataset.q].f,slot:curSlot??autoSlot()});tot();toast('한 번에 기록했어요')});
  const yk=key(new Date(rd.getFullYear(),rd.getMonth(),rd.getDate()-1)),y=(days[yk]||{}).logs||[],btn=$('#sameyd');
