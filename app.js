@@ -328,10 +328,10 @@ function quickUI(){
  btn.disabled=!y.length;btn.textContent=(key(rd)==key(sim)?'어제':'전날')+'와 같음'+(y.length?` (${y.length}개)`:' (기록 없음)');
  btn.onclick=()=>{y.forEach(l=>logs.push({...l,n:nm(l)}));tot();toast('전날 기록을 가져왔어요')}}
 const SK='dietproto_v1';
-function saveState(){if(wiped)return;try{stash();localStorage.setItem(SK,JSON.stringify({SV,thm,thmSet,scm,CY,nb,wsd,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,rt,OW,age:$('#age').value,pa:$('#pa').value,ht:$('#ht').value,wt:$('#wt').value}))}catch(e){}}
+function saveState(){if(wiped)return;try{stash();const _st=JSON.stringify({SV,thm,thmSet,scm,CY,nb,wsd,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,rt,OW,age:$('#age').value,pa:$('#pa').value,ht:$('#ht').value,wt:$('#wt').value});localStorage.setItem(SK,_st);bkMirror(_st)}catch(e){}}
 function loadState(){try{const t=localStorage.getItem(SK);if(!t)return;const o=JSON.parse(t);
  ({SV,thm,thmSet,scm,CY,nb,wsd,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,rt,OW}=Object.assign({SV,thm,thmSet,scm,CY,nb,wsd,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,rt,OW},o));rt=rt||{};
- sim=new Date();sim.setDate(sim.getDate()+simOff);todayIdx=(sim.getDay()+6)%7;rd=new Date(sim.getFullYear(),sim.getMonth(),sim.getDate());
+ simOff=0;sim=new Date();todayIdx=(sim.getDay()+6)%7;rd=new Date(sim.getFullYear(),sim.getMonth(),sim.getDate());
  const d0=days[key(rd)];if(d0){logs=d0.logs||[];water=d0.water||0;steps=d0.steps||0;exDone=!!d0.exDone}
  ['age','pa','ht','wt'].forEach(i=>{if(o[i]!=null)$('#'+i).value=o[i]});if(wlog.length)$('#wt').value=wlog[wlog.length-1].v;
  $('#gkg').value=G.kg;$('#gwk').value=G.weeks;$('#gw').value=G.water;$('#gs').value=G.steps;$('#gm').value=G.meals;
@@ -715,6 +715,16 @@ $('#owre').onclick=()=>{if(OW){idbDel('ow:'+OW.d).catch(()=>{});OW=null;sens();s
 $('#owsave').onclick=owSave;
 addEventListener('resize',()=>{if(!$('#ow').hidden)owFit()});
 if(window.ResizeObserver){let ow0='';new ResizeObserver(()=>{const w=$('#owwrap'),k=w.clientWidth+'x'+w.clientHeight;if(k!==ow0&&!$('#ow').hidden){ow0=k;owFit()}}).observe($('#owwrap'))}
+/* 기록 지키기(베타 배포): 저장공간 보존 요청 + IndexedDB에 상태 사본(브라우저가 localStorage를 비웠을 때 되살림) + 백업 파일 */
+var bkT=null;function bkMirror(st){clearTimeout(bkT);bkT=setTimeout(()=>{idbPut('__state',st).catch(()=>{})},800)}
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist().catch(()=>{})}catch(e){}
+async function bkRestore(){try{if(localStorage.getItem(SK))return;const st=await idbGet('__state');if(st){localStorage.setItem(SK,st);location.reload()}}catch(e){}}
+$('#bkout').onclick=async()=>{saveState();const d=new Date(),name=`diet-backup-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`,b=new Blob([localStorage.getItem(SK)||'{}'],{type:'application/json'}),f=new File([b],name,{type:'application/json'});
+ try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name=='AbortError')return}
+ const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('백업 파일을 저장했어요')};
+$('#bkin').onclick=()=>$('#bkfile').click();
+$('#bkfile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;f.text().then(t=>{let o;try{o=JSON.parse(t)}catch(x){return toast('백업 파일을 읽을 수 없어요')}if(!o||typeof o!='object'||!('SV' in o||'days' in o))return toast('이 앱의 백업 파일이 아니에요');
+ if(!confirm('지금 기록을 백업 파일 내용으로 바꿀까요?'))return;wiped=true;localStorage.setItem(SK,t);idbPut('__state',t).catch(()=>{}).finally(()=>location.reload())})};
 /* sensitive */
 function sens(){const L=[];if(typeof OW!='undefined'&&OW&&OW.has)L.push('오운완 사진: 오늘 1장 (다음 날 자동으로 지워져요)');if(CY&&CY.starts.length)L.push('생리주기 정보: 시작일 '+CY.starts.length+'회 · 평균 주기 '+cyAvg()+'일 · 생리 '+CY.len+'일');if(Object.keys(cyc).length)L.push('생리주기 직접 고른 날 '+Object.keys(cyc).length+'일');if((SV.past||[]).length)L.push('다이어트로 힘들었던 경험: '+SV.past.map(k=>(SVQ.find(q=>q.k=='past').o.find(o=>o[0]==k)||[,,k])[2]).join('·'));if(nb.photos.length)L.push('눈바디 사진 '+nb.photos.length+'장');if(nb.cloth||Object.keys(nb.fit).length)L.push('기준 옷 핏 기록 '+Object.keys(nb.fit).length+'회'+(nb.cloth?' ('+nb.cloth+')':''));if(lowfm)L.push('장 민감: 예민한 편으로 저장됨');if(SV.avoid.length)L.push('피해야 할 음식(알레르기): '+SV.avoid.map(k=>AVN[k]).join('·'));if(wlog.length)L.push('몸무게 기록 '+wlog.length+'건');if(Object.keys(cond).length)L.push('컨디션 기록 '+Object.keys(cond).length+'일');
  $('#sens').innerHTML=L.length?L.map(v=>`<div class="meal"><div class="sub" style="color:var(--ink)">${v}</div></div>`).join(''):'<div class="ok">저장된 민감정보가 없어요.</div>'}
@@ -737,7 +747,7 @@ function logChg(t){chg.unshift({t:Date.now(),txt:t});if(chg.length>20)chg.length
 function chgUI(){const e=$('#chg');if(!e)return;e.innerHTML=chg.length?chg.slice(0,5).map(c=>{const d=new Date(c.t);return `<div>${d.getMonth()+1}/${d.getDate()} · ${c.txt}</div>`}).join(''):'아직 변경 이력이 없어요.'}
 ['gkg','gwk','gw','gs','gm'].forEach(i=>{$('#'+i).oninput=goalIn;$('#'+i).onchange=()=>{goalIn();goalLog()}});
 function refresh(){if(typeof slotUI==='function')slotUI();posterUI();lockUI();phase=(cyc[key(sim)]||{}).p||((typeof cyPhase=='function'&&cyPhase(sim.getTime()))||{}).p||null;cyUI();nbUI();vwUI();phasesUI();pmsBn();dateUI();quickUI();waterUI();stepsUI();exUI();weekRender();show();upd();condUI();tot();sens()}
-loadState();if(typeof owClean=='function')try{owClean()}catch(e){}if(!PL||!PL.s)PL={s:[...((PL&&PL.p)||[]),...((PL&&PL.w!=null)?[PL.w]:[])],c:[]};G.water=Math.min(2000,Math.max(500,G.water||2000));$('#gw').value=G.water;G.meals=Math.min(3,G.meals||3);$('#gm').value=G.meals;plBoxes();G0={...G};goalMsg();// 기본 정보 몸무게로 첫 기록을 한 번만 채움(민감정보 삭제 후 다시 생기지 않게)
+loadState();bkRestore();if(typeof owClean=='function')try{owClean()}catch(e){}if(!PL||!PL.s)PL={s:[...((PL&&PL.p)||[]),...((PL&&PL.w!=null)?[PL.w]:[])],c:[]};G.water=Math.min(2000,Math.max(500,G.water||2000));$('#gw').value=G.water;G.meals=Math.min(3,G.meals||3);$('#gm').value=G.meals;plBoxes();G0={...G};goalMsg();// 기본 정보 몸무게로 첫 기록을 한 번만 채움(민감정보 삭제 후 다시 생기지 않게)
 if(!wlog.length&&profileDone&&!wsd)logWeight(+$('#wt').value);if(profileDone)wsd=true;calc();wmenu();phasesUI();pmsBn();refresh();
 $('#wipe').onclick=()=>{wiped=true;try{localStorage.removeItem(SK)}catch(e){}toast('삭제했어요. 다시 불러와요');idbClear().finally(()=>{try{location.reload()}catch(e){}})};
 
