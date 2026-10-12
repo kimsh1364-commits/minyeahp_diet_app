@@ -107,19 +107,6 @@
   <div class="sub" style="margin-top:6px">목표량은 예시 기준이에요(탄수 하한·단백질 권장 범위·지방 비율 15–30%).</div>
  </div>
  <div class="card">
-  <h2>🏃 운동 · 걸음</h2>
-  <div id="exinfo"></div>
-  <div class="row" style="justify-content:space-between;margin-top:12px"><span>👟 <b id="stp">0</b>보</span><span class="sub" id="stg"></span></div>
-  <div class="bar"><i id="sbar" style="width:0"></i></div>
-  <div class="row" id="stedit" style="margin-top:8px;flex-wrap:nowrap"><input id="stin" type="number" placeholder="걸음수 직접 입력(대략)"><button id="stok" style="flex:none">입력</button></div>
-  <div class="sub" style="margin-top:6px">걸음수는 직접 입력해요. 건강앱 자동 연동은 앱 버전에서 만들 예정이에요.</div>
- </div>
- <div class="card">
-  <h2><span id="condt">오늘</span> 컨디션 <span class="tag">1탭</span></h2>
-  <div id="cond"></div>
-  <div class="sub">체중 말고 몸이 어떤지 체크해요. 추이는 주간 탭에서 봐요.</div>
- </div>
- <div class="card">
   <h2><span id="reqt">오늘</span>의 필수 행동 <span class="tag">자동 반영</span></h2>
   <div id="req"></div>
   <div id="stampbox" style="margin-top:8px;font-size:14px"></div>
@@ -235,6 +222,26 @@
  <div class="card"><h2>기록 보는 방식</h2><div class="sub">몸무게를 어떻게 볼지 골라요. 언제든 바꿀 수 있어요.</div><div class="row" id="vwset" style="margin-top:8px"></div><div class="sub" id="vwnote" style="margin-top:6px"></div></div>
  <div class="card"><h2>화면 모드</h2><div class="row"><button class="chip" data-md="">시스템</button><button class="chip" data-md="light">라이트</button><button class="chip" data-md="dark">다크</button></div></div>
 </section>
+
+<!-- 운동 -->
+<section class="view" id="v6">
+ <div class="sub" id="exdate" style="margin:0 2px 10px"></div>
+ <div class="card">
+  <h2>🏃 운동 · 걸음</h2>
+  <div id="exinfo"></div>
+  <div class="row" style="justify-content:space-between;margin-top:12px"><span>👟 <b id="stp">0</b>보</span><span class="sub" id="stg"></span></div>
+  <div class="bar"><i id="sbar" style="width:0"></i></div>
+  <div class="row" id="stedit" style="margin-top:8px;flex-wrap:nowrap"><input id="stin" type="number" placeholder="걸음수 직접 입력(대략)"><button id="stok" style="flex:none">입력</button></div>
+  <div class="sub" style="margin-top:6px">걸음수는 직접 입력해요. 건강앱 자동 연동은 앱 버전에서 만들 예정이에요.</div>
+  <button class="pri" id="owopen" style="width:100%;margin-top:12px">📸 오운완 찍고 꾸미기</button>
+  <div class="sub" style="margin-top:6px">인스타그램 스토리·피드 크기로 날짜 스탬프와 스티커를 붙여 갤러리에 저장해요. 사진은 오늘 하루만 앱에 남고, 다음 날 자동으로 지워져요.</div>
+ </div>
+ <div class="card">
+  <h2><span id="condt">오늘</span> 컨디션 <span class="tag">1탭</span></h2>
+  <div id="cond"></div>
+  <div class="sub">체중 말고 몸이 어떤지 체크해요. 추이는 주간 탭에서 봐요.</div>
+ </div>
+</section>
 </div>
 
 <div id="wpov" hidden><div style="max-width:420px;margin:0 auto"><h2 style="margin:4px 0 8px">아이폰 배경화면</h2>
@@ -250,6 +257,18 @@
  <div class="cnt" id="camcnt"></div></div>
  <div class="chint" id="camhint">실루엣에 몸을 맞추고, 매번 같은 자리·같은 거리에서 찍어요 · 점선 틀 크기로 저장되고 몸 둘레 바깥은 흐리게 돼요</div>
  <div class="cbar"><button id="camx">닫기</button><button id="camflip">↺ 전환</button><button class="shut" id="camgo" aria-label="촬영">촬영</button><button id="camtimer">⏱ 3초</button><button id="camghostb">지난 사진</button></div></div>
+<div id="ow" hidden role="dialog" aria-modal="true" aria-label="오운완 찍고 꾸미기">
+ <div class="owtop"><button id="owx">닫기</button><div class="owfmt" role="group" aria-label="저장 크기"><button data-owf="story" aria-pressed="true">스토리 9:16</button><button data-owf="feed" aria-pressed="false">피드 4:5</button></div></div>
+ <div class="owwrap" id="owwrap"><div class="owstage" id="owst"><video id="owv" playsinline muted autoplay></video><img id="owimg" alt="오늘의 오운완 사진" hidden draggable="false"><div class="owly" id="owly"></div><div class="owgd" id="owgd" aria-hidden="true"></div></div></div>
+ <div class="owbar" id="owshot"><button id="owpick">사진 고르기</button><button class="shut" id="owgo" aria-label="촬영">촬영</button><button id="owflip">↺ 전환</button><input type="file" id="owfile" accept="image/*" hidden></div>
+ <div class="owed" id="owed" hidden>
+  <div class="owsel" id="owsel" hidden><span class="sub" id="owselt">고른 꾸미기</span><button id="owsm" aria-label="작게">−</button><button id="owbg" aria-label="크게">＋</button><button id="owdel">빼기</button></div>
+  <div class="owtray" id="owtray" hidden></div>
+  <div class="owtools"><button id="owstamp" aria-pressed="false">📅 날짜</button><button id="owstyle">모양 바꾸기</button><button id="owstk" aria-expanded="false">스티커</button><button id="owre">다시 찍기</button></div>
+  <button class="pri" id="owsave">갤러리에 저장</button>
+  <div class="owhint">꾸미기는 끌어서 옮기고, 빈 곳을 끌면 사진 위치가 움직여요. 점선 밖은 인스타그램 화면에서 가려질 수 있어요.</div>
+ </div>
+</div>
 <div id="nbv" hidden role="dialog" aria-modal="true" aria-label="눈바디 크게 보기"><div class="nbvt"><b id="nbvd"></b><span id="nbvc"></span><button id="nbvx">닫기</button></div>
  <div class="nbvc"><button class="nbva" id="nbvp" aria-label="이전 눈바디">‹</button><img id="nbvi" alt=""><button class="nbva" id="nbvn" aria-label="다음 눈바디">›</button></div>
  <div class="nbvb"><span class="sub">옆으로 밀거나 화살표로 다른 날 사진을 볼 수 있어요</span><button id="nbvdel" class="danger">이 사진 삭제</button></div></div>
@@ -275,7 +294,8 @@
 </div></div>
 <nav class="tabs" id="tabs">
  <button class="on" data-v="0"><span>🏠</span>기준</button>
- <button data-v="1"><span>✏️</span>기록</button>
+ <button data-v="1"><span>🍽️</span>식단</button>
+ <button data-v="6"><span>🏃‍♀️</span>운동</button>
  <button data-v="2"><span>📸</span>눈바디</button>
  <button data-v="3"><span>📅</span>주간</button>
  <button data-v="4"><span>📊</span>리포트</button>

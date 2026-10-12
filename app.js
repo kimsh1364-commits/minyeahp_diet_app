@@ -216,7 +216,7 @@ function renderReq(){hist[key(rd)]=snap();if(typeof slotUI==='function')slotUI()
 function waterUI(){lockUI()}
 function stepsUI(){lockUI();$('#stp').textContent=steps.toLocaleString();$('#stg').textContent=planned()?'운동하는 날엔 참고용':'운동 없는 날 목표 '+G.steps.toLocaleString()+'보';$('#sbar').style.width=Math.min(100,steps/G.steps*100)+'%';}
 $('#stok').onclick=()=>{steps=Math.max(0,Math.round(+$('#stin').value||0));$('#stin').value='';stepsUI();renderReq()};
-function exUI(){const pl=planned();$('#exinfo').innerHTML=pl?`<div class="row" style="justify-content:space-between"><span>${dl()} 계획: <b>${pl}</b></span><button id="exbtn" class="${exDone?'chip on':''}">${exDone?'✓ 완료':'운동 완료 체크'}</button></div>`:'<div>'+dl()+'은 <b>운동 없는 날</b>이에요 → 걸음 '+G.steps.toLocaleString()+'보가 목표예요.</div>';
+function exUI(){const pl=planned(),ed=$('#exdate');if(ed)ed.textContent=key(rd)==key(sim)?'오늘 기록이에요':`${rd.getMonth()+1}/${rd.getDate()} 기록을 보고 있어요 · 날짜는 식단 탭에서 바꿔요`;$('#exinfo').innerHTML=pl?`<div class="row" style="justify-content:space-between"><span>${dl()} 계획: <b>${pl}</b></span><button id="exbtn" class="${exDone?'chip on':''}">${exDone?'✓ 완료':'운동 완료 체크'}</button></div>`:'<div>'+dl()+'은 <b>운동 없는 날</b>이에요 → 걸음 '+G.steps.toLocaleString()+'보가 목표예요.</div>';
  const b=$('#exbtn');if(b)b.onclick=()=>{exDone=!exDone;exUI();renderReq()}}
 
 /* record: mode */
@@ -328,9 +328,9 @@ function quickUI(){
  btn.disabled=!y.length;btn.textContent=(key(rd)==key(sim)?'어제':'전날')+'와 같음'+(y.length?` (${y.length}개)`:' (기록 없음)');
  btn.onclick=()=>{y.forEach(l=>logs.push({...l,n:nm(l)}));tot();toast('전날 기록을 가져왔어요')}}
 const SK='dietproto_v1';
-function saveState(){if(wiped)return;try{stash();localStorage.setItem(SK,JSON.stringify({SV,thm,thmSet,scm,CY,nb,wsd,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,rt,age:$('#age').value,pa:$('#pa').value,ht:$('#ht').value,wt:$('#wt').value}))}catch(e){}}
+function saveState(){if(wiped)return;try{stash();localStorage.setItem(SK,JSON.stringify({SV,thm,thmSet,scm,CY,nb,wsd,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,rt,OW,age:$('#age').value,pa:$('#pa').value,ht:$('#ht').value,wt:$('#wt').value}))}catch(e){}}
 function loadState(){try{const t=localStorage.getItem(SK);if(!t)return;const o=JSON.parse(t);
- ({SV,thm,thmSet,scm,CY,nb,wsd,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,rt}=Object.assign({SV,thm,thmSet,scm,CY,nb,wsd,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,rt},o));rt=rt||{};
+ ({SV,thm,thmSet,scm,CY,nb,wsd,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,rt,OW}=Object.assign({SV,thm,thmSet,scm,CY,nb,wsd,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,rt,OW},o));rt=rt||{};
  sim=new Date();sim.setDate(sim.getDate()+simOff);todayIdx=(sim.getDay()+6)%7;rd=new Date(sim.getFullYear(),sim.getMonth(),sim.getDate());
  const d0=days[key(rd)];if(d0){logs=d0.logs||[];water=d0.water||0;steps=d0.steps||0;exDone=!!d0.exDone}
  ['age','pa','ht','wt'].forEach(i=>{if(o[i]!=null)$('#'+i).value=o[i]});if(wlog.length)$('#wt').value=wlog[wlog.length-1].v;
@@ -624,7 +624,7 @@ function slotData(){const sc=SCH[SV.sched]||SCH.day,L=todayLogs(),S=SLOTO.map(i=
  L.forEach(l=>{if(l.slot==null){const s=S.find(x=>!x.items.length)||S[S.length-1];s.items.push(nm(l))}});
  S.forEach(s=>s.done=s.items.length>0);return S}
 function autoSlot(){const S=slotData();if(SV.sched=='day'&&key(rd)==key(sim)){const h=new Date().getHours()+new Date().getMinutes()/60;return h<10.5?0:h<15?1:h<17.5?3:2}const e=S.find(s=>!s.done);return e?e.i:2}
-const TABN=['기준','기록','눈바디','주간','리포트','설정'];
+const TABN=['기준','식단','눈바디','주간','리포트','설정','운동'];
 function tbarUI(){const T=effTh(),now=new Date(),hm=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
  $$('.view').forEach((v,i)=>{let b=v.querySelector(':scope>.tbar');if(!b){b=document.createElement('div');b.className='tbar';b.setAttribute('aria-hidden','true');v.prepend(b)}const n=TABN[i];
   b.innerHTML=T=='y2k'?`<b>${n}</b><span class="tbe" lang="en">Daily Essential</span>`
@@ -646,12 +646,79 @@ function hwUI(){const T=effTh(),mh=$('#pmh');const B=document.body.classList;B.t
  if(mh)mh.innerHTML=T=='y2k'?`<div class="yh"><div><div class="yyr" lang="en">${String(sim.getFullYear()).split('').join(' ')}</div><div class="ytt" lang="en">Daily Essential</div></div>${hstk('y2k-star',48)}<svg class="yheart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-8.8C1.6 8 3.6 4.6 6.9 4.6c2 0 3.4 1.1 5.1 3 1.7-1.9 3.1-3 5.1-3 3.3 0 5.3 3.4 3.9 6.6C19 15.6 12 20 12 20z"/><g><circle cx="7" cy="9" r=".9"/><circle cx="12" cy="10.6" r=".9"/><circle cx="17" cy="9" r=".9"/><circle cx="12" cy="15.4" r=".9"/></g></svg></div><div class="yrt" lang="en">MY ROUTINE</div><hr class="ytilt">`:'';
  ckUI()}
 function goTab(v,sel){const b=$(`#tabs [data-v="${v}"]`);if(b)b.click();if(sel){const e=$(sel);if(e){if(e.tagName=='DETAILS')e.open=true;e.scrollIntoView({block:'start'})}}}
+/* 오운완: 운동 탭에서 찍고(또는 고르고) 인스타그램 스토리 9:16 / 피드 4:5 크기로 날짜 스탬프·스티커를 붙여 갤러리에 저장.
+   사진은 그날 하루만 IndexedDB('ow:날짜')에 두고 다음 날 지운다. 꾸미기 위치는 무대 크기 대비 비율로 저장 */
+const OWS=[["01-shock-hate-workout","충격 진짜 운동하기 싫음",208,115],["02-but-did-it","하지만 해냈죠?",192,85],["03-not-okay","안 괜찮아요",188,93],["04-throwaway-day","오늘은 그냥 버리는 날이라고 생각해",232,107],["05-is-it-a-problem","문제가 될까요?",198,87],["06-did-my-best","최선은 다했답니다",210,111],["07-crazy-negative","미쳤다 (Negative)",186,104],["08-live-star-people","live live star star people i see",176,176],["09-praise-please","칭찬 부탁합니다",176,176],["10-support-only","무조건적인 지지만 환영",176,176],["11-smart-day","고능한 하루",186,96],["12-cute-me","귀여운 나",186,96],["13-proud-me","대견한 나",186,96],["14-great","대단해",180,80],["15-cool","멋있어",180,80],["16-yummy","맛있다",180,80],["17-i-did-it","내가 해냄",170,130],["18-from-tomorrow","내일부터는 달라집니다 (진짜)",176,104],["19-im-cute","딱히 볼 건 없지만 제가 귀엽습니다",176,136],["20-so-tired","사람이 지쳤잖아",130,170],["21-its-hard","힘들다잖아",176,126]];
+const OWF={story:{r:9/16,W:1080,H:1920,n:'스토리'},feed:{r:4/5,W:1080,H:1350,n:'피드'}};
+const OWEN=['SUN','MON','TUE','WED','THU','FRI','SAT'],OWKO=['일','월','화','수','목','금','토'];
+let OW=null,owS=null,owFace='environment',owSel=-1;
+function owStampText(s){const d=sim,Y=d.getFullYear(),M=d.getMonth()+1,D=d.getDate(),p=n=>String(n).padStart(2,'0');
+ return [`${Y}.${p(M)}.${p(D)}`,`${p(M)}.${p(D)} ${OWEN[d.getDay()]}`,`'${String(Y).slice(2)} ${p(M)} ${p(D)}`,`${M}월 ${D}일 오운완`][s%4]}
+const OWST=4;
+function owClean(){if(OW&&OW.d!==key(sim)){idbDel('ow:'+OW.d).catch(()=>{});OW=null;saveState()}}
+function owFit(){const w=$('#owwrap'),st=$('#owst');if(!w||$('#ow').hidden)return;const r=OWF[(OW&&OW.fmt)||owFmt].r,aw=w.clientWidth-16,ah=w.clientHeight-8;let sw=Math.min(aw,ah*r);st.style.width=sw+'px';st.style.height=sw/r+'px';owGuide();owDraw()}
+let owFmt='story';
+function owGuide(){const g=$('#owgd'),f=(OW&&OW.fmt)||owFmt;g.className='owgd '+f;g.innerHTML=f=='story'?'<i class="t"><span>프로필·닫기 버튼 자리</span></i><i class="b"><span>메시지 보내기 자리</span></i>':'<i class="c"><span>프로필 격자에 보이는 범위</span></i>';
+ $$('[data-owf]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.owf==f)))}
+async function owOpen(){owClean();$('#ow').hidden=false;document.body.style.overflow='hidden';try{await document.fonts.load("800 40px OwStamp")}catch(e){}
+ if(OW&&OW.has){const u=await idbGet('ow:'+OW.d).catch(()=>null);if(u){owEdit(u);return}}owShoot()}
+function owClose(){owStop();$('#ow').hidden=true;document.body.style.overflow='';owSel=-1}
+function owStop(){if(owS){owS.getTracks().forEach(t=>t.stop());owS=null}$('#owv').srcObject=null}
+async function owShoot(){$('#owed').hidden=true;$('#owshot').hidden=false;$('#owimg').hidden=true;$('#owly').innerHTML='';$('#owv').hidden=false;owFit();
+ if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){toast('카메라를 열 수 없어요. “사진 고르기”를 써 주세요');return}
+ try{owStop();owS=await navigator.mediaDevices.getUserMedia({video:{facingMode:owFace,width:{ideal:1080},height:{ideal:1920}},audio:false});const v=$('#owv');v.srcObject=owS;v.style.transform=owFace=='user'?'scaleX(-1)':'';await v.play().catch(()=>{})}catch(e){toast('카메라를 열 수 없어요. “사진 고르기”를 써 주세요')}}
+// 화면에 보이는 그대로(무대 비율, cover) 찍기
+function owCapture(){const v=$('#owv');if(!v.videoWidth)return toast('카메라가 아직 준비 중이에요');const f=OWF[owFmt],W=f.W,H=f.H,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),k=Math.max(W/v.videoWidth,H/v.videoHeight),dw=v.videoWidth*k,dh=v.videoHeight*k;
+ if(owFace=='user'){x.translate(W,0);x.scale(-1,1)}x.drawImage(v,(W-dw)/2,(H-dh)/2,dw,dh);const u=c.toDataURL('image/jpeg',.88);c.width=c.height=0;owStop();owNew(u)}
+async function owNew(u){OW={d:key(sim),fmt:owFmt,px:50,py:50,items:[{t:'stamp',s:0,x:.5,y:owFmt=='story'?.2:.1,w:.075}],has:1};try{await idbPut('ow:'+OW.d,u)}catch(e){toast('사진을 저장하지 못했어요 (저장 공간을 확인해 주세요)')}sens();saveState();owEdit(u)}
+function owEdit(u){owFmt=OW.fmt;owStop();$('#owv').hidden=true;const im=$('#owimg');im.src=u;im.hidden=false;$('#owshot').hidden=true;$('#owed').hidden=false;owSel=-1;owFit();owTools()}
+function owTools(){const has=OW.items.some(i=>i.t=='stamp');$('#owstamp').setAttribute('aria-pressed',String(has));$('#owstyle').disabled=!has}
+function owDraw(){const ly=$('#owly');if(!OW||!OW.has||$('#owed').hidden){if(ly)ly.innerHTML='';return}const st=$('#owst'),W=st.clientWidth;$('#owimg').style.objectPosition=`${OW.px}% ${OW.py}%`;
+ ly.innerHTML=OW.items.map((it,i)=>it.t=='stamp'?`<div class="owit owstamp s${it.s%OWST} ${i==owSel?'sel':''}" data-i="${i}" style="left:${it.x*100}%;top:${it.y*100}%;font-size:${it.w*W}px">${owStampText(it.s)}</div>`
+  :`<img class="owit ${i==owSel?'sel':''}" data-i="${i}" src="assets/ounwan/${it.id}.webp" alt="${OWS.find(s=>s[0]==it.id)?.[1]||''}" draggable="false" style="left:${it.x*100}%;top:${it.y*100}%;width:${it.w*W}px">`).join('');
+ $('#owsel').hidden=owSel<0;if(owSel>=0)$('#owselt').textContent=OW.items[owSel].t=='stamp'?'날짜 스탬프':'스티커'}
+function owAddStk(id){OW.items.push({t:'stk',id,x:.5,y:.5,w:.42});owSel=OW.items.length-1;$('#owtray').hidden=true;$('#owstk').setAttribute('aria-expanded','false');owDraw();saveState()}
+// 끌기: 꾸미기는 옮기고, 빈 곳은 사진 위치(object-position)를 옮긴다
+{let drag=null;const ly=$('#owly');
+ ly.addEventListener('pointerdown',e=>{if(!OW)return;const t=e.target.closest('.owit'),st=$('#owst').getBoundingClientRect();owSel=t?+t.dataset.i:-1;drag={i:owSel,sx:e.clientX,sy:e.clientY,w:st.width,h:st.height,o:owSel>=0?{...OW.items[owSel]}:{px:OW.px,py:OW.py}};ly.setPointerCapture(e.pointerId);owDraw()});
+ ly.addEventListener('pointermove',e=>{if(!drag)return;const dx=(e.clientX-drag.sx)/drag.w,dy=(e.clientY-drag.sy)/drag.h;
+  if(drag.i>=0){const it=OW.items[drag.i];it.x=Math.min(1,Math.max(0,drag.o.x+dx));it.y=Math.min(1,Math.max(0,drag.o.y+dy));const el=ly.querySelector(`[data-i="${drag.i}"]`);if(el){el.style.left=it.x*100+'%';el.style.top=it.y*100+'%'}}
+  else{OW.px=Math.min(100,Math.max(0,drag.o.px-dx*100));OW.py=Math.min(100,Math.max(0,drag.o.py-dy*100));$('#owimg').style.objectPosition=`${OW.px}% ${OW.py}%`}});
+ const end=()=>{if(drag){drag=null;saveState()}};ly.addEventListener('pointerup',end);ly.addEventListener('pointercancel',end)}
+// 저장: 무대와 같은 비율로 1080px 너비에 다시 그려 갤러리로(공유 시트의 '이미지 저장')
+async function owRender(){const f=OWF[OW.fmt],W=f.W,H=f.H,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),im=$('#owimg');
+ x.fillStyle='#111';x.fillRect(0,0,W,H);const k=Math.max(W/im.naturalWidth,H/im.naturalHeight),dw=im.naturalWidth*k,dh=im.naturalHeight*k;x.drawImage(im,(W-dw)*OW.px/100,(H-dh)*OW.py/100,dw,dh);
+ for(const it of OW.items){const cx=it.x*W,cy=it.y*H;
+  if(it.t=='stamp'){const s=it.s%OWST,fs=it.w*W,t=owStampText(it.s);x.font=`800 ${fs}px OwStamp, 'Noto Sans KR', sans-serif`;x.textAlign='center';x.textBaseline='middle';
+   if(s==1){const tw=x.measureText(t).width;x.fillStyle='#FFFFFF';x.beginPath();x.roundRect(cx-tw/2-fs*.6,cy-fs*.8,tw+fs*1.2,fs*1.6,fs*.8);x.fill();x.fillStyle='#111111';x.fillText(t,cx,cy+fs*.04)}
+   else{x.save();x.shadowColor=s==2?'rgba(120,40,0,.85)':'rgba(0,0,0,.45)';x.shadowBlur=fs*(s==2?.25:.3);x.shadowOffsetY=fs*.04;x.fillStyle=s==2?'#FF9A3C':'#FFFFFF';x.fillText(t,cx,cy);x.restore()}}
+  else{const si=await new Promise(ok=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>ok(null);i.src=`assets/ounwan/${it.id}.webp`});if(si){const w=it.w*W,h=w*si.naturalHeight/si.naturalWidth;x.drawImage(si,cx-w/2,cy-h/2,w,h)}}}
+ const b=await new Promise(ok=>c.toBlob(ok,'image/jpeg',.92));c.width=c.height=0;return b}
+async function owSave(){if(!OW)return;const btn=$('#owsave');btn.disabled=true;btn.textContent='만드는 중…';try{try{await document.fonts.load("800 40px OwStamp")}catch(e){}
+  const b=await owRender(),name=`ounwan-${OW.d.replace(/-/g,'')}-${OW.fmt}.jpg`,file=new File([b],name,{type:'image/jpeg'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});return}catch(e){if(e&&e.name=='AbortError')return}}
+  const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('사진을 저장했어요. 안 보이면 다운로드 폴더를 확인해 주세요')}
+ catch(e){toast('저장하지 못했어요. 다시 한 번 눌러 주세요')}finally{btn.disabled=false;btn.textContent='갤러리에 저장'}}
+$('#owopen').onclick=owOpen;$('#owx').onclick=owClose;$('#owgo').onclick=owCapture;$('#owflip').onclick=()=>{owFace=owFace=='user'?'environment':'user';owShoot()};
+$('#owpick').onclick=()=>$('#owfile').click();
+$('#owfile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const k=Math.min(1,1920/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);const d=c.toDataURL('image/jpeg',.88);c.width=c.height=0;URL.revokeObjectURL(u);owStop();owNew(d)};im.onerror=()=>toast('사진을 열 수 없어요');im.src=u};
+$$('[data-owf]').forEach(b=>b.onclick=()=>{owFmt=b.dataset.owf;if(OW&&OW.has&&!$('#owed').hidden){OW.fmt=owFmt;saveState()}owFit()});
+$('#owstamp').onclick=()=>{const i=OW.items.findIndex(t=>t.t=='stamp');if(i>=0){OW.items.splice(i,1);owSel=-1}else{OW.items.push({t:'stamp',s:0,x:.5,y:OW.fmt=='story'?.2:.1,w:.075});owSel=OW.items.length-1}owTools();owDraw();saveState()};
+$('#owstyle').onclick=()=>{const it=OW.items.find(t=>t.t=='stamp');if(it){it.s=(it.s+1)%OWST;owDraw();saveState()}};
+$('#owstk').onclick=()=>{const t=$('#owtray'),open=t.hidden;t.hidden=!open;$('#owstk').setAttribute('aria-expanded',String(open));if(open&&!t.children.length){t.innerHTML=OWS.map(([id,tx])=>`<button data-stk="${id}" aria-label="${tx} 스티커 붙이기"><img src="assets/ounwan/${id}.webp" alt="" loading="lazy"></button>`).join('');t.querySelectorAll('[data-stk]').forEach(b=>b.onclick=()=>owAddStk(b.dataset.stk))}};
+$('#owsm').onclick=()=>{const it=OW.items[owSel];if(it){it.w=Math.max(it.t=='stamp'?.035:.15,it.w*.85);owDraw();saveState()}};
+$('#owbg').onclick=()=>{const it=OW.items[owSel];if(it){it.w=Math.min(it.t=='stamp'?.16:.9,it.w*1.18);owDraw();saveState()}};
+$('#owdel').onclick=()=>{if(owSel<0)return;OW.items.splice(owSel,1);owSel=-1;owTools();owDraw();saveState()};
+$('#owre').onclick=()=>{if(OW){idbDel('ow:'+OW.d).catch(()=>{});OW=null;sens();saveState()}owShoot()};
+$('#owsave').onclick=owSave;
+addEventListener('resize',()=>{if(!$('#ow').hidden)owFit()});
+if(window.ResizeObserver){let ow0='';new ResizeObserver(()=>{const w=$('#owwrap'),k=w.clientWidth+'x'+w.clientHeight;if(k!==ow0&&!$('#ow').hidden){ow0=k;owFit()}}).observe($('#owwrap'))}
 /* sensitive */
-function sens(){const L=[];if(CY&&CY.starts.length)L.push('생리주기 정보: 시작일 '+CY.starts.length+'회 · 평균 주기 '+cyAvg()+'일 · 생리 '+CY.len+'일');if(Object.keys(cyc).length)L.push('생리주기 직접 고른 날 '+Object.keys(cyc).length+'일');if((SV.past||[]).length)L.push('다이어트로 힘들었던 경험: '+SV.past.map(k=>(SVQ.find(q=>q.k=='past').o.find(o=>o[0]==k)||[,,k])[2]).join('·'));if(nb.photos.length)L.push('눈바디 사진 '+nb.photos.length+'장');if(nb.cloth||Object.keys(nb.fit).length)L.push('기준 옷 핏 기록 '+Object.keys(nb.fit).length+'회'+(nb.cloth?' ('+nb.cloth+')':''));if(lowfm)L.push('장 민감: 예민한 편으로 저장됨');if(SV.avoid.length)L.push('피해야 할 음식(알레르기): '+SV.avoid.map(k=>AVN[k]).join('·'));if(wlog.length)L.push('몸무게 기록 '+wlog.length+'건');if(Object.keys(cond).length)L.push('컨디션 기록 '+Object.keys(cond).length+'일');
+function sens(){const L=[];if(typeof OW!='undefined'&&OW&&OW.has)L.push('오운완 사진: 오늘 1장 (다음 날 자동으로 지워져요)');if(CY&&CY.starts.length)L.push('생리주기 정보: 시작일 '+CY.starts.length+'회 · 평균 주기 '+cyAvg()+'일 · 생리 '+CY.len+'일');if(Object.keys(cyc).length)L.push('생리주기 직접 고른 날 '+Object.keys(cyc).length+'일');if((SV.past||[]).length)L.push('다이어트로 힘들었던 경험: '+SV.past.map(k=>(SVQ.find(q=>q.k=='past').o.find(o=>o[0]==k)||[,,k])[2]).join('·'));if(nb.photos.length)L.push('눈바디 사진 '+nb.photos.length+'장');if(nb.cloth||Object.keys(nb.fit).length)L.push('기준 옷 핏 기록 '+Object.keys(nb.fit).length+'회'+(nb.cloth?' ('+nb.cloth+')':''));if(lowfm)L.push('장 민감: 예민한 편으로 저장됨');if(SV.avoid.length)L.push('피해야 할 음식(알레르기): '+SV.avoid.map(k=>AVN[k]).join('·'));if(wlog.length)L.push('몸무게 기록 '+wlog.length+'건');if(Object.keys(cond).length)L.push('컨디션 기록 '+Object.keys(cond).length+'일');
  $('#sens').innerHTML=L.length?L.map(v=>`<div class="meal"><div class="sub" style="color:var(--ink)">${v}</div></div>`).join(''):'<div class="ok">저장된 민감정보가 없어요.</div>'}
 $('#del1').onclick=()=>{$('#del2').hidden=false;$('#del1').hidden=true};
 $('#delno').onclick=()=>{$('#del2').hidden=true;$('#del1').hidden=false};
-$('#delok').onclick=()=>{phase=null;cyc={};CY=null;SV.past=[];nb={cloth:'',fit:{},photos:[]};nbView=null;idbClear().then(()=>nbUI());lowfm=false;SV.gut=false;SV.avoid=[];wlog=[];cond={};$$('.lowfm').forEach(x=>x.checked=false);['c1','c1x','c2'].forEach(i=>$('#'+i).checked=false);consent=false;phasesUI();pmsBn();wmenu();tot();sens();upd();condUI();cyUI();nbUI();saveState();$('#del2').hidden=true;$('#del1').hidden=false;toast('민감정보를 삭제했어요')};
+$('#delok').onclick=()=>{phase=null;OW=null;cyc={};CY=null;SV.past=[];nb={cloth:'',fit:{},photos:[]};nbView=null;idbClear().then(()=>nbUI());lowfm=false;SV.gut=false;SV.avoid=[];wlog=[];cond={};$$('.lowfm').forEach(x=>x.checked=false);['c1','c1x','c2'].forEach(i=>$('#'+i).checked=false);consent=false;phasesUI();pmsBn();wmenu();tot();sens();upd();condUI();cyUI();nbUI();saveState();$('#del2').hidden=true;$('#del1').hidden=false;toast('민감정보를 삭제했어요')};
 $$('[data-md]').forEach(b=>b.onclick=()=>{scm=b.dataset.md;applyTheme();saveState()});
 sysDark.addEventListener&&sysDark.addEventListener('change',()=>{if(!scm)applyTheme()});
 $('#thpok').onclick=()=>{thmSet=true;$('#thp').hidden=true;applyTheme();posterUI();tyUI();saveState();scrollTo(0,0);if(thpFrom||!profileDone)onbOpen(true);else toast(combo()+' 루틴이에요')};
@@ -668,7 +735,7 @@ function logChg(t){chg.unshift({t:Date.now(),txt:t});if(chg.length>20)chg.length
 function chgUI(){const e=$('#chg');if(!e)return;e.innerHTML=chg.length?chg.slice(0,5).map(c=>{const d=new Date(c.t);return `<div>${d.getMonth()+1}/${d.getDate()} · ${c.txt}</div>`}).join(''):'아직 변경 이력이 없어요.'}
 ['gkg','gwk','gw','gs','gm'].forEach(i=>{$('#'+i).oninput=goalIn;$('#'+i).onchange=()=>{goalIn();goalLog()}});
 function refresh(){if(typeof slotUI==='function')slotUI();posterUI();lockUI();phase=(cyc[key(sim)]||{}).p||((typeof cyPhase=='function'&&cyPhase(sim.getTime()))||{}).p||null;cyUI();nbUI();vwUI();phasesUI();pmsBn();dateUI();quickUI();waterUI();stepsUI();exUI();weekRender();show();upd();condUI();tot();sens()}
-loadState();if(!PL||!PL.s)PL={s:[...((PL&&PL.p)||[]),...((PL&&PL.w!=null)?[PL.w]:[])],c:[]};G.water=Math.min(2000,Math.max(500,G.water||2000));$('#gw').value=G.water;G.meals=Math.min(3,G.meals||3);$('#gm').value=G.meals;plBoxes();G0={...G};goalMsg();// 기본 정보 몸무게로 첫 기록을 한 번만 채움(민감정보 삭제 후 다시 생기지 않게)
+loadState();if(typeof owClean=='function')try{owClean()}catch(e){}if(!PL||!PL.s)PL={s:[...((PL&&PL.p)||[]),...((PL&&PL.w!=null)?[PL.w]:[])],c:[]};G.water=Math.min(2000,Math.max(500,G.water||2000));$('#gw').value=G.water;G.meals=Math.min(3,G.meals||3);$('#gm').value=G.meals;plBoxes();G0={...G};goalMsg();// 기본 정보 몸무게로 첫 기록을 한 번만 채움(민감정보 삭제 후 다시 생기지 않게)
 if(!wlog.length&&profileDone&&!wsd)logWeight(+$('#wt').value);if(profileDone)wsd=true;calc();wmenu();phasesUI();pmsBn();refresh();
 $('#wipe').onclick=()=>{wiped=true;try{localStorage.removeItem(SK)}catch(e){}toast('삭제했어요. 다시 불러와요');idbClear().finally(()=>{try{location.reload()}catch(e){}})};
 
