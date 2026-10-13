@@ -292,9 +292,9 @@ const f4=v=>[v[0],v[1],v[2],fatOf(...v)];
 function base(x){return x.db?x.db:f4(x.item=='직접'||x.cat=='기타'?SZ[x.size]:CAT[x.cat][x.item])}
 function sum(x){if(!x.item)return[0,0,0,0];const f=base(x);let r=f.map(v=>v*x.por);x.add.forEach(a=>f4(ADD[a]).forEach((v,i)=>r[i]+=v));r[0]+=x.x.length*80;r[1]+=x.x.length*8;r[2]+=x.x.length*3;r[3]+=x.x.length*4;return r.map(Math.round)}
 $('#xadd').onclick=()=>{const v=$('#xname').value.trim();if(!v||!cur)return;cur.x.push(v);$('#xname').value='';show()};
-$('#save').onclick=()=>{const s=sum(cur);const nm=(cur.item=='직접'||cur.cat=='기타'?($('#cname').value.trim()||'직접 입력 메뉴'):cur.db?cur.item+(cur.brand?` (${cur.brand})`:''):cur.cat+' '+cur.item);logs.push({n:nm+(cur.por!=1?` ×${cur.por}`:'')+(cur.add.length||cur.x.length?' + '+[...cur.add,...cur.x].join(', '):''),k:s[0],c:s[1],p:s[2],f:s[3],v:vegOf(cur),e:EM[cur.cat],slot:curSlot??autoSlot()});cur=null;$('#fq').value='';$('#cname').value='';show();tot();toast('저장됨')};
+$('#save').onclick=()=>{const s=sum(cur);const nm=(cur.item=='직접'||cur.cat=='기타'?($('#cname').value.trim()||'직접 입력 메뉴'):cur.db?cur.item+(cur.brand?` (${cur.brand})`:''):cur.cat+' '+cur.item);logs.push({n:nm+(cur.por!=1?` ×${cur.por}`:'')+(cur.add.length||cur.x.length?' + '+[...cur.add,...cur.x].join(', '):''),k:s[0],c:s[1],p:s[2],f:s[3],v:vegOf(cur),t:Date.now(),e:EM[cur.cat],slot:curSlot??autoSlot()});cur=null;$('#fq').value='';$('#cname').value='';show();tot();toast('저장됨')};
 function tot(){
- $('#log').innerHTML=logs.length?logs.map((l,i)=>`<div class="meal"><div>${l.slot!=null?`<span class="tag" style="margin-right:4px">${(SCH[SV.sched]||SCH.day).m[l.slot]}</span>`:''}${l.n}${NV()=='focus'?`<div class="sub">탄 ${l.c}g · 단 ${l.p}g · 지 ${lf(l)}g</div>`:''}</div><span class="row" style="gap:4px;flex:none;flex-wrap:nowrap"><button data-f="${i}" aria-label="즐겨찾기">${favs.some(f=>f.n==nm(l))?'★':'☆'}</button><button data-d="${i}">삭제</button></span></div>`).join(''):'아직 기록이 없어요.';
+ $('#log').innerHTML=logs.length?logs.map((l,i)=>[l,i]).sort((a,b)=>(a[0].t||0)-(b[0].t||0)||a[1]-b[1]).map(([l,i])=>`<div class="meal"><div>${l.t?`<span class="sub" style="margin-right:6px">${hm(l.t)}</span>`:''}${l.slot!=null?`<span class="tag" style="margin-right:4px">${(SCH[SV.sched]||SCH.day).m[l.slot]}</span>`:''}${l.n}${NV()=='focus'?`<div class="sub">${l.rough?'영양 계산 없이 기록':`탄 ${l.c}g · 단 ${l.p}g · 지 ${lf(l)}g`}</div>`:''}</div><span class="row" style="gap:4px;flex:none;flex-wrap:nowrap">${l.rough?'':`<button data-f="${i}" aria-label="즐겨찾기">${favs.some(f=>f.n==nm(l))?'★':'☆'}</button>`}<button data-d="${i}">삭제</button></span></div>`).join(''):'아직 기록이 없어요.';
  $$('#log [data-d]').forEach(b=>b.onclick=()=>{logs.splice(+b.dataset.d,1);tot()});
  $$('#log [data-f]').forEach(b=>b.onclick=()=>{const l=logs[+b.dataset.f],i=favs.findIndex(f=>f.n==nm(l));if(i>=0)favs.splice(i,1);else favs.push({...l,n:nm(l)});tot()});
  const c=logs.reduce((a,l)=>a+l.c,0),p=logs.reduce((a,l)=>a+l.p,0),f=logs.reduce((a,l)=>a+lf(l),0),v=logs.reduce((a,l)=>a+(l.v||0),0),cg=window.CARBMIN||130,pg=window.PROT||60;
@@ -320,6 +320,9 @@ const FOODS=['🥪','🥘','🍣','🍙','🍛','🍲','🥗','🍜','🍢','�
 let rd=new Date(sim.getFullYear(),sim.getMonth(),sim.getDate()),days={},cyc={},favs=[],simOff=0,wiped=false,profileDone=false,chg=[];
 const dl=()=>key(rd)==key(sim)?'오늘':(rd.getMonth()+1)+'/'+rd.getDate();
 const nm=l=>l.n.replace(' 📷','');
+const hm=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+// 대충 먹었어요: 영양 계산 없이 '먹었다'만 남김(식단 기록 횟수에는 들어감)
+$('#rough').onclick=()=>{logs.push({n:'대충 먹었어요',k:0,c:0,p:0,f:0,v:0,rough:1,slot:curSlot??autoSlot(),t:Date.now()});tot();toast('기록했어요. 이것도 충분해요')};
 const tk=k=>{const p=k.split('-');return new Date(+p[0],+p[1]-1,+p[2]).getTime()};
 function stash(){days[key(rd)]={logs,water,steps,exDone}}
 function setRec(d){stash();rd=new Date(d.getFullYear(),d.getMonth(),d.getDate());const o=days[key(rd)]||{logs:[],water:0,steps:0,exDone:false};logs=o.logs;water=o.water;steps=o.steps;exDone=o.exDone;cur=null;refresh()}
@@ -332,14 +335,14 @@ function dateUI(){const md=d=>(d.getMonth()+1)+'/'+d.getDate()+'('+DW[(d.getDay(
  $('#datenote').textContent=key(rd)==key(sim)?'● 표시는 기록이 있는 날이에요. 놓친 날도 눌러서 기억나는 만큼만 남겨요.':`지난 날(${md(rd)}) 기록 중이에요. 괜찮아요, 기억나는 만큼만 남겨요.`;
  $('#condt').textContent=dl()}
 function quickUI(){
- const seen=new Set(favs.map(f=>f.n)),rec=[];const add=l=>{const n=nm(l);if(!seen.has(n)&&rec.length<6){seen.add(n);rec.push({...l,n})}};
+ const seen=new Set(favs.map(f=>f.n)),rec=[];const add=l=>{if(l.rough)return;const n=nm(l);if(!seen.has(n)&&rec.length<6){seen.add(n);rec.push({...l,n})}};
  [...logs].reverse().forEach(add);Object.keys(days).filter(k=>k!=key(rd)).sort((a,b)=>tk(b)-tk(a)).forEach(k=>[...days[k].logs].reverse().forEach(add));
  const items=[...favs.map(f=>({f,fav:1})),...rec.map(f=>({f}))].slice(0,4),sh=n=>n.length>14?n.slice(0,13)+'…':n;
  $('#qrow').innerHTML=items.length?items.map((x,i)=>`<button class="chip" data-q="${i}">${x.fav?'★ ':''}${sh(x.f.n)}</button>`).join(''):'<span class="sub">기록이 쌓이면 자주 먹은 메뉴가 여기에 나와요.</span>';
- $$('#qrow [data-q]').forEach(b=>b.onclick=()=>{logs.push({...items[+b.dataset.q].f,slot:curSlot??autoSlot()});tot();toast('한 번에 기록했어요')});
+ $$('#qrow [data-q]').forEach(b=>b.onclick=()=>{logs.push({...items[+b.dataset.q].f,slot:curSlot??autoSlot(),t:Date.now()});tot();toast('한 번에 기록했어요')});
  const yk=key(new Date(rd.getFullYear(),rd.getMonth(),rd.getDate()-1)),y=(days[yk]||{}).logs||[],btn=$('#sameyd');
  btn.disabled=!y.length;btn.textContent=(key(rd)==key(sim)?'어제':'전날')+'와 같음'+(y.length?` (${y.length}개)`:' (기록 없음)');
- btn.onclick=()=>{y.forEach(l=>logs.push({...l,n:nm(l)}));tot();toast('전날 기록을 가져왔어요')}}
+ btn.onclick=()=>{y.forEach(l=>logs.push({...l,n:nm(l),t:Date.now()}));tot();toast('전날 기록을 가져왔어요')}}
 const SK='dietproto_v1';
 function saveState(){if(wiped)return;try{stash();const _st=JSON.stringify({SV,thm,thmSet,scm,CY,nb,wsd,profileDone,chg,days,hist,doneDates,cond,wlog,cyc,favs,G,PL,simOff,weeksDone,badged,dayDone,lowfm,consent,wk,synced,sleepSync,slp,cycSync,cycStart,rt,OW,age:$('#age').value,pa:$('#pa').value,ht:$('#ht').value,wt:$('#wt').value});localStorage.setItem(SK,_st);bkMirror(_st)}catch(e){}}
 function loadState(){try{const t=localStorage.getItem(SK);if(!t)return;const o=JSON.parse(t);
@@ -445,7 +448,7 @@ function reportUI(){
  if(!sl.length)adv+='<div class="advc"><b>수면 기록이 없어요</b><div class="sub" style="margin-top:4px">기록 탭의 "오늘 컨디션"에서 수면을 체크하면, 수면이 식욕과 다이어트에 미치는 영향을 리포트에 반영해요.</div></div>';
  if(!weak.length&&sl.length)adv+='<div class="advc"><b>🎉 큰 보완점이 없어요</b><div class="sub" style="margin-top:4px">이번 주 패턴을 유지해 봐요. 컨디션이 떨어지는 날이 있으면 수면과 물부터 확인하세요.</div></div>';
  if(avg('en')&&avg('en')<2)adv+='<div class="advc"><b>에너지가 낮은 편이에요</b><div class="sub" style="margin-top:4px">수면·탄수·수분이 부족하면 피로가 커질 수 있어요. 위 항목부터 점검해 보세요. 피곤함이 오래가면 몸이 쉬어 가라는 신호일 수 있어요. 무리하지 말고 몸 상태를 한 번 살펴봐 주세요.</div></div>';
- $('#radv').innerHTML=adv;
+ $('#radv').innerHTML=NV()=='easy'?`<details><summary class="sub">조언 펼쳐 보기</summary>${adv}</details>`:adv;
 }
 $('#rseed').onclick=()=>{for(let i=1;i<=6;i++){const d=new Date(sim);d.setDate(d.getDate()-i);const k=key(d),wd=(d.getDay()+6)%7,pl=(PL.s.includes(wd)||PL.c.includes(wd))?1:0,m=Math.random()<.85?G.meals:G.meals-1,r=Math.random;
   const h={m,c:m>=G.meals?(r()<.7?(window.CARBMIN||233)+r()*60:150+r()*60):60,p:m>=G.meals?55+r()*50:20,v:m>=G.meals?1+r()*3:.5,f:m>=G.meals?(window.FATLO||30)+r()*((window.FATHI||60)-(window.FATLO||30)):15,w:r()<.75?G.water:1000+r()*900,s:2500+r()*7000,pl,ex:pl?(r()<.8?1:0):0};hist[k]=h;
@@ -793,7 +796,8 @@ $('#wipe').onclick=()=>{wiped=true;try{localStorage.removeItem(SK)}catch(e){}toa
 function pstUI(){const e=$('#pstats');if(!e)return;const m=NV(),g=$('#pgoal'),pg=window.PROT||0,cg=window.CARBMIN||130,ok=pg>0;
  e.className='pstats pst-'+m;
  if(m=='focus'){g.innerHTML='오늘의 목표 <small>탄·단·지를 고루</small>';e.innerHTML=[[ok?cg+'g↑':'-','탄수'],[ok?pg+'g':'-','단백질'],[(G.water/1000).toFixed(1)+'L','물'],[G.steps.toLocaleString(),'걸음']].map(([a,b])=>`<div class="pst"><b>${a}</b><span>${b}</span></div>`).join('');return}
- if(m=='easy'){g.innerHTML='오늘의 무드';e.innerHTML=`<div class="pdeco" aria-hidden="true">${effTh()=='minimal'?['clean-bag','clean-polish','clean-water'].map(n=>hstk(n,72,1)).join(''):''}</div>`;return}
+ if(m=='easy'){g.innerHTML='오늘의 무드';const th=effTh(),hrt=c=>`<svg width="44" height="40" viewBox="0 0 44 40"><path d="M22 38C10 29 2 21 2 12A10 10 0 0 1 22 7a10 10 0 0 1 20 5c0 9-8 17-20 26z" fill="${c}" stroke="#fff" stroke-width="3"/></svg>`,spk='<svg width="26" height="26" viewBox="0 0 26 26"><path d="M13 0l3 10 10 3-10 3-3 10-3-10L0 13l10-3z" fill="#fff"/></svg>';
+ e.innerHTML=`<div class="pdeco" aria-hidden="true">${th=='minimal'?['clean-bag','clean-polish','clean-water'].map(n=>hstk(n,72,1)).join(''):th=='y2k'?hstk('y2k-star',72,1)+hstk('y2k-phone',72,1):th=='kitsch'?hrt('#F7A8C8')+spk+hrt('#DE2373')+spk+hrt('#F7A8C8'):''}</div>`;return}
  const t=key(rd)==key(sim),pl=planned(),r=t?reqs():[],nm=['식단','물',pl?'운동':'걸음'];
  g.innerHTML='오늘의 목표 <small>필수 행동을 채우면 차올라요</small>';
  e.innerHTML=`<div class="pbar" role="img" aria-label="오늘 필수 행동 ${r.filter(x=>x.d).length}개 채움">${nm.map((n,i)=>`<div class="${r[i]&&r[i].d?'on':''}"><i></i><span>${n}</span></div>`).join('')}</div>`}
