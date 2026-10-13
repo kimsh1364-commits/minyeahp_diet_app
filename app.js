@@ -808,6 +808,11 @@ $('#pmfile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)retu
  im.onload=()=>{const d=shrink(im,im.naturalWidth,im.naturalHeight);URL.revokeObjectURL(u);idbPut('mood',d).then(()=>{moodU=d;SV.mood=true;saveState();pstUI();sens();toast('사진을 넣었어요')}).catch(()=>toast('사진을 저장하지 못했어요'))};
  im.onerror=()=>{URL.revokeObjectURL(u);toast('이 사진은 열 수 없어요')};im.src=u};
 // 배경화면용 목표 칸: 집중 모드만 탄수·단백질 숫자, 나머지는 물·걸음만
+// 간단·균형 모드는 배경화면의 목표 칸 대신 '오늘의 무드' 사진(없으면 물·걸음)
+const wpMood=()=>NV()!='focus'&&SV.mood&&WPI['mood#img']||null;
+function wpCover(x,im,a,b,w,h,r){const k=Math.max(w/im.width,h/im.height),iw=im.width*k,ih=im.height*k;x.save();x.beginPath();x.roundRect(a,b,w,h,r||0);x.clip();x.drawImage(im,a+(w-iw)/2,b+(h-ih)/2,iw,ih);x.restore()}
+async function wpMoodLoad(){WPI['mood#img']=null;if(NV()=='focus'||!SV.mood)return;if(!moodU)moodU=await idbGet('mood').catch(()=>null);if(!moodU)return;
+ WPI['mood#img']=await new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>ok(null);setTimeout(()=>ok(null),3000);im.src=moodU})}
 function wpStats(){const pg=window.PROT||0,cg=window.CARBMIN||130,ok=pg>0,a=[[(G.water/1000).toFixed(1)+'L','물'],[G.steps.toLocaleString(),'걸음']];return NV()=='focus'?[[ok?cg+'g↑':'-','탄수'],[ok?pg+'g':'-','단백질'],...a]:a}
 function posterUI(){
  const pg=window.PROT||0,cg=window.CARBMIN||130,ok=pg>0;
@@ -873,9 +878,9 @@ function wpWin(x,W,H,D,mag){const F="'Noto Sans KR','Apple SD Gothic Neo',system
  const t2=$('#pt2').textContent,w2=tw(t2,96,900)+60;x.fillStyle=K.soft;x.beginPath();x.roundRect(iL+w1+32,y-112,w2,138,36);x.fill();tx(t2,iL+w1+32+w2/2,y-8,96,900,K.ink,'center');
  y+=62;tx($('.pright').textContent,iL+iW,y,34,700,K.sub,'right');
  const sec=(t,s)=>{y+=mag?74:90;tx(t,iL,y,48,900,K.ink);tx(s,iL+tw(t,48,900)+24,y,30,500,K.sub);y+=32};
- sec('오늘의 목표',NV()=='focus'?'탄·단·지를 고루':'물·걸음');
- const st=wpStats(),g=22,bw=(iW-(st.length-1)*g)/st.length;
- st.forEach(([a,b],i)=>{const bx=iL+i*(bw+g);box(bx,y,bw,150,K.sf,K.line,3);tx(a,bx+bw/2,y+74,a.length>6?40:48,900,K.ink,'center');tx(b,bx+bw/2,y+122,28,500,K.sub,'center')});y+=150;
+ const mi=wpMood();sec(mi?'오늘의 무드':'오늘의 목표',mi?'':NV()=='focus'?'탄·단·지를 고루':'물·걸음');
+ if(mi){const mh=mag?160:200;box(iL,y,iW,mh,K.sf,K.line,3);wpCover(x,mi,iL,y,iW,mh,mag?30:0);y+=mh-150}else{const st=wpStats(),g=22,bw=(iW-(st.length-1)*g)/st.length;
+ st.forEach(([a,b],i)=>{const bx=iL+i*(bw+g);box(bx,y,bw,150,K.sf,K.line,3);tx(a,bx+bw/2,y+74,a.length>6?40:48,900,K.ink,'center');tx(b,bx+bw/2,y+122,28,500,K.sub,'center')})}y+=150;
  sec('주간 루틴','근력·유산소 요일');
  const wk=[...document.querySelectorAll('#pweek > div')],cg=12,cw=(iW-6*cg)/7;
  wk.forEach((e,i)=>{const bx=iL+i*(cw+cg),hl=e.className.includes('p')||e.className.includes('w'),td=e.className.includes('t');box(bx,y,cw,130,hl?K.soft:K.sf,td?K.hi:K.line,td?6:3,mag?24:0);tx(e.querySelector('b').textContent,bx+cw/2,y+56,38,900,K.ink,'center');tx(e.lastChild.textContent,bx+cw/2,y+102,26,500,K.sub,'center')});y+=130;
@@ -920,8 +925,8 @@ function wpDraw(theme){const W=1170,H=2532,c=document.createElement('canvas');c.
  const t2=$('#pt2').textContent,w2=tw(t2,110,900)+70;
  rr(L+w1+50,y,w2,150,Math.min(R,40),C.yel);tx(t2,L+w1+50+w2/2,y+112,110,900,C.yt,'center');
  y+=200;
- const st=wpStats(),g=24,bw=(CW-(st.length-1)*g)/st.length;
- st.forEach(([a,b],i)=>{const bx=L+i*(bw+g);rr(bx,y,bw,170,R,C.card,1);tx(a,bx+bw/2,y+86,a.length>6?44:54,900,C.ink,'center');tx(b,bx+bw/2,y+138,32,500,C.sub,'center')});
+ const mi=wpMood();if(mi){rr(L,y,CW,280,R,C.card,1);wpCover(x,mi,L,y,CW,280,R);y+=110}else{const st=wpStats(),g=24,bw=(CW-(st.length-1)*g)/st.length;
+ st.forEach(([a,b],i)=>{const bx=L+i*(bw+g);rr(bx,y,bw,170,R,C.card,1);tx(a,bx+bw/2,y+86,a.length>6?44:54,900,C.ink,'center');tx(b,bx+bw/2,y+138,32,500,C.sub,'center')})}
  y+=250;lbl(L,y,tw('주간 루틴',54,900),54);tx('주간 루틴',L,y,54,900,C.ink);y+=30;
  const wk=[...document.querySelectorAll('#pweek > div')],cg=14,cw=(CW-6*cg)/7;
  wk.forEach((e,i)=>{const bx=L+i*(cw+cg),k=e.className.includes('p')?C.blush:e.className.includes('w')?C.lilac:C.card;rr(bx,y,cw,160,Math.min(R,34),k,1);tx(e.querySelector('b').textContent,bx+cw/2,y+68,42,900,C.ink,'center');tx(e.lastChild.textContent,bx+cw/2,y+120,30,500,C.sub,'center')});
@@ -948,6 +953,7 @@ async function wpOpen(theme){wpTheme=theme||wpTheme||curMode();$$('[data-wp]').f
  try{await wait(Promise.all([document.fonts.load("900 40px 'Noto Sans KR'"),document.fonts.load("500 40px 'Noto Sans KR'")]),1500)}catch(e){}
  try{await wait(wpLoad(wpTheme),4500)}catch(e){}
  try{await wait(wpStk(wpTheme),4500)}catch(e){}
+ try{await wait(wpMoodLoad(),3500)}catch(e){}
  let url='';try{url=wpDraw(wpTheme)}catch(e){try{Object.keys(WPI).filter(k=>k.endsWith('#img')).forEach(k=>WPI[k]=null);url=wpDraw(wpTheme)}catch(e2){}}
  if(url){img.src=url;img.alt='루틴 배경화면 미리보기'}else{img.alt='';$('#wpov').hidden=true;toast('배경화면을 만들지 못했어요. 앱을 닫았다 다시 열고 한 번 더 눌러 주세요')}}
 $('#wpbtn').onclick=()=>wpOpen();
