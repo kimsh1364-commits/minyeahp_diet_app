@@ -205,7 +205,7 @@ $('#c2').onchange=e=>{if(!e.target.checked&&lowfm){lowfm=false;SV.gut=false;$$('
 
 /* daily required */
 function planned(){const wd=(rd.getDay()+6)%7;return PL.s.includes(wd)?'근력':PL.c.includes(wd)?'유산소':null}
-function reqs(){const pl=planned();const r=[{n:'식단 기록 '+G.meals+'번',d:logs.length>=G.meals,s:logs.length+'/'+G.meals},{n:'물 '+(G.water/1000)+'L',d:water>=G.water,s:(water/1000).toFixed(1)+'L'}];
+function reqs(){const pl=planned(),mc=mealGroups(logs).length;const r=[{n:'식단 기록 '+G.meals+'번',d:mc>=G.meals,s:mc+'/'+G.meals},{n:'물 '+(G.water/1000)+'L',d:water>=G.water,s:(water/1000).toFixed(1)+'L'}];
  r.push(pl?{n:pl+' 운동',d:exDone,s:exDone?'완료':'미완료'}:{n:'걸음 '+G.steps.toLocaleString()+'보 (운동 없는 날)',d:steps>=G.steps,s:steps.toLocaleString()+'보'});return r}
 function renderReq(){hist[key(rd)]=snap();if(typeof pstUI==='function')pstUI();if(typeof slotUI==='function')slotUI();if(typeof hwUI==='function')hwUI();if(typeof reportUI==='function')reportUI();
  const r=reqs(),h=r.map(x=>`<div class="meal" style="align-items:center"><span>${x.d?'✅':'⬜'} ${x.n}</span><span class="${x.d?'ok':'sub'}">${x.s}</span></div>`).join('');
@@ -294,7 +294,10 @@ function sum(x){if(!x.item)return[0,0,0,0];const f=base(x);let r=f.map(v=>v*x.po
 $('#xadd').onclick=()=>{const v=$('#xname').value.trim();if(!v||!cur)return;cur.x.push(v);$('#xname').value='';show()};
 $('#save').onclick=()=>{const s=sum(cur);const nm=(cur.item=='직접'||cur.cat=='기타'?($('#cname').value.trim()||'직접 입력 메뉴'):cur.db?cur.item+(cur.brand?` (${cur.brand})`:''):cur.cat+' '+cur.item);logs.push({n:nm+(cur.por!=1?` ×${cur.por}`:'')+(cur.add.length||cur.x.length?' + '+[...cur.add,...cur.x].join(', '):''),k:s[0],c:s[1],p:s[2],f:s[3],v:vegOf(cur),t:Date.now(),e:EM[cur.cat],slot:curSlot??autoSlot()});cur=null;$('#fq').value='';$('#cname').value='';show();tot();toast('저장됨')};
 function tot(){
- $('#log').innerHTML=logs.length?logs.map((l,i)=>[l,i]).sort((a,b)=>(a[0].t||0)-(b[0].t||0)||a[1]-b[1]).map(([l,i])=>`<div class="meal"><div>${l.t?`<span class="sub" style="margin-right:6px">${hm(l.t)}</span>`:''}${l.slot!=null?`<span class="tag" style="margin-right:4px">${(SCH[SV.sched]||SCH.day).m[l.slot]}</span>`:''}${l.n}${NV()=='focus'?`<div class="sub">${l.rough?'영양 계산 없이 기록':`탄 ${l.c}g · 단 ${l.p}g · 지 ${lf(l)}g`}</div>`:''}</div><span class="row" style="gap:4px;flex:none;flex-wrap:nowrap">${l.rough?'':`<button data-f="${i}" aria-label="즐겨찾기">${favs.some(f=>f.n==nm(l))?'★':'☆'}</button>`}<button data-d="${i}">삭제</button></span></div>`).join(''):'아직 기록이 없어요.';
+ $('#log').innerHTML=logs.length?mealGroups(logs).map(g=>{const f=g[0][0],sc=(SCH[SV.sched]||SCH.day).m,sum=k=>g.reduce((a,[l])=>a+(k=='f'?lf(l):l[k]),0),allR=g.every(([l])=>l.rough);
+  const head=`${f.t?`<span class="sub" style="margin-right:6px">${hm(f.t)}</span>`:''}${f.slot!=null?`<span class="tag" style="margin-right:4px">${sc[f.slot]}</span>`:''}${g.map(([l])=>ehtml(l.n)).join(', ')}${NV()=='focus'?`<div class="sub">${allR?'영양 계산 없이 기록':`탄 ${Math.round(sum('c'))}g · 단 ${Math.round(sum('p'))}g · 지 ${Math.round(sum('f'))}g`}</div>`:''}`;
+  const btns=([l,i])=>`<span class="row" style="gap:4px;flex:none;flex-wrap:nowrap">${l.rough?'':`<button data-f="${i}" aria-label="즐겨찾기">${favs.some(x=>x.n==nm(l))?'★':'☆'}</button>`}<button data-d="${i}">삭제</button></span>`;
+  return g.length==1?`<div class="meal"><div>${head}</div>${btns(g[0])}</div>`:`<details class="meal mgrp"><summary><div>${head}</div><span class="sub" style="flex:none">편집</span></summary>${g.map(x=>`<div class="meal"><div>${ehtml(x[0].n)}</div>${btns(x)}</div>`).join('')}</details>`}).join(''):'아직 기록이 없어요.';
  $$('#log [data-d]').forEach(b=>b.onclick=()=>{logs.splice(+b.dataset.d,1);tot()});
  $$('#log [data-f]').forEach(b=>b.onclick=()=>{const l=logs[+b.dataset.f],i=favs.findIndex(f=>f.n==nm(l));if(i>=0)favs.splice(i,1);else favs.push({...l,n:nm(l)});tot()});
  const c=logs.reduce((a,l)=>a+l.c,0),p=logs.reduce((a,l)=>a+l.p,0),f=logs.reduce((a,l)=>a+lf(l),0),v=logs.reduce((a,l)=>a+(l.v||0),0),cg=window.CARBMIN||130,pg=window.PROT||60;
@@ -320,6 +323,10 @@ const FOODS=['🥪','🥘','🍣','🍙','🍛','🍲','🥗','🍜','🍢','�
 let rd=new Date(sim.getFullYear(),sim.getMonth(),sim.getDate()),days={},cyc={},favs=[],simOff=0,wiped=false,profileDone=false,chg=[];
 const dl=()=>key(rd)==key(sim)?'오늘':(rd.getMonth()+1)+'/'+rd.getDate();
 const nm=l=>l.n.replace(' 📷','');
+function ehtml(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+// 같은 끼니를 1시간 안에 따로 기록하면 한 번의 식사로 묶어 보여주고 식단 기록 1번으로 센다(시각 없는 예전 기록은 따로)
+function mealGroups(L){const G2=[];L.map((l,i)=>[l,i]).sort((a,b)=>(a[0].t||0)-(b[0].t||0)||a[1]-b[1]).forEach(x=>{const g=G2[G2.length-1],l=x[0],q=g&&g[g.length-1][0];
+ if(g&&l.t&&q.t&&l.slot===q.slot&&l.t-q.t<=36e5)g.push(x);else G2.push([x])});return G2}
 const hm=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
 // 대충 먹었어요: 영양 계산 없이 '먹었다'만 남김(식단 기록 횟수에는 들어감)
 $('#rough').onclick=()=>{logs.push({n:'대충 먹었어요',k:0,c:0,p:0,f:0,v:0,rough:1,slot:curSlot??autoSlot(),t:Date.now()});tot();toast('기록했어요. 이것도 충분해요')};
@@ -399,7 +406,7 @@ $('#wseed').onclick=()=>{const cur=wlog.length?wlog[wlog.length-1].v:+$('#wt').v
  upd();sens();toast(consent?'체중·주기 예시를 채웠어요':'체중 예시를 채웠어요 (주기는 동의 후 가능)')};
 /* weekly report */
 let hist={};
-function snap(){return{m:logs.length,c:logs.reduce((a,l)=>a+l.c,0),p:logs.reduce((a,l)=>a+l.p,0),v:logs.reduce((a,l)=>a+(l.v||0),0),f:logs.reduce((a,l)=>a+lf(l),0),w:water,s:steps,pl:planned()?1:0,ex:exDone?1:0}}
+function snap(){return{m:mealGroups(logs).length,c:logs.reduce((a,l)=>a+l.c,0),p:logs.reduce((a,l)=>a+l.p,0),v:logs.reduce((a,l)=>a+(l.v||0),0),f:logs.reduce((a,l)=>a+lf(l),0),w:water,s:steps,pl:planned()?1:0,ex:exDone?1:0}}
 function dayStat(d){const h=hist[key(d)],c=cond[key(d)]||{},o={};const pg=(window.PROT||60),cg=window.CARBMIN||130,fl=window.FATLO||30,fh=window.FATHI||60;
  if(h){o.meal=h.m>=G.meals;o.water=h.w>=G.water;o.move=h.pl?!!h.ex:h.s>=G.steps;if(h.m>=G.meals){o.carb=h.c>=cg;o.prot=h.p>=pg;if(h.f!=null)o.fat=h.f>=fl&&h.f<=fh}}
  o.sleep=c.s||null;o.en=c.e||null;o.gut=c.g||null;o.all=!!doneDates[key(d)];return o}

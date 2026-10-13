@@ -393,3 +393,7 @@ body.nv-easy #platecard{display:none}
 .pmood.adj{outline:3px dashed var(--accent-ink);outline-offset:2px}
 .pmood.adj img{touch-action:none;cursor:grab}
 .pmhint{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);padding:4px 12px;border-radius:999px;background:var(--surface-solid);color:var(--text);font-size:12px;font-weight:700;pointer-events:none;white-space:nowrap}
+.mgrp{display:block}
+.mgrp>summary{display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer;list-style:none}
+.mgrp>summary::-webkit-details-marker{display:none}
+.mgrp>.meal{margin-top:6px;padding-left:10px}
