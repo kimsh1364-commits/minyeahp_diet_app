@@ -338,7 +338,7 @@ body.pwin .ck,body.pwin .ckb{border-radius:0}
 /* 키치 눈바디 프리쿠라: 사용자가 준 핑크 호피·진주 하트 프레임(하트 안쪽만 투명하게 만든 assets/themes/kitsch/pricura-frame.webp, 768×1376), 사진은 하트 창(가로 4.3–95.7%, 세로 19.5–81.5%) 안에 몸 전체가 보이게 */
 [data-theme="kitsch"] .mbf{padding:0;border:0;background:none;overflow:visible}
 [data-theme="kitsch"] .mbf .scr{position:relative;aspect-ratio:768/1376;background:#FFE3EE;overflow:hidden}
-[data-theme="kitsch"] .mbf .scr img{position:absolute;left:4.3%;top:19.5%;width:91.4%;height:62%;aspect-ratio:auto;object-fit:contain;object-position:50% 50%}
+[data-theme="kitsch"] .mbf .scr img{position:absolute;left:4.3%;top:19.5%;width:91.4%;height:62%;aspect-ratio:auto;object-fit:cover;object-position:50% 35%}
 [data-theme="kitsch"] .mbf .scr::after,[data-theme="kitsch"] .mbempty::after{content:"";position:absolute;inset:0;background:url(assets/themes/kitsch/pricura-frame.webp) center/100% 100% no-repeat;pointer-events:none}
 [data-theme="kitsch"] .mbempty{position:relative;display:grid;place-items:center;padding-top:0;aspect-ratio:768/1376;background:#FFE3EE;color:var(--accent-ink);font-size:13px;font-weight:700;cursor:pointer}
 /* Y2K 눈바디: 핑크 폴더폰(테두리·카메라·화면) + y2k-phone 그림에서 따온 하트 참(assets/themes/y2k/y2k-charm.webp) */
