@@ -799,18 +799,29 @@ function pstUI(){const e=$('#pstats');if(!e)return;const m=NV(),g=$('#pgoal'),pg
  if(m=='focus'){g.innerHTML='오늘의 목표 <small>탄·단·지를 고루</small>';e.innerHTML=[[ok?cg+'g↑':'-','탄수'],[ok?pg+'g':'-','단백질'],[(G.water/1000).toFixed(1)+'L','물'],[G.steps.toLocaleString(),'걸음']].map(([a,b])=>`<div class="pst"><b>${a}</b><span>${b}</span></div>`).join('');return}
  // 간단·균형 모드: 갤러리 사진으로 꾸미는 '오늘의 무드'(IndexedDB 'mood', 기기에만 저장)
  g.innerHTML='오늘의 무드 <small>갤러리 사진으로 꾸며요</small>';
- e.innerHTML=`<div class="pmood">${SV.mood&&moodU?`<img src="${moodU}" alt="내가 고른 사진">`:`<button id="pmadd">+ 갤러리에서 사진 넣기</button>`}</div>${SV.mood?'<div class="row" style="margin-top:6px"><button id="pmchg">사진 바꾸기</button><button id="pmdel">빼기</button></div>':''}`;
+ const [px,py]=SV.mpos||[50,50];
+ e.innerHTML=`<div class="pmood${moodAdj?' adj':''}" style="aspect-ratio:${moodAR()}">${SV.mood&&moodU?`<img src="${moodU}" alt="내가 고른 사진" draggable="false" style="object-position:${px}% ${py}%">${moodAdj?'<span class="pmhint">끌어서 위치를 맞춰요</span>':''}`:`<button id="pmadd">+ 갤러리에서 사진 넣기</button>`}</div>${SV.mood?(moodAdj?'<div class="row" style="margin-top:6px"><button class="pri" id="pmok">완료</button><button id="pmrst">가운데로</button></div>':'<div class="row" style="margin-top:6px"><button id="pmchg">사진 바꾸기</button><button id="pmpos">위치 맞추기</button><button id="pmdel">빼기</button></div>'):''}`;
+ if($('#pmpos'))$('#pmpos').onclick=()=>{moodAdj=true;pstUI()};
+ if($('#pmok'))$('#pmok').onclick=()=>{moodAdj=false;saveState();pstUI()};
+ if($('#pmrst'))$('#pmrst').onclick=()=>{SV.mpos=[50,50];pstUI()};
+ const mi=e.querySelector('.pmood.adj img');if(mi){let st=null;
+  mi.onpointerdown=ev=>{st={x:ev.clientX,y:ev.clientY,p:[...(SV.mpos||[50,50])]};mi.setPointerCapture(ev.pointerId);ev.preventDefault()};
+  mi.onpointermove=ev=>{if(!st)return;const bw=mi.clientWidth,bh=mi.clientHeight,k=Math.max(bw/mi.naturalWidth,bh/mi.naturalHeight),ow=mi.naturalWidth*k-bw,oh=mi.naturalHeight*k-bh,cl=v=>Math.max(0,Math.min(100,v));
+   SV.mpos=[ow>0?cl(st.p[0]-(ev.clientX-st.x)/ow*100):50,oh>0?cl(st.p[1]-(ev.clientY-st.y)/oh*100):50];mi.style.objectPosition=SV.mpos[0]+'% '+SV.mpos[1]+'%'};
+  mi.onpointerup=mi.onpointercancel=()=>{st=null}}
  if(SV.mood&&!moodU)idbGet('mood').then(u=>{if(u){moodU=u;pstUI()}}).catch(()=>{});
  const pick=()=>$('#pmfile').click();if($('#pmadd'))$('#pmadd').onclick=pick;if($('#pmchg'))$('#pmchg').onclick=pick;
- if($('#pmdel'))$('#pmdel').onclick=()=>{SV.mood=false;moodU=null;idbDel('mood').catch(()=>{});saveState();pstUI();sens()}}
-var moodU=null;
+ if($('#pmdel'))$('#pmdel').onclick=()=>{SV.mood=false;SV.mpos=[50,50];moodU=null;idbDel('mood').catch(()=>{});saveState();pstUI();sens()}}
+var moodU=null,moodAdj=false;
 $('#pmfile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const im=new Image(),u=URL.createObjectURL(f);
- im.onload=()=>{const d=shrink(im,im.naturalWidth,im.naturalHeight);URL.revokeObjectURL(u);idbPut('mood',d).then(()=>{moodU=d;SV.mood=true;saveState();pstUI();sens();toast('사진을 넣었어요')}).catch(()=>toast('사진을 저장하지 못했어요'))};
+ im.onload=()=>{const d=shrink(im,im.naturalWidth,im.naturalHeight);URL.revokeObjectURL(u);idbPut('mood',d).then(()=>{moodU=d;SV.mood=true;SV.mpos=[50,50];saveState();pstUI();sens();toast('사진을 넣었어요')}).catch(()=>toast('사진을 저장하지 못했어요'))};
  im.onerror=()=>{URL.revokeObjectURL(u);toast('이 사진은 열 수 없어요')};im.src=u};
 // 배경화면용 목표 칸: 집중 모드만 탄수·단백질 숫자, 나머지는 물·걸음만
 // 간단·균형 모드는 배경화면의 목표 칸 대신 '오늘의 무드' 사진(없으면 물·걸음)
 const wpMood=()=>NV()!='focus'&&SV.mood&&WPI['mood#img']||null;
-function wpCover(x,im,a,b,w,h,r){const k=Math.max(w/im.width,h/im.height),iw=im.width*k,ih=im.height*k;x.save();x.beginPath();x.roundRect(a,b,w,h,r||0);x.clip();x.drawImage(im,a+(w-iw)/2,b+(h-ih)/2,iw,ih);x.restore()}
+function wpCover(x,im,a,b,w,h,r){const k=Math.max(w/im.width,h/im.height),iw=im.width*k,ih=im.height*k,[px,py]=SV.mpos||[50,50];x.save();x.beginPath();x.roundRect(a,b,w,h,r||0);x.clip();x.drawImage(im,a+(w-iw)*px/100,b+(h-ih)*py/100,iw,ih);x.restore()}
+// 홈 '오늘의 무드' 칸도 배경화면과 같은 비율(가로 1170 기준: 미니멀 창 942×200, Y2K 942×160, 나머지 1030×280)
+function moodAR(){const t=effTh();return t=='minimal'?'942/200':t=='y2k'?'942/160':'1030/280'}
 async function wpMoodLoad(){WPI['mood#img']=null;if(NV()=='focus'||!SV.mood)return;if(!moodU)moodU=await idbGet('mood').catch(()=>null);if(!moodU)return;
  WPI['mood#img']=await new Promise(ok=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>ok(null);setTimeout(()=>ok(null),3000);im.src=moodU})}
 function wpStats(){const pg=window.PROT||0,cg=window.CARBMIN||130,ok=pg>0,a=[[(G.water/1000).toFixed(1)+'L','물'],[G.steps.toLocaleString(),'걸음']];return NV()=='focus'?[[ok?cg+'g↑':'-','탄수'],[ok?pg+'g':'-','단백질'],...a]:a}
