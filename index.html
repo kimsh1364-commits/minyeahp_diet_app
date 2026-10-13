@@ -25,7 +25,7 @@
   <div id="pmh"></div>
   <div class="wbn" id="wbn"><div class="wbn-t"><div><b>💧 물 마시기</b><div class="sub" id="wbs"></div></div><button class="wdrop" id="wplus" aria-label="물 1잔 기록"><img src="assets/themes/water/water-bottle.webp" width="56" height="56" alt=""></button><div class="wbn-r"><b>누르면 +1잔</b><small class="sub">1잔 200ml</small><button id="wminus" aria-label="한 잔 취소">−1잔</button></div></div><div id="wdrops" class="wdrops"></div><div class="bar"><i id="wbar2" style="width:0"></i></div></div>
   <div class="ptitle"><span id="pt1">2달</span><span class="pill" id="pt2">−5kg</span><span class="pright">직장인 현실 루틴</span></div>
-  <div class="psec">오늘의 목표 <small>탄·단·지를 고루</small></div>
+  <div class="psec" id="pgoal">오늘의 목표 <small>탄·단·지를 고루</small></div>
   <div class="pstats" id="pstats"></div>
   <div class="psec">주간 루틴 <small>근력·유산소 요일은 설정 탭에서</small></div><div class="pweek" id="pweek"></div>
   <div class="psec">오늘루틴 <small>매일 챙기는 6가지</small></div><ol class="ckl" id="ckl"></ol>
@@ -86,16 +86,16 @@
    <label style="margin-top:10px">추가한 것 (빠른 선택)</label><div class="row" id="adds"></div>
    <div class="row" style="margin-top:6px;flex-wrap:nowrap"><input id="xname" placeholder="추가 메뉴 직접 입력 (예: 아보카도)"><button id="xadd" style="flex:none">추가</button></div>
    <div id="xlist" class="sub" style="margin-top:4px"></div>
-   <div class="row" style="justify-content:space-between;margin-top:10px"><div>단백질 <span class="big" id="rk">0</span> g</div><div class="sub" id="rm"></div></div>
+   <div class="row nvf" style="justify-content:space-between;margin-top:10px"><div>단백질 <span class="big" id="rk">0</span> g</div><div class="sub" id="rm"></div></div>
    <button class="pri" id="save" style="width:100%;margin-top:8px">저장하기</button></div>
  </div>
  </div>
  <div class="card">
   <h2>오늘 기록</h2>
   <div id="log" class="sub">아직 기록이 없어요.</div>
-  <div id="tot" style="margin-top:10px"></div>
+  <div id="tot" class="nvf" style="margin-top:10px"></div>
  </div>
-<div class="card">
+<div class="card" id="platecard">
   <h2>오늘의 접시</h2>
   <div class="stage2" style="align-items:center"><svg id="plate" viewBox="0 0 200 200" width="100%" role="img" aria-label="오늘의 접시"></svg><div id="ptxt" style="font-size:13px;min-width:0"></div></div>
   <div class="sub" style="margin-top:6px">목표량은 예시 기준이에요(탄수 하한·단백질 권장 범위·지방 비율 15–30%).</div>
@@ -172,7 +172,7 @@
  <div class="card">
   <div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0" id="calt">월별 도장판</h2><b id="calc2"></b></div>
   <div class="cal" id="calh"></div><div class="cal" id="cal" style="margin-top:4px"></div>
-  <div class="sub" style="margin-top:6px">필수 행동을 채운 날 스티커가 붙어요. 🥗 균형 식사(탄수 하한·단백질·지방 적정 범위) · 💪 운동 완료 · 👟 걸음 목표 · 🌙 숙면(수면 "좋음") · ⭐ 기본. 2개 이상 받은 날은 🌟로 표시돼요. 체중 달성은 기준이 아니에요. 빈 날이 있어도 괜찮아요.</div>
+  <div class="sub" id="stkdesc" style="margin-top:6px">필수 행동을 채운 날 스티커가 붙어요. 🥗 균형 식사(탄수 하한·단백질·지방 적정 범위) · 💪 운동 완료 · 👟 걸음 목표 · 🌙 숙면(수면 "좋음") · ⭐ 기본. 2개 이상 받은 날은 🌟로 표시돼요. 체중 달성은 기준이 아니에요. 빈 날이 있어도 괜찮아요.</div>
  </div>
  <div class="card"><h2>하루별 한눈에</h2><div class="hm" id="rhm"></div><div class="sub" style="margin-top:6px">초록=달성 · 노랑=보통 · 분홍=아쉬움 · 회색=기록 없음</div></div>
  <div class="card"><h2>컨디션 · 몸무게</h2><div id="rcond"></div></div>
@@ -221,7 +221,7 @@
  <div class="row" style="margin-top:8px"><button id="bkout">백업 파일 저장</button><button id="bkin">백업 불러오기</button><input type="file" id="bkfile" accept="application/json,.json" hidden></div>
  <button class="danger" id="wipe" style="margin-top:8px">저장된 데이터 모두 지우기</button></div>
  <div class="card"><h2>내 앱 꾸미기</h2><div class="sub">앱 색·첫 화면·배경화면·결과 카드·눈바디에 적용돼요. 다크 모드에서는 모든 테마가 무채색으로 보여요.</div><div id="thlist" class="thlist"></div></div>
- <div class="card"><h2>기록 보는 방식</h2><div class="sub">몸무게를 어떻게 볼지 골라요. 언제든 바꿀 수 있어요.</div><div class="row" id="vwset" style="margin-top:8px"></div><div class="sub" id="vwnote" style="margin-top:6px"></div></div>
+ <div class="card"><h2>기록 보기</h2><div class="sub">식단·몸무게를 얼마나 자세히 볼지 골라요. 언제든 바꿀 수 있어요.</div><div class="row" id="nvset" style="margin-top:8px"></div><div class="sub" id="nvnote" style="margin-top:6px"></div><label class="row" style="margin-top:10px;color:var(--ink);font-size:14px"><input type="checkbox" id="wfol" style="width:auto"> 몸무게도 이 모드에 맞추기</label><div id="vwbox" hidden><label>몸무게 보기</label><div class="row" id="vwset" style="margin-top:4px"></div><div class="sub" id="vwnote" style="margin-top:6px"></div></div></div>
  <div class="card"><h2>화면 모드</h2><div class="row"><button class="chip" data-md="">시스템</button><button class="chip" data-md="light">라이트</button><button class="chip" data-md="dark">다크</button></div></div>
 </section>
 
