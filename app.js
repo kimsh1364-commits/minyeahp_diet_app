@@ -739,7 +739,6 @@ async function owSave(){if(!OW)return;const btn=$('#owsave');btn.disabled=true;b
   const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('사진을 저장했어요. 안 보이면 다운로드 폴더를 확인해 주세요')}
  catch(e){toast('저장하지 못했어요. 다시 한 번 눌러 주세요')}finally{btn.disabled=false;btn.textContent='갤러리에 저장'}}
 $('#owopen').onclick=owOpen;$('#owx').onclick=owClose;$('#owgo').onclick=owCapture;$('#owflip').onclick=()=>{owFace=owFace=='user'?'environment':'user';owShoot()};
-$('#owpick').onclick=()=>$('#owfile').click();
 $('#owfile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const k=Math.min(1,1920/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);const d=c.toDataURL('image/jpeg',.88);c.width=c.height=0;URL.revokeObjectURL(u);owStop();owNew(d)};im.onerror=()=>toast('사진을 열 수 없어요');im.src=u};
 $$('[data-owf]').forEach(b=>b.onclick=()=>{owFmt=b.dataset.owf;if(OW&&OW.has&&!$('#owed').hidden){OW.fmt=owFmt;saveState()}owFit()});
 $('#owstamp').onclick=()=>{const i=OW.items.findIndex(t=>t.t=='stamp');if(i>=0){OW.items.splice(i,1);owSel=-1}else{OW.items.push({t:'stamp',s:0,x:.5,y:OW.fmt=='story'?.2:.1,w:.075});owSel=OW.items.length-1}owTools();owDraw();saveState()};
@@ -770,7 +769,7 @@ async function bkRestore(){try{if(localStorage.getItem(SK))return;const st=await
 $('#bkout').onclick=async()=>{saveState();const d=new Date(),name=`diet-backup-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`,b=new Blob([localStorage.getItem(SK)||'{}'],{type:'application/json'}),f=new File([b],name,{type:'application/json'});
  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name=='AbortError')return}
  const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('백업 파일을 저장했어요')};
-$('#bkin').onclick=()=>$('#bkfile').click();
+
 $('#bkfile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;f.text().then(t=>{let o;try{o=JSON.parse(t)}catch(x){return toast('백업 파일을 읽을 수 없어요')}if(!o||typeof o!='object'||!('SV' in o||'days' in o))return toast('이 앱의 백업 파일이 아니에요');
  if(!confirm('지금 기록을 백업 파일 내용으로 바꿀까요?'))return;wiped=true;localStorage.setItem(SK,t);idbPut('__state',t).catch(()=>{}).finally(()=>location.reload())})};
 /* sensitive */
@@ -807,7 +806,7 @@ function pstUI(){const e=$('#pstats');if(!e)return;const m=NV(),g=$('#pgoal'),pg
  // 간단·균형 모드: 갤러리 사진으로 꾸미는 '오늘의 무드'(IndexedDB 'mood', 기기에만 저장)
  g.innerHTML='오늘의 무드 <small>갤러리 사진으로 꾸며요</small>';
  const [px,py]=SV.mpos||[50,50];
- e.innerHTML=`<div class="pmood${moodAdj?' adj':''}" style="aspect-ratio:${moodAR()}">${SV.mood&&moodU?`<img src="${moodU}" alt="내가 고른 사진" draggable="false" style="object-position:${px}% ${py}%">${moodAdj?'<span class="pmhint">끌어서 위치를 맞춰요</span>':''}`:`<button id="pmadd">+ 갤러리에서 사진 넣기</button>`}</div>${SV.mood?(moodAdj?'<div class="row" style="margin-top:6px"><button class="pri" id="pmok">완료</button><button id="pmrst">가운데로</button></div>':'<div class="row" style="margin-top:6px"><button id="pmchg">사진 바꾸기</button><button id="pmpos">위치 맞추기</button><button id="pmdel">빼기</button></div>'):''}`;
+ e.innerHTML=`<div class="pmood${moodAdj?' adj':''}" style="aspect-ratio:${moodAR()}">${SV.mood&&moodU?`<img src="${moodU}" alt="내가 고른 사진" draggable="false" style="object-position:${px}% ${py}%">${moodAdj?'<span class="pmhint">끌어서 위치를 맞춰요</span>':''}`:`<label for="pmfile" class="lbtn" id="pmadd">+ 갤러리에서 사진 넣기</label>`}</div>${SV.mood?(moodAdj?'<div class="row" style="margin-top:6px"><button class="pri" id="pmok">완료</button><button id="pmrst">가운데로</button></div>':'<div class="row" style="margin-top:6px"><label for="pmfile" class="lbtn" id="pmchg">사진 바꾸기</label><button id="pmpos">위치 맞추기</button><button id="pmdel">빼기</button></div>'):''}`;
  if($('#pmpos'))$('#pmpos').onclick=()=>{moodAdj=true;pstUI()};
  if($('#pmok'))$('#pmok').onclick=()=>{moodAdj=false;saveState();pstUI()};
  if($('#pmrst'))$('#pmrst').onclick=()=>{SV.mpos=[50,50];pstUI()};
@@ -817,7 +816,6 @@ function pstUI(){const e=$('#pstats');if(!e)return;const m=NV(),g=$('#pgoal'),pg
    SV.mpos=[ow>0?cl(st.p[0]-(ev.clientX-st.x)/ow*100):50,oh>0?cl(st.p[1]-(ev.clientY-st.y)/oh*100):50];mi.style.objectPosition=SV.mpos[0]+'% '+SV.mpos[1]+'%'};
   mi.onpointerup=mi.onpointercancel=()=>{st=null}}
  if(SV.mood&&!moodU)idbGet('mood').then(u=>{if(u){moodU=u;pstUI()}}).catch(()=>{});
- const pick=()=>$('#pmfile').click();if($('#pmadd'))$('#pmadd').onclick=pick;if($('#pmchg'))$('#pmchg').onclick=pick;
  if($('#pmdel'))$('#pmdel').onclick=()=>{SV.mood=false;SV.mpos=[50,50];moodU=null;idbDel('mood').catch(()=>{});saveState();pstUI();sens()}}
 var moodU=null,moodAdj=false;
 $('#pmfile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const im=new Image(),u=URL.createObjectURL(f);

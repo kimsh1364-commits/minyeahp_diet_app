@@ -397,3 +397,7 @@ body.nv-easy #platecard{display:none}
 .mgrp>summary{display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer;list-style:none}
 .mgrp>summary::-webkit-details-marker{display:none}
 .mgrp>.meal{margin-top:6px;padding-left:10px}
+/* 파일 고르기: 아이폰 사파리에서 숨긴(display:none) 입력을 코드로 누르면 안 열릴 때가 있어, 입력은 눈에만 안 보이게 두고 label로 바로 연다 */
+.vh{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;overflow:hidden!important;pointer-events:none}
+.lbtn{display:inline-flex;align-items:center;justify-content:center;margin:0;padding:8px 12px;border:var(--btn-border);border-radius:var(--btn-radius);background:var(--btn-bg);color:var(--btn-fg,var(--text));font-size:14px;font-weight:700;cursor:pointer}
+#ow .owlbl{display:inline-flex;align-items:center;padding:8px 14px;background:#222;color:#fff;border:1px solid #555;border-radius:99px;font-size:13px;cursor:pointer}
