@@ -251,40 +251,53 @@ const SZ={'작게':[300,40,12],'보통':[500,65,20],'크게':[700,90,28]};
 const ADD={'샐러드':[40,6,2],'삶은 달걀':[75,1,6],'두부':[90,2,9],'닭가슴살':[110,0,23]};
 let cur=null,logs=[];
 const UN={'샌드위치':'개','비빔밥':'그릇','포케':'그릇','김밥':'줄','덮밥·볶음밥':'그릇','국·정식':'상','샐러드':'접시','면':'그릇','분식':'접시','간식':'개','고기·구이':'인분','치킨·피자·버거':'인분','카페·음료':'잔','밥·반찬':'인분','기타':'인분'};
-const ALI={'계란':'달걀','커피':'아메리카노','라떼':'카페라떼','밥':'공깃밥','치맥':'치킨','국수':'면'};
+const ALI={'계란':'달걀','커피':'아메리카노','라떼':'카페라떼','밥':'공깃밥','치맥':'치킨','국수':'면','공깃밥':'쌀밥','흰밥':'쌀밥','달걀':'달걀 삶은것'};
 const POP=[['김밥','일반'],['샐러드','닭가슴살'],['포케','연어'],['샌드위치','에그샐러드'],['비빔밥','야채'],['면','라면'],['카페·음료','아메리카노'],['간식','바나나']];
 const fatOf=(k,c,p)=>Math.max(0,Math.round((k-4*c-4*p)/9));
+const lf=l=>l.f!=null?l.f:fatOf(l.k,l.c,l.p);
+// 식약처 식품영양성분 DB(음식) — tools/build_foods.py로 만든 assets/data/foods.json
+// 한 줄: [이름, 업체, 대표식품, 1회 제공량, 단위, kcal(내부 계산용), 탄, 단, 지, 탄·지 추정]
+let FDB=null,FDBp=null;
+function fdbLoad(){if(FDB||FDBp)return FDBp;FDBp=fetch('assets/data/foods.json').then(r=>r.json()).then(o=>{FDB=o.d.map(r=>({r,s:(r[0]+r[1]+r[2]).replace(/\s/g,'').toLowerCase(),n:r[0].replace(/\s/g,'').toLowerCase()}));if($('#fq').value)renderRes()}).catch(()=>{FDBp=null});return FDBp}
+function fdbFind(raw){if(!FDB)return[];let t=raw.trim().toLowerCase().split(/\s+/).filter(Boolean);if(!t.length)return[];const q=t.join(''),al=ALI[q]&&ALI[q].replace(/\s/g,'').toLowerCase();
+ const m=[];FDB.forEach(o=>{const hit=t.every(w=>o.s.includes(w))||(al&&o.n.includes(al));if(!hit)return;const sc=(o.n==q||o.n==al?0:o.n.startsWith(q)||(al&&o.n.startsWith(al))?1:2)*2+(o.r[1]?1:0);m.push([sc,o.n.length,o.r])});
+ return m.sort((a,b)=>a[0]-b[0]||a[1]-b[1]).slice(0,15).map(x=>x[2])}
 function pick(cat,item){cur={cat,item,por:1,add:[],x:[],size:'보통'};show()}
-function renderRes(){const q=($('#fq').value||'').replace(/\s/g,'').toLowerCase(),all=[];
+function renderRes(){const raw=$('#fq').value||'',q=raw.replace(/\s/g,'').toLowerCase(),all=[];
  Object.keys(CAT).forEach(c=>Object.keys(CAT[c]).forEach(i=>all.push([c,i])));
- if(!q){$('#fres').innerHTML='';return}let r;{const qs=[q];if(ALI[q])qs.push(ALI[q]);r=all.filter(([c,i])=>qs.some(t=>(i+c).replace(/\s/g,'').toLowerCase().includes(t))).slice(0,10)}
- const row=([c,i])=>{const v=CAT[c][i];return `<button class="meal" data-c="${c}" data-i="${i}" style="width:100%;text-align:left"><div>${c} · <b>${i}</b><div class="sub">1${UN[c]||'인분'} 기준 · 탄 ${v[1]}g · 단 ${v[2]}g · 지 ${fatOf(...v)}g</div></div><span class="sub" style="flex:none">선택</span></button>`};
- $('#fres').innerHTML=(r.length?r.map(row).join(''):'<div class="sub">검색 결과가 없어요.</div>')+(`<button id="fown" style="margin-top:6px;width:100%">“${$('#fq').value.trim()}” 직접 입력해서 기록</button>`);
+ if(!q){$('#fres').innerHTML='';return}fdbLoad();
+ const db=fdbFind(raw);let r;{const qs=[q];if(ALI[q])qs.push(ALI[q]);r=all.filter(([c,i])=>qs.some(t=>(i+c).replace(/\s/g,'').toLowerCase().includes(t))).slice(0,FDB?(db.length?2:5):10)}
+ const g=v=>Math.round(v);
+ const drow=(d,j)=>`<button class="meal" data-db="${j}" style="width:100%;text-align:left"><div><b>${d[0]}</b>${d[1]?` <span class="tag">${d[1]}</span>`:''}<div class="sub">1회 ${d[3]}${d[4]} 기준 · 탄 ${g(d[6])}g · 단 ${g(d[7])}g · 지 ${g(d[8])}g${d[9]?' (탄·지 추정)':''}</div></div><span class="sub" style="flex:none">선택</span></button>`;
+ const row=([c,i])=>{const v=CAT[c][i];return `<button class="meal" data-c="${c}" data-i="${i}" style="width:100%;text-align:left"><div>${c} · <b>${i}</b><div class="sub">1${UN[c]||'인분'} 기준 · 탄 ${v[1]}g · 단 ${v[2]}g · 지 ${fatOf(...v)}g · 앱 평균값</div></div><span class="sub" style="flex:none">선택</span></button>`};
+ $('#fres').innerHTML=(!FDB?'<div class="sub">식약처 음식 데이터를 불러오는 중이에요…</div>':'')+db.map(drow).join('')+r.map(row).join('')+(!db.length&&!r.length&&FDB?'<div class="sub">검색 결과가 없어요.</div>':'')+(`<button id="fown" style="margin-top:6px;width:100%">“${raw.trim()}” 직접 입력해서 기록</button>`);
+ $$('#fres [data-db]').forEach(b=>b.onclick=()=>{const d=db[+b.dataset.db];cur={cat:'DB',item:d[0],brand:d[1],db:[d[5],d[6],d[7],d[8]],w:d[3]+d[4],est:d[9],por:1,add:[],x:[],size:'보통'};show()});
  $$('#fres [data-c]').forEach(b=>b.onclick=()=>pick(b.dataset.c,b.dataset.i));
- if($('#fown'))$('#fown').onclick=()=>{const n=$('#fq').value.trim();cur={cat:'기타',item:'직접',por:1,add:[],x:[],size:'보통'};show();$('#cname').value=n}}
-$('#fq').oninput=renderRes;$('#pkx').onclick=()=>{cur=null;show()};
+ if($('#fown'))$('#fown').onclick=()=>{const n=raw.trim();cur={cat:'기타',item:'직접',por:1,add:[],x:[],size:'보통'};show();$('#cname').value=n}}
+$('#fq').oninput=renderRes;$('#fq').onfocus=fdbLoad;$('#pkx').onclick=()=>{cur=null;show()};
 function show(){
  $('#fsrch').hidden=!!cur;$('#s2').hidden=!(cur&&cur.item=='직접');$('#s3').hidden=!(cur&&cur.item);
  if(!cur){renderRes();return}
- $('#pk').textContent=cur.item=='직접'?'직접 입력':cur.cat+' '+cur.item;
+ $('#pk').textContent=cur.item=='직접'?'직접 입력':cur.db?cur.item+(cur.brand?' · '+cur.brand:''):cur.cat+' '+cur.item;
  $('#csize').innerHTML=Object.keys(SZ).map(k=>`<button class="chip ${cur.size==k?'on':''}" data-z="${k}">${k}</button>`).join('');
  $$('#csize button').forEach(b=>b.onclick=()=>{cur.size=b.dataset.z;show()});
- const u=UN[cur.cat]||'인분';$('#portions').innerHTML=[.5,1,1.5].map(p=>`<button class="chip ${p==cur.por?'on':''}" data-p="${p}">${p==.5?'반 '+u:p==1?'한 '+u:'한 '+u+' 반'}</button>`).join('');
+ const u=UN[cur.cat]||'인분';$('#portions').innerHTML=(cur.db?[.25,.5,1,1.5]:[.5,1,1.5]).map(p=>`<button class="chip ${p==cur.por?'on':''}" data-p="${p}">${cur.db?(p==1?'1회 제공량 '+cur.w:p==.25?'¼':p==.5?'½':'1.5배'):p==.5?'반 '+u:p==1?'한 '+u:'한 '+u+' 반'}</button>`).join('');
  $$('#portions button').forEach(b=>b.onclick=()=>{cur.por=+b.dataset.p;show()});
  $('#adds').innerHTML=Object.keys(ADD).map(a=>`<button class="chip ${cur.add.includes(a)?'on':''}" data-a="${a}">${cur.add.includes(a)?'− ':'+ '}${a}</button>`).join('');
  $$('#adds button').forEach(b=>b.onclick=()=>{const a=b.dataset.a;cur.add=cur.add.includes(a)?cur.add.filter(x=>x!=a):[...cur.add,a];show()});
  $('#xlist').textContent=cur.x.length?'직접 추가: '+cur.x.join(', ')+' (대략 추정)':'';
- const s=sum(cur);$('#rk').textContent=s[2];$('#rm').textContent=`탄 ${s[1]}g · 지 ${fatOf(...s)}g`+(cur.item=='직접'||cur.x.length?' · 추정':' · 평균치');
+ const s=sum(cur);$('#rk').textContent=s[2];$('#rm').textContent=`탄 ${s[1]}g · 지 ${s[3]}g`+(cur.item=='직접'||cur.x.length?' · 추정':cur.db?(cur.est?' · 탄·지 추정':' · 식약처 DB'):' · 평균치');
 }
-function base(x){return x.item=='직접'||x.cat=='기타'?SZ[x.size]:CAT[x.cat][x.item]}
-function sum(x){if(!x.item)return[0,0,0];const f=base(x);let r=f.map(v=>v*x.por);x.add.forEach(a=>ADD[a].forEach((v,i)=>r[i]+=v));r[0]+=x.x.length*80;r[1]+=x.x.length*8;r[2]+=x.x.length*3;return r.map(Math.round)}
+const f4=v=>[v[0],v[1],v[2],fatOf(...v)];
+function base(x){return x.db?x.db:f4(x.item=='직접'||x.cat=='기타'?SZ[x.size]:CAT[x.cat][x.item])}
+function sum(x){if(!x.item)return[0,0,0,0];const f=base(x);let r=f.map(v=>v*x.por);x.add.forEach(a=>f4(ADD[a]).forEach((v,i)=>r[i]+=v));r[0]+=x.x.length*80;r[1]+=x.x.length*8;r[2]+=x.x.length*3;r[3]+=x.x.length*4;return r.map(Math.round)}
 $('#xadd').onclick=()=>{const v=$('#xname').value.trim();if(!v||!cur)return;cur.x.push(v);$('#xname').value='';show()};
-$('#save').onclick=()=>{const s=sum(cur);const nm=(cur.item=='직접'||cur.cat=='기타'?($('#cname').value.trim()||'직접 입력 메뉴'):cur.cat+' '+cur.item);logs.push({n:nm+(cur.por!=1?` ×${cur.por}`:'')+(cur.add.length||cur.x.length?' + '+[...cur.add,...cur.x].join(', '):''),k:s[0],c:s[1],p:s[2],v:vegOf(cur),e:EM[cur.cat],slot:curSlot??autoSlot()});cur=null;$('#fq').value='';$('#cname').value='';show();tot();toast('저장됨')};
+$('#save').onclick=()=>{const s=sum(cur);const nm=(cur.item=='직접'||cur.cat=='기타'?($('#cname').value.trim()||'직접 입력 메뉴'):cur.db?cur.item+(cur.brand?` (${cur.brand})`:''):cur.cat+' '+cur.item);logs.push({n:nm+(cur.por!=1?` ×${cur.por}`:'')+(cur.add.length||cur.x.length?' + '+[...cur.add,...cur.x].join(', '):''),k:s[0],c:s[1],p:s[2],f:s[3],v:vegOf(cur),e:EM[cur.cat],slot:curSlot??autoSlot()});cur=null;$('#fq').value='';$('#cname').value='';show();tot();toast('저장됨')};
 function tot(){
- $('#log').innerHTML=logs.length?logs.map((l,i)=>`<div class="meal"><div>${l.slot!=null?`<span class="tag" style="margin-right:4px">${(SCH[SV.sched]||SCH.day).m[l.slot]}</span>`:''}${l.n}<div class="sub">탄 ${l.c}g · 단 ${l.p}g · 지 ${fatOf(l.k,l.c,l.p)}g</div></div><span class="row" style="gap:4px;flex:none;flex-wrap:nowrap"><button data-f="${i}" aria-label="즐겨찾기">${favs.some(f=>f.n==nm(l))?'★':'☆'}</button><button data-d="${i}">삭제</button></span></div>`).join(''):'아직 기록이 없어요.';
+ $('#log').innerHTML=logs.length?logs.map((l,i)=>`<div class="meal"><div>${l.slot!=null?`<span class="tag" style="margin-right:4px">${(SCH[SV.sched]||SCH.day).m[l.slot]}</span>`:''}${l.n}<div class="sub">탄 ${l.c}g · 단 ${l.p}g · 지 ${lf(l)}g</div></div><span class="row" style="gap:4px;flex:none;flex-wrap:nowrap"><button data-f="${i}" aria-label="즐겨찾기">${favs.some(f=>f.n==nm(l))?'★':'☆'}</button><button data-d="${i}">삭제</button></span></div>`).join(''):'아직 기록이 없어요.';
  $$('#log [data-d]').forEach(b=>b.onclick=()=>{logs.splice(+b.dataset.d,1);tot()});
  $$('#log [data-f]').forEach(b=>b.onclick=()=>{const l=logs[+b.dataset.f],i=favs.findIndex(f=>f.n==nm(l));if(i>=0)favs.splice(i,1);else favs.push({...l,n:nm(l)});tot()});
- const c=logs.reduce((a,l)=>a+l.c,0),p=logs.reduce((a,l)=>a+l.p,0),f=logs.reduce((a,l)=>a+fatOf(l.k,l.c,l.p),0),v=logs.reduce((a,l)=>a+(l.v||0),0),cg=window.CARBMIN||130,pg=window.PROT||60;
+ const c=logs.reduce((a,l)=>a+l.c,0),p=logs.reduce((a,l)=>a+l.p,0),f=logs.reduce((a,l)=>a+lf(l),0),v=logs.reduce((a,l)=>a+(l.v||0),0),cg=window.CARBMIN||130,pg=window.PROT||60;
  const br=(n,a,b,u,lab)=>`<div class="sbar"><span>${n}</span><span class="bar"><i style="width:${Math.min(100,b?a/b*100:0)}%"></i></span><span>${Math.round(a*10)/10}/${lab||b}${u}</span></div>`;
  $('#tot').innerHTML=br('탄수',c,cg,'g')+br('단백질',p,pg,'g')+br('지방',f,window.FATLO||30,'g',(window.FATLO||30)+'–'+(window.FATHI||60))+(logs.length>=G.meals&&c<cg?`<div class="sub" style="margin-top:6px">탄수 ${Math.round(c)}g — 하한 ${cg}g 이상을 목표로 해요 (줄이는 게 목표가 아니에요).</div>`:'');
  quickUI();plateUI();renderReq();
@@ -383,7 +396,7 @@ $('#wseed').onclick=()=>{const cur=wlog.length?wlog[wlog.length-1].v:+$('#wt').v
  upd();sens();toast(consent?'체중·주기 예시를 채웠어요':'체중 예시를 채웠어요 (주기는 동의 후 가능)')};
 /* weekly report */
 let hist={};
-function snap(){return{m:logs.length,c:logs.reduce((a,l)=>a+l.c,0),p:logs.reduce((a,l)=>a+l.p,0),v:logs.reduce((a,l)=>a+(l.v||0),0),f:logs.reduce((a,l)=>a+fatOf(l.k,l.c,l.p),0),w:water,s:steps,pl:planned()?1:0,ex:exDone?1:0}}
+function snap(){return{m:logs.length,c:logs.reduce((a,l)=>a+l.c,0),p:logs.reduce((a,l)=>a+l.p,0),v:logs.reduce((a,l)=>a+(l.v||0),0),f:logs.reduce((a,l)=>a+lf(l),0),w:water,s:steps,pl:planned()?1:0,ex:exDone?1:0}}
 function dayStat(d){const h=hist[key(d)],c=cond[key(d)]||{},o={};const pg=(window.PROT||60),cg=window.CARBMIN||130,fl=window.FATLO||30,fh=window.FATHI||60;
  if(h){o.meal=h.m>=G.meals;o.water=h.w>=G.water;o.move=h.pl?!!h.ex:h.s>=G.steps;if(h.m>=G.meals){o.carb=h.c>=cg;o.prot=h.p>=pg;if(h.f!=null)o.fat=h.f>=fl&&h.f<=fh}}
  o.sleep=c.s||null;o.en=c.e||null;o.gut=c.g||null;o.all=!!doneDates[key(d)];return o}
@@ -444,7 +457,7 @@ const VEG={'샌드위치':.3,'비빔밥':1,'포케':1,'김밥':.5,'덮밥·볶�
 function vegOf(x){return (VEG[x.cat]??.3)*x.por+(x.add.includes('샐러드')?1:0)}
 function sector(a0,a1,q){const r=80,p=a=>[100+r*Math.cos(a*Math.PI/180),100+r*Math.sin(a*Math.PI/180)],[x0,y0]=p(a0),[x1,y1]=p(a1);return `<path d="M100 100 L${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1} Z" transform="translate(100 100) scale(${q}) translate(-100 -100)"`}
 function plateUI(){
- const c=logs.reduce((a,l)=>a+l.c,0),p=logs.reduce((a,l)=>a+l.p,0),f=logs.reduce((a,l)=>a+fatOf(l.k,l.c,l.p),0);
+ const c=logs.reduce((a,l)=>a+l.c,0),p=logs.reduce((a,l)=>a+l.p,0),f=logs.reduce((a,l)=>a+lf(l),0);
  const cg=window.CARBMIN||130,pg=(window.PROT||60),fl=window.FATLO||30,fh=window.FATHI||60;
  const R=[[c/cg,'탄수','--lemon',-90,30],[p/pg,'단백질','--blush',30,150],[f/fl,'지방','--leaf-soft',150,270]];
  let h='<circle cx="100" cy="100" r="92" style="fill:var(--card);stroke:var(--line)" stroke-width="3"/>';
